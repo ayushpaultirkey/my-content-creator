@@ -1,0 +1,19 @@
+{
+    "name": "gemini-content-creator",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "node ./src/app.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "nodejs-file-downloader": "^4.13.0",
+        "cross-zip": "^4.0.1"
+    },
+    "dependencies": {
+        "ffcreator": "^7.3.5"
+    }
+}
