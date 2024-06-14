@@ -18,7 +18,13 @@ class App extends H12.Component {
         return <>
             <div class="w-full h-full relative">
                 
-                <Dashboard args></Dashboard>
+                <div class="w-full h-full">
+                    <Editor args></Editor>
+                </div>
+                <div class="bg-zinc-900 bg-opacity-85 backdrop-blur-sm w-full h-full absolute top-0 left-0 flex flex-col justify-center items-center text-zinc-300 hidden">
+                    <i class="fas fa-splotch fa-spin text-2xl text-blue-500"></i>
+                    <label class="text-sm font-semibold">Please Wait, AI Is Crafting...</label>
+                </div>
                 
             </div>
         </>;

@@ -13,10 +13,12 @@ class Async {
             this.Reject = rej;
         });
     }
-}
+};
 
-async function preRenderPoject(projectPath = "", data = {}) {
 
+async function projectPreRender(projectPath = "", data = {}) {
+
+    // Create new promise
     const promise = new Async();
 
     // Get current directory path and filename
@@ -24,18 +26,20 @@ async function preRenderPoject(projectPath = "", data = {}) {
     FFCreator.setFFmpegPath(path.join(__dirname, "./../../library/ffmpeg/bin/ffmpeg.exe"));
     FFCreator.setFFprobePath(path.join(__dirname, "./../../library/ffmpeg/bin/ffprobe.exe"));
 
-    //
-    const S = 2;
+    // Set video dimension
+    const S = 1;
     const W = 720 / S;
     const H = 1280 / S;
 
-    //
-    let ind = 0;
-    let len = data.slide.length;
-    function create() {
-        if(ind > len - 1) {
+    // Render for all slides into separate files
+    let index = 0;
+    let length = data.slide.length;
+    const render = () => {
+        if(index > length - 1) {
+
             console.log("Project pre-render completed");
             promise.Resolve();
+
         }
         else {
 
@@ -48,48 +52,48 @@ async function preRenderPoject(projectPath = "", data = {}) {
             //
             const scene = new FFScene();
             scene.setBgColor("#000000");
-            scene.setDuration(data.slide[ind].time);
+            scene.setDuration(data.slide[index].time);
             scene.setTransition("GridFlip", 2);
             creator.addChild(scene);
 
             //
             const text = new FFText({
-                text: data.slide[ind].content,
+                text: data.slide[index].content,
                 x: W / 2,
                 y: H / 2,
-                scale: 0.1
             });
             text.setColor("#ffffff");
             text.addEffect("zoomIn", 1, 0);
-            text.addEffect("fadeOut", 1, data.slide[ind].hideAt - data.slide[ind].showAt);
+            text.addEffect("fadeOut", 1, data.slide[index].hideAt - data.slide[index].showAt);
             text.alignCenter();
-            text.setWrap(600);
+            text.setWrap(W / 1.5);
             scene.addChild(text);
 
-            creator.output(path.join(projectPath, `./cache/slide-${ind}.mp4`));
+            //
+            creator.output(path.join(projectPath, `./cache/slide-${index}.mp4`));
             creator.start();
             creator.closeLog();
 
-            creator.on('start', () => {
+            //
+            creator.on("start", () => {
                 console.log(`Project pre-render started`);
             });
-            creator.on('error', e => {
-                console.error(`Unable to prerender project`);
+            creator.on("error", e => {
+                console.log(`Unable to pre-render project`);
                 promise.Reject();
             });
-            creator.on('progress', e => {
-                console.log((`Project pre-render: ${(e.percent * 100) >> 0}%`));
+            creator.on("progress", e => {
+                console.log(`Project pre-render: ${(e.percent * 100) >> 0}%`);
             });
-            creator.on('complete', e => {
-                //promise.Resolve("Project pre-render completed");
-                console.log((`Project pre-render ${ind} completed`));
-                ind++;
-                create();
+            creator.on("complete", e => {
+                console.log(`Project pre-render ${index} completed`);
+                index++;
+                render();
             });
 
-        }
+        };
     };
-    create();
+    render();
 
 
     return promise.Promise;
@@ -107,7 +111,7 @@ async function makeProject(projectPath = "") {
         throw new Error("Project already exists");
     }
     catch(error) {
-        if(error.code === 'ENOENT') {
+        if(error.code === "ENOENT") {
 
             const data = {
                 "title": "3 Easy Exercises for a Stronger Core",
@@ -149,7 +153,7 @@ async function makeProject(projectPath = "") {
                         "hideAt": 60
                     }
                 ]
-            }
+            };
 
             await fs.mkdir(projectPath, { recursive: true });
             await fs.writeFile(path.join(projectPath, "/project.json"), JSON.stringify({
@@ -159,7 +163,7 @@ async function makeProject(projectPath = "") {
                 ],
                 data: data
             }));
-            await preRenderPoject(projectPath, data);
+            await projectPreRender(projectPath, data);
 
             console.log("Project folder created");
 
@@ -197,7 +201,7 @@ async function Create(request, response) {
         const _projectId = crypto.randomUUID();
         const _projectPath = path.join(__dirname, `../../public/project/${_projectId}`);
 
-        // Check if the project directory exists and create if it doesn't
+        // Check if the project directory exists and create if it doesn"t
         await makeProject(_projectPath);
 
         // Set success respones
