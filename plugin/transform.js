@@ -148,15 +148,32 @@ function DOMPharse(_element = document.body) {
                                 //_test += `this.node("span",[\`${_split[j]}\`]),`;
                                 _test += `\`${_split[j]}\`,`;
                             };
-                            _test += ((typeof(_key[j]) !== "undefined") ? `this.node("span",[\`${_key[j]}\`]),` : "");
+                            //_test += ((typeof(_key[j]) !== "undefined") ? `this.node("span",[\`${_key[j]}\`]),` : "");
                             //_test += ((typeof(_key[j]) !== "undefined") ? `\`${_key[j]}\`,` : "");
+
+                            if((typeof(_key[j]) !== "undefined")) {
+
+                                const match = _key[j].match(/\{.*?~(.*?)\}/);
+
+                                if(match && match[1]) {
+                                    _test += `${match[1]},`;
+                                }
+                                else {
+                                    _test += `\`${_key[j]}\`,`;
+                                }
+                            }
+                            else {
+                                _test += "";
+                            };
     
                         };
 
                     }
                     else {
+
                         //_test += `this.node("span",[\`${_value}\`]),`;
                         _test += `[\`${_value}\`],`;
+
                     };
                 }
                 else {

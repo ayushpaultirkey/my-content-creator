@@ -280,7 +280,7 @@ class Component {
                 }
                 else {
                     while(_node.firstChild) {
-                        _node.firstChild.remove()
+                        _node.firstChild.remove();
                     };
                     _node.append(_clone);
                 };

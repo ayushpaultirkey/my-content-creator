@@ -1,6 +1,6 @@
 import "dotenv/config";
 import express from "express";
-import viteexpress from "vite-express";
+import viteExpress from "vite-express";
 import compression from "compression";
 import router from "./router.js";
 
@@ -17,7 +17,8 @@ function init() {
     app.use("/", router);
     
     //Create server
-    viteexpress.listen(app, 3000, () => {
+    viteExpress.config({ mode: "development" });
+    viteExpress.listen(app, 3000, () => {
         console.log("> Server started !")
         console.log("> http://localhost:3000/");
     });

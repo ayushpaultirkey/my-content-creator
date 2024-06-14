@@ -82,7 +82,6 @@ function init(imgs = []) {
     //text.alignCenter();
     scene.addChild(text);
 
-
     //creator.addAudio({ path: path.join(__dirname, "./../audio/audio1.mp3") })
     
     creator.output(path.join(__dirname, "./out.mp4"));

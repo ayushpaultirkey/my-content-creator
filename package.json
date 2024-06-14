@@ -13,22 +13,21 @@
     "author": "",
     "license": "ISC",
     "devDependencies": {
-        "cross-zip": "^4.0.1",
-        "nodejs-file-downloader": "^4.13.0",
-	    "jsdom": "^22.1.0",
-        "mime": "^3.0.0",
-        "tailwindcss": "^3.3.5",
         "vite": "^4.4.5",
-        "xregexp": "^5.1.1"
+        "mime": "^3.0.0",
+	    "jsdom": "^22.1.0",
+        "xregexp": "^5.1.1",
+        "cross-zip": "^4.0.1",
+        "tailwindcss": "^3.3.5",
+        "nodejs-file-downloader": "^4.13.0"
     },
     "dependencies": {
-        "ffcreator": "^7.3.5",
-        "pexels": "^1.4.0",
         "sharp": "^0.33.4",
-	    "@google/generative-ai": "^0.7.1",
-        "compression": "^1.7.4",
         "dotenv": "^16.3.1",
         "express": "^4.18.2",
-        "vite-express": "^0.11.1"
+        "ffcreator": "^7.3.5",
+        "compression": "^1.7.4",
+        "vite-express": "^0.11.1",
+	    "@google/generative-ai": "^0.7.1"
     }
 }
