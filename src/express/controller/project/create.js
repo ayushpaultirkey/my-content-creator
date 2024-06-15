@@ -70,7 +70,7 @@ async function projectPreRender(projectPath = "", data = {}) {
             scene.addChild(text);
 
             //
-            creator.output(path.join(projectPath, `./cache/slide-${index}.mp4`));
+            creator.output(path.join(projectPath, `./cache/${data.slide[index].id}.mp4`));
             creator.start();
             creator.closeLog();
 
@@ -161,6 +161,10 @@ async function makeProject(projectPath = "") {
                     { "sender": "user", "content": "Can you help me in generate a video content for health and fitness, the video length is around 1 minute" },
                     { "sender": "ai", "content": "sure" }
                 ],
+                config: {
+                    width: 720,
+                    height: 1280
+                },
                 data: data
             }));
             await projectPreRender(projectPath, data);

@@ -40,23 +40,11 @@ export default class Editor extends H12.Component {
 
                             <div class="w-full h-full flex flex-col overflow-hidden">
                                 <div class="h-full space-y-2 flex flex-col overflow-auto">
-                                    
                                     {e.prompt}
-                                    <div>
-                                        <div class="w-2/3 bg-zinc-500 text-xs font-semibold p-2 rounded-md rounded-bl-none shadow-md">
-                                            <label>Response</label>
-                                        </div>
-                                    </div>
-                                    <div class="flex justify-end">
-                                        <div class="w-2/3 bg-zinc-600 text-xs font-semibold p-2 rounded-md rounded-br-none shadow-md">
-                                            <label>Response</label>
-                                        </div>
-                                    </div>
-
                                 </div>
                                 <div class="bg-zinc-400 flex rounded-lg overflow-hidden">
                                     <textarea type="text" class="text-xs font-semibold bg-transparent placeholder:text-zinc-600 w-full p-3 px-4 resize-none" placeholder="Ask anything..."></textarea>
-                                    <button class="text-xs font-semibold bg-transparent p-3 px-4 hover:bg-zinc-500 active:bg-zinc-600">Ask</button>
+                                    <button class="text-xs font-semibold bg-transparent p-3 px-4 hover:bg-zinc-500 active:bg-zinc-600" onclick={ this.editorUpdateSlide }>Ask</button>
                                 </div>
                             </div>
 
@@ -224,8 +212,8 @@ export default class Editor extends H12.Component {
 
     }
 
-    loadSlide(index = 0) {
-        this.element.editorViewport.src = `./project/${this.project.id}/cache/slide-${index}.mp4`;
+    loadSlide(id, index) {
+        this.element.editorViewport.src = `./project/${this.project.id}/cache/${id}.mp4`;
         this.element.editorViewportVideo.load();
         this.element.editorSlideContent.value = this.project.data.slide[index].content;
     }
@@ -237,13 +225,14 @@ export default class Editor extends H12.Component {
         this.Set("{e.slide}", "");
         for(var i = 0, len = currentProject.data.slide.length; i < len; i++) {
 
+            let id = currentProject.data.slide[i].id;
             let index = i;
 
             this.Set("{e.slide}++", 
                 <>
-                    <div class="bg-zinc-900 w-20 h-full rounded-md shadow-md" onclick={ () => { this.loadSlide(index); } }>
+                    <div class="bg-zinc-900 w-20 h-full rounded-md shadow-md" onclick={ () => { this.loadSlide(id, index); } }>
                         <video class="w-full h-full pointer-events-none" loop autoplay>
-                            <source type="video/mp4" src={ `./project/${currentProject.id}/cache/slide-${i}.mp4` }/>
+                            <source type="video/mp4" src={ `./project/${currentProject.id}/cache/${currentProject.data.slide[i].id}.mp4` }/>
                         </video>
                     </div>
                 </>
@@ -267,7 +256,27 @@ export default class Editor extends H12.Component {
 
         };
 
-        this.loadSlide(0);
+        this.loadSlide(currentProject.data.slide[0].id, 0);
+
+    }
+
+    async editorUpdateSlide() {
+
+        try {
+            
+            const request = await fetch(`/api/project/update?id=${this.project.id}&slideid=${this.project.data.slide[0].id}&content=hello`);
+            const response = await request.json();
+
+            if(!response.success) {
+                throw new Error(response.message);
+            };
+
+            console.log(response);
+
+        }
+        catch(error) {
+            console.error(error);
+        };
 
     }
 
