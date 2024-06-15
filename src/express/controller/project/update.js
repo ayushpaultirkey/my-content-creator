@@ -83,7 +83,7 @@ async function directoryExist(dir = "") {
 async function update(request, response) {
 
     // Create response body
-    const responseBody = { message: "", success: false, data: [] };
+    const responseBody = { message: "", success: false, data: {} };
     
     //
     try {
@@ -123,9 +123,20 @@ async function update(request, response) {
             const projectUpdate = findUpdatedSlides(projectContentOriginal.data.slide, projectContentUpdated.data.slide);
             await projectSlideRender(projectId, projectUpdate.updated.concat(projectUpdate.added));
 
+            //
+            await fs.writeFile(path.join(projectPath, "/project.json"), JSON.stringify({
+                "prompt": [ ... projectContentOriginal.prompt ],
+                "config": { ... projectContentOriginal.config },
+                "data": { ... projectContentUpdated.data }
+            }));
 
             // Set success response
             responseBody.success = true;
+            responseBody.data = {
+                "prompt": [ ... projectContentOriginal.prompt ],
+                "config": { ... projectContentOriginal.config },
+                "data": { ... projectContentUpdated.data }
+            };
 
         };
 

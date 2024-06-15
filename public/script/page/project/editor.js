@@ -1,4 +1,5 @@
-import { getProjectList } from "../../module/project";
+import Dispatcher from "@library/h12.dispatcher";
+import { getProjectList, setProjectList } from "../../module/project";
 import "./../../../style/output.css";
 import H12 from "@library/h12";
 
@@ -6,13 +7,11 @@ import H12 from "@library/h12";
 export default class Editor extends H12.Component {
     constructor() {
         super();
-        this.slideIndex = 0;
         this.project = null;
+        this.projectSlideIndex = 0;
     }
     async init() {
 
-        //
-        this.project = await getProjectList().then(data => data[0]);
 
         //
         await this.projectLoad();
@@ -44,7 +43,7 @@ export default class Editor extends H12.Component {
                                 </div>
                                 <div class="bg-zinc-400 flex rounded-lg overflow-hidden">
                                     <textarea type="text" class="text-xs font-semibold bg-transparent placeholder:text-zinc-600 w-full p-3 px-4 resize-none" placeholder="Ask anything..."></textarea>
-                                    <button class="text-xs font-semibold bg-transparent p-3 px-4 hover:bg-zinc-500 active:bg-zinc-600" onclick={ this.editorUpdateSlide }>Ask</button>
+                                    <button class="text-xs font-semibold bg-transparent p-3 px-4 hover:bg-zinc-500 active:bg-zinc-600">Ask</button>
                                 </div>
                             </div>
 
@@ -81,7 +80,7 @@ export default class Editor extends H12.Component {
                             </div>
 
                             <div class="pt-3">
-                                <button class="p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors">Update</button>
+                                <button class="p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.editorUpdateSlide }>Update</button>
                             </div>
 
                             <div>
@@ -216,11 +215,19 @@ export default class Editor extends H12.Component {
         this.element.editorViewport.src = `./project/${this.project.id}/cache/${id}.mp4`;
         this.element.editorViewportVideo.load();
         this.element.editorSlideContent.value = this.project.data.slide[index].content;
+        this.projectSlideIndex = index;
     }
 
-    async projectLoad(id = "306c1dc4-59e5-4b47-af24-1c86a0a40083") {
+    async projectReload() {
+        await this.projectLoad(null, this.projectSlideIndex);
+    }
 
-        const currentProject = this.project;
+    async projectLoad(id = "306c1dc4-59e5-4b47-af24-1c86a0a40083", slideIndex = 0) {
+
+        //
+        const currentProject = await getProjectList().then(data => data[0]);
+
+        this.project = currentProject;
 
         this.Set("{e.slide}", "");
         for(var i = 0, len = currentProject.data.slide.length; i < len; i++) {
@@ -228,9 +235,9 @@ export default class Editor extends H12.Component {
             let id = currentProject.data.slide[i].id;
             let index = i;
 
-            this.Set("{e.slide}++", 
+            this.Set("{e.slide}++",
                 <>
-                    <div class="bg-zinc-900 w-20 h-full rounded-md shadow-md" onclick={ () => { this.loadSlide(id, index); } }>
+                    <div class="bg-zinc-900 w-20 min-w-20 h-full rounded-md shadow-md" onclick={ () => { this.loadSlide(id, index); } }>
                         <video class="w-full h-full pointer-events-none" loop autoplay>
                             <source type="video/mp4" src={ `./project/${currentProject.id}/cache/${currentProject.data.slide[i].id}.mp4` }/>
                         </video>
@@ -256,27 +263,33 @@ export default class Editor extends H12.Component {
 
         };
 
-        this.loadSlide(currentProject.data.slide[0].id, 0);
+        this.loadSlide(currentProject.data.slide[slideIndex].id, slideIndex);
 
     }
 
     async editorUpdateSlide() {
 
+        Dispatcher.call("ShowLoader", "AI is updating slide...");
+
         try {
+
+            const slideContent = this.element.editorSlideContent.value;
             
-            const request = await fetch(`/api/project/update?id=${this.project.id}&slideid=${this.project.data.slide[0].id}&content=hello`);
+            const request = await fetch(`/api/project/update?id=${this.project.id}&slideid=${this.project.data.slide[0].id}&content=${slideContent}`);
             const response = await request.json();
 
             if(!response.success) {
                 throw new Error(response.message);
             };
 
-            console.log(response);
+            await this.projectReload();
 
         }
         catch(error) {
             console.error(error);
         };
+
+        Dispatcher.call("HideLoader");
 
     }
 
