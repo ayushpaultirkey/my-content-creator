@@ -6,17 +6,17 @@
 */
 const Dispatcher = {};
 
-Dispatcher.target = new EventTarget();
+Dispatcher.Target = new EventTarget();
 
 /**
     * The function will be called when the `Disptacher.Call()` function is called based on the event name
     * @param `name` `string` Name of the event
     * @param `callback` `function` Event that will be called that have `event` and `event.detail` as arguments
 */
-Dispatcher.on = function(name = "", callback = null) {
+Dispatcher.On = function(name = "", callback = null) {
 
     if(name.length > 0 && callback !== null) {
-        Dispatcher.target.addEventListener(name, (event) => { callback(event, event.detail) }, true);
+        Dispatcher.Target.addEventListener(name, (event) => { callback(event, event.detail) }, true);
     };
 
 };
@@ -26,10 +26,10 @@ Dispatcher.on = function(name = "", callback = null) {
     * @param name `string` Name of the event
     * @param argument `any`
 */
-Dispatcher.call = function(name = "", argument = null) {
+Dispatcher.Call = function(name = "", argument = null) {
 
     if(name.length > 0) {
-        Dispatcher.target.dispatchEvent(new CustomEvent(name, { detail: argument }));
+        Dispatcher.Target.dispatchEvent(new CustomEvent(name, { detail: argument }));
     };
 
 };

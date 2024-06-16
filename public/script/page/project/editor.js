@@ -9,11 +9,12 @@ export default class Editor extends H12.Component {
         super();
         this.project = null;
         this.projectSlideIndex = 0;
+        this.isSlidePreviewPlaying = false;
     }
     async init() {
 
-
         //
+        this.Set("{e.slidePlay}", "play");
         await this.projectLoad();
 
     }
@@ -42,8 +43,8 @@ export default class Editor extends H12.Component {
                                     {e.prompt}
                                 </div>
                                 <div class="bg-zinc-400 flex rounded-lg overflow-hidden">
-                                    <textarea type="text" class="text-xs font-semibold bg-transparent placeholder:text-zinc-600 w-full p-3 px-4 resize-none" placeholder="Ask anything..."></textarea>
-                                    <button class="text-xs font-semibold bg-transparent p-3 px-4 hover:bg-zinc-500 active:bg-zinc-600">Ask</button>
+                                    <input type="text" class="text-xs font-semibold bg-transparent placeholder:text-zinc-600 w-full p-3 resize-none" placeholder="Ask anything..." />
+                                    <button class="text-xs font-semibold bg-transparent p-3 hover:bg-zinc-500 active:bg-zinc-600">Ask</button>
                                 </div>
                             </div>
 
@@ -110,7 +111,7 @@ export default class Editor extends H12.Component {
                             </div>
 
                             <div>
-                                <label class="text-xs font-semibold text-zinc-400">Images:</label>
+                                <label class="text-xs font-semibold text-zinc-400">Backgound Images:</label>
                                 <div class="grid sm:grid-cols-[repeat(auto-fill,56px)] grid-cols-[repeat(auto-fill,auto)] gap-1">
                                     <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
                                     <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
@@ -180,17 +181,20 @@ export default class Editor extends H12.Component {
                     <div class="bg-zinc-800 w-full h-full flex justify-center items-center">
                         
                         <div class="bg-zinc-300 h-96 shadow-lg">
-                            <video class="w-full h-full" id="editorViewportVideo" controls loop autoplay >
+                            <video class="w-full h-full" id="editorViewportVideo" controls loop autoplay>
                                 <source type="video/mp4" id="editorViewport" />
                             </video>
                         </div>
 
                     </div>
-                    <div class="bg-zinc-800 w-full h-24">
+                    <div class="bg-zinc-800 w-full h-24 relative">
                         
-                        <div class="flex flex-row border-t border-zinc-700 h-full p-3 space-x-2 overflow-auto">
+                        <button class="fa fa-{e.slidePlay} top-2 right-1 absolute text-zinc-500" onclick={ this.editorSlideRefresh }></button>
+
+                        <div class="flex flex-row border-t border-zinc-700 h-full p-3 space-x-2 overflow-auto" id="editorSlides">
                             {e.slide}
                         </div>
+
 
                     </div>
                 </div>
@@ -222,6 +226,27 @@ export default class Editor extends H12.Component {
         await this.projectLoad(null, this.projectSlideIndex);
     }
 
+    editorSlideRefresh() {
+
+        try {
+
+            this.element.editorViewportVideo.load();
+
+            this.element.editorSlides.querySelectorAll("video").forEach(x => {
+                (this.isSlidePreviewPlaying) ? x.pause() : x.load();
+            });
+            this.isSlidePreviewPlaying = !this.isSlidePreviewPlaying;
+
+            this.Set("{e.slidePlay}", (this.isSlidePreviewPlaying) ? "pause" : "play");
+
+
+        }
+        catch(error) {
+            console.error(error);
+        }
+
+    }
+
     async projectLoad(id = "306c1dc4-59e5-4b47-af24-1c86a0a40083", slideIndex = 0) {
 
         //
@@ -237,8 +262,8 @@ export default class Editor extends H12.Component {
 
             this.Set("{e.slide}++",
                 <>
-                    <div class="bg-zinc-900 w-20 min-w-20 h-full rounded-md shadow-md" onclick={ () => { this.loadSlide(id, index); } }>
-                        <video class="w-full h-full pointer-events-none" loop autoplay>
+                    <div class="bg-zinc-900 w-20 min-w-20 h-full rounded-md shadow-md" id="num" onclick={ () => { this.loadSlide(id, index); } }>
+                        <video class="w-full h-full pointer-events-none" loop autoplay muted>
                             <source type="video/mp4" src={ `./project/${currentProject.id}/cache/${currentProject.data.slide[i].id}.mp4` }/>
                         </video>
                     </div>
@@ -269,13 +294,13 @@ export default class Editor extends H12.Component {
 
     async editorUpdateSlide() {
 
-        Dispatcher.call("ShowLoader", "AI is updating slide...");
+        Dispatcher.Call("ShowLoader", "AI is updating slide...");
 
         try {
 
             const slideContent = this.element.editorSlideContent.value;
             
-            const request = await fetch(`/api/project/update?id=${this.project.id}&slideid=${this.project.data.slide[0].id}&content=${slideContent}`);
+            const request = await fetch(`/api/slide/update?pid=${this.project.id}&sid=${this.project.data.slide[this.projectSlideIndex].id}&scontent=${slideContent}`);
             const response = await request.json();
 
             if(!response.success) {
@@ -289,7 +314,7 @@ export default class Editor extends H12.Component {
             console.error(error);
         };
 
-        Dispatcher.call("HideLoader");
+        Dispatcher.Call("HideLoader");
 
     }
 

@@ -1,35 +1,145 @@
 import path from "path";
 import fs from "fs/promises";
-import directory from "../../library/directory.js";
-import { FFScene, FFText, FFVideo, FFAlbum, FFImage, FFCreator, FFAudio } from "ffcreator";
 import wait from "./wait.js";
+import directory from "../../library/directory.js";
+import { FFScene, FFText, FFImage, FFCreator, FFAudio, FFRect } from "ffcreator";
+import { RenderSlide, renderSlides } from "./slide.js";
+
 
 const project = null;
 
 /**
-    * Reads project file
-    * @param {string} projectId
-    * @returns {Promise<object>}
+ * Generates video content data for a health and fitness video.
+ * 
+ * @returns {{ prompt: [any], config: { width, height }, data: { title, totalTime, slide: [{ id, content, time, showAt, hideAy }] } }} The video content data.
 */
+async function ReadProject(projectId = "") {
+
+    try {
+        
+        // Get current directory path
+        const { __dirname } = directory();
+
+        // Get project path and read the project json file
+        const _path = path.join(__dirname, `../../public/project/${projectId}/project.json`);
+        const _content = await fs.readFile(_path, "utf8");
+
+        // Export the json file
+        return JSON.parse(_content);
+
+    }
+    catch (error) {
+
+        throw new Error("Failed to read or parse json file");
+
+    };
+
+};
+
+
+async function UpdateProject(projectId = "", project = {}) {
+
+    try {
+        
+        // Get current directory path
+        const { __dirname } = directory();
+
+        // Get project path and update the project json file
+        const _path = path.join(__dirname, `../../public/project/${projectId}/project.json`);
+        await fs.writeFile(_path, JSON.stringify(project));
+
+    }
+    catch (error) {
+
+        throw new Error("Failed to update project file");
+
+    };
+
+};
+
+
+async function DoesProjectExists(projectId = "") {
+
+    try {
+
+        // Get current directory path
+        const { __dirname } = directory();
+
+        // Check if the project file exists ?
+        const _path = path.join(__dirname, `../../public/project/${projectId}/project.json`);
+        await fs.access(_path);
+
+        return true;
+        
+    }
+    catch(error) {
+        if(error.code === "ENOENT") {
+        }
+        else {
+            throw error;
+        };
+    };
+
+};
+
+
+async function CreateProject(projectId = "", project = {}) {
+
+    try {
+
+        // Get current directory path
+        const { __dirname } = directory();
+
+        if(await DoesProjectExists(projectId)) {
+            throw new Error("Project already exists")
+        };
+
+        // Create new project folder and json file
+        const _path = path.join(__dirname, `../../public/project/${projectId}/`);
+        await fs.mkdir(_path, { recursive: true });
+        await fs.writeFile(path.join(_path, "/project.json"), JSON.stringify(project));
+        await RenderSlide(projectId, project.data.slide);
+
+    }
+    catch(error) {
+        throw error;
+    };
+
+};
+
+
+
+
+
 async function readProject(projectId = "") {
     try {
-        const content = await fs.readFile(projectId, "utf8");
+        
+        // Get current directory path and filename
+        const { __dirname } = directory();
+
+        const projectPath = path.join(__dirname, `../../public/project/${projectId}/project.json`);
+
+        const content = await fs.readFile(projectPath, "utf8");
+
         return JSON.parse(content);
+
     }
     catch (error) {
         throw new Error(`Failed to read or parse json file`);
     };
 };
-
-
-/**
-    * Checks if project exists at given path
-    * @param {string} projectId
-*/
 async function doesProjectExist(projectId = "") {
     try {
-        await fs.access(projectId);
+
+        // Get current directory path and filename
+        const { __dirname } = directory();
+
+        const projectPath = path.join(__dirname, `../../public/project/${projectId}/project.json`);
+
+        await fs.access(projectPath);
+
         return true;
+        
     }
     catch(error) {
         if(error.code === "ENOENT") {
@@ -40,11 +150,6 @@ async function doesProjectExist(projectId = "") {
         };
     };
 };
-
-
-
-
-
 async function projectSlideRender(projectId = "", slides = []) {
 
     // Create new promise
@@ -94,6 +199,11 @@ async function projectSlideRender(projectId = "", slides = []) {
                 scene.setDuration(slide.time);
                 scene.setTransition("GridFlip", 2);
                 creator.addChild(scene);
+
+                const rectangle = new FFRect({ width: W * 2, height: H * 2, color: "#FF0000" });
+                rectangle.addEffect("fadeIn", 1, 0);
+                rectangle.addEffect("fadeOut", 1, slide.hideAt - slide.showAt);
+                scene.addChild(rectangle);
 
                 //
                 const text = new FFText({
@@ -148,4 +258,4 @@ async function projectSlideRender(projectId = "", slides = []) {
 
 };
 
-export { readProject, doesProjectExist, projectSlideRender };
+export { readProject, doesProjectExist, projectSlideRender, ReadProject, CreateProject, UpdateProject, DoesProjectExists };

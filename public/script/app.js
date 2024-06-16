@@ -16,8 +16,8 @@ class App extends H12.Component {
         this.Set("{a.loader}", "hidden");
         this.Set("{a.loader.text}", "Please Wait, AI Is Crafting...");
 
-        Dispatcher.on("ShowLoader", this.showLoader.bind(this));
-        Dispatcher.on("HideLoader", this.hideLoader.bind(this));
+        Dispatcher.On("ShowLoader", this.showLoader.bind(this));
+        Dispatcher.On("HideLoader", this.hideLoader.bind(this));
 
     }
     async render() {
@@ -44,6 +44,9 @@ class App extends H12.Component {
         this.Set("{a.loader}", "hidden");
     }
 
+    load() {
+        Dispatcher.Call("Loaded");
+    }
 };
 
 //

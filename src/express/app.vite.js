@@ -3,17 +3,21 @@ import express from "express";
 import viteExpress from "vite-express";
 import compression from "compression";
 import router from "./router.js";
+import { GenerativeInit } from "./service/gemini.js";
 
 //
 function init() {
 
-    //Create express app
+    // Start generative ai
+    GenerativeInit();
+
+    // Create express app
     const app = express();
 
-    //Use response compression
+    // Use response compression
     app.use(compression());
     
-    //Serve files
+    // Serve files
     app.use("/", router);
     
     //Create server
