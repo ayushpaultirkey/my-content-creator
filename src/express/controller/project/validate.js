@@ -1,41 +1,5 @@
-import path from "path";
-import fs from "fs/promises";
-import directory from "../../../library/directory.js";
+import { DoesProjectExists, ReadProject } from "../../service/project.js";
 
-/**
-    * Reads project file
-    * @param {string} dir
-    * @returns {Promise<object>}
-*/
-async function readJsonFile(dir = "") {
-    try {
-        const fileContent = await fs.readFile(dir, 'utf8');
-        return JSON.parse(fileContent);
-    }
-    catch (error) {
-        throw new Error(`Failed to read or parse json file`);
-    };
-};
-
-
-/**
-    * Checks if project exists at given path
-    * @param {string} dir
-*/
-async function directoryExists(dir = "") {
-    try {
-        await fs.access(dir);
-        return true;
-    }
-    catch(error) {
-        if(error.code === 'ENOENT') {
-            return false;
-        }
-        else {
-            throw error;
-        };
-    };
-};
 
 /**
     * Validates project IDs from request query
@@ -45,58 +9,48 @@ async function directoryExists(dir = "") {
 async function validate(request, response) {
 
     //Create response object
-    const responseBody = { message: "", success: false, data: [] };
+    const _response = { message: "", success: false, data: [] };
     
     //Create project
     try {
 
-        // Get current directory path and filename
-        const { __dirname } = directory();
-
         // Check if the query parameter are valid
-        const projectIds = JSON.parse(request.query.pid);
-        if(projectIds == null || !Array.isArray(projectIds)) {
+        const _projectId = JSON.parse(request.query.pid);
+        if(_projectId == null || !Array.isArray(_projectId)) {
             throw new Error("No project IDs provided");
         };
 
         // Validate each project ID
-        for(const projectId of projectIds) {
+        for(const projectId of _projectId) {
             if(typeof projectId !== "string" || projectId.length < 2) {
                 throw new Error(`Invalid project ID: ${projectId}`);
             };
         };
 
         // Validate each project ID
-        for(const projectId of projectIds) {
+        for(const projectId of _projectId) {
 
-            // Generate project path and check if it exists
-            const projectPath = path.join(__dirname, `../../public/project/${projectId}`);
-            const projectExists = await directoryExists(projectPath);
-
-            // If project exists then set response value
-            if(projectExists) {
-
-                const projectContent = await readJsonFile(path.join(projectPath, "/project.json"));
-                responseBody.data.push({ id: projectId, ... projectContent });
-
+            if(await DoesProjectExists(projectId)) {
+                const project = await ReadProject(projectId);
+                _response.data.push({ id: projectId, ... project });
             };
 
         };
 
         // Set success response
-        responseBody.success = true;
+        _response.success = true;
         
     }
     catch(error) {
 
         // Set error message
-        responseBody.message = error.message || "An error occurred";
+        _response.message = error.message || "An error occurred";
 
     }
     finally {
         
         // Send response
-        response.send(responseBody);
+        response.send(_response);
 
     };
 

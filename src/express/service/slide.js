@@ -247,7 +247,12 @@ async function UpdateSlide(projectId = "", project = {}) {
 };
 
 
-
+/**
+ * 
+ * @param {*} projectId 
+ * @param {[{ id, content, totalTime, showAt, hideAt }]} slide 
+ * @returns 
+ */
 async function RenderSlide(projectId = "", slide = []) {
 
     // Create new promise
@@ -294,7 +299,7 @@ async function RenderSlide(projectId = "", slide = []) {
                 //
                 const _scene = new FFScene();
                 _scene.setBgColor("#000000");
-                _scene.setDuration(_slide.time);
+                _scene.setDuration(_slide.totalTime);
                 _creator.addChild(_scene);
 
                 //

@@ -8,8 +8,7 @@ export default class Card extends H12.Component {
     }
     async init(args = { project }) {
 
-
-        this.Set("{c.title}", args.project.data.title);
+        this.Set("{c.title}", args.project.property.title);
 
     }
     async render() {

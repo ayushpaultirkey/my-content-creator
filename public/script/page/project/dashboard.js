@@ -49,6 +49,7 @@ export default class Dashboard extends H12.Component {
                                 <label class="text-sm font-semibold">Examples:</label>
                                 <button class="text-xs text-left" onclick={ () => { this.addExampleProject(0); } }>&bull; Can you help me in generate a video content for health and fitness ? The video length is around 1 minute.</button>
                                 <button class="text-xs text-left" onclick={ () => { this.addExampleProject(1); } }>&bull; Can you create a content for video on recent space discoveries ?</button>
+                                <button class="text-xs text-left" onclick={ () => { this.addExampleProject(2); } }>&bull; Surprise me !</button>
                             </div>
                         </div>
                     </div>
@@ -85,7 +86,7 @@ export default class Dashboard extends H12.Component {
 
         try {
             
-            const _request = await fetch(`/api/project/create?prompt=hello`);
+            const _request = await fetch(`/api/project/create?prompt=${this.element.projectCreateBox.value}`);
             const _response = await _request.json();
 
             if(!_response.success) {
@@ -117,7 +118,8 @@ export default class Dashboard extends H12.Component {
 
         const _example = [
             "Can you help me in generate a video content for health and fitness ? The video length is around 1 minute.",
-            "Can you create a content for video on recent space discoveries ?"
+            "Can you create a content for video on recent space discoveries ?",
+            "Surprise me !"
         ];
 
         this.element.projectCreateBox.value = _example[index];

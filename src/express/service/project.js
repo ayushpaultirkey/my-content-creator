@@ -82,7 +82,11 @@ async function DoesProjectExists(projectId = "") {
 
 };
 
-
+/**
+ * 
+ * @param {*} projectId 
+ * @param {{ config: { width, height }, property: { response, title, description, totalTime, slides: [{ id, content, totalTime, showAt, hideAt }] } }} project 
+*/
 async function CreateProject(projectId = "", project = {}) {
 
     try {
@@ -98,7 +102,7 @@ async function CreateProject(projectId = "", project = {}) {
         const _path = path.join(__dirname, `../../public/project/${projectId}/`);
         await fs.mkdir(_path, { recursive: true });
         await fs.writeFile(path.join(_path, "/project.json"), JSON.stringify(project));
-        await RenderSlide(projectId, project.data.slide);
+        await RenderSlide(projectId, project.property.slides);
 
     }
     catch(error) {

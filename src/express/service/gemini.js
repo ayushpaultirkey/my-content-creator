@@ -2,14 +2,21 @@ import "dotenv/config";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 
+/**
+ * @type {import("@google/generative-ai").GoogleGenerativeAI}
+ */
 let GENERATIVE = null;
+/**
+ * @type {import("@google/generative-ai").GenerativeModel}
+ */
 let MODEL = null;
 
 
 function GenerativeInit() {
 
     const _instruction =
-    `You have to assist the user on creating a content for a video. You can only respond in json as the format is provided below, the explanation is also provided.
+    `You have to assist the user on creating a content for a video. You can only respond in json as the format is provided below, the explanation is also provided. If anything is not provided or any specific topic is not provided or if you are unsure then create a content any interesting topic or on any trending topic as you like, you must always create any content on a topic.
+
     {
     "response": string,
     "title": string,
@@ -33,7 +40,7 @@ function GenerativeInit() {
     "slides"."content": the content for the slide, dont use any text formatting and keep it precise if the video duration is not long.
     "slides"."totalTime": the total time for the slide, adjust it according to the slide's content, so user can read it.
     "slides"."showAt": the time when the slide will be visible.
-    "slides"."hideAt": the tme when the slide will hide, and next slide will show`;
+    "slides"."hideAt": the tme when the slide will hide, and next slide will show.`;
 
     GENERATIVE = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_API);
     MODEL = GENERATIVE.getGenerativeModel({
@@ -47,10 +54,11 @@ function GenerativeInit() {
 };
 
 
-async function GenerativeRun(prompt = "", history = { context: [], message: [] }) {
+async function GenerativeRun(prompt = "", session = { context: [], message: [] }) {
 
-    const _context = history.context;
-    const _message = history.message;
+    let _context = session.context;
+    let _message = session.message;
+    let _answer = "";
 
     try {
         
@@ -59,26 +67,26 @@ async function GenerativeRun(prompt = "", history = { context: [], message: [] }
             _message.push({ role: "model", parts: [{ "text": response }] });
         };
     
-        const _chat = MODEL.startChat({
-            history: _message,
-            generationConfig: {
-                maxOutputTokens: 100,
-                
-            }
+        let _chat = MODEL.startChat({
+            history: _message
         });
     
-        const _result = await _chat.sendMessage(prompt);
-        const _response = await _result.response;
-        const _responseText = _response.text();
+        let _result = await _chat.sendMessage(prompt);
+        let _response = _result.response.text();
     
-        _context.push([prompt, _responseText]);
+        _context.push([prompt, _response]);
+
+        let _jsonString = _response.replace(/^```json\s*|\s*```$/g, '');
+        let _jsonObject = JSON.parse(_jsonString);
+
+        _answer = _jsonObject;
     
     }
     catch(error) {
         throw error;
-    }
+    };
 
-    return { context: _context, message: _message };
+    return { context: _context, message: _message, response: _answer };
 
 }
 
