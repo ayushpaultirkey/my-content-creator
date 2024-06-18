@@ -21,30 +21,30 @@ function GenerativeInit() {
     "response": string,
     "title": string,
     "description": string,
-    "keyword": string,
     "totalTime": int,
+    "backgroundImage": [string],
     "slides": {
     "id": string,
     "content": string,
     "totalTime": int,
     "showAt": int,
     "hideAt": int,
-    "image": ["/@project/img1.jpg"]
+    "image": [string]
     }
     }
     The explanation for the json data format:
     "response": this the response for the thing you have been asked, you can write anything here in response for the user.
     "title": is the title for the video, keep it precise and accurate.
     "description": the detailed description for the video, use seo to make the description stand out by using emojis, hashtag or other things and easy to understand.
-    "keyword": this contain the keyword for the video, so it be used to easily identify the type of content. It should be a single word.
     "totalTime": the total time of the video based on the time of the slides.
+    "backgroundImage": in this there will be background images for the video, you cannot set the value for this.
     "slides": this is a array that contain multiple slides of the video.
     "slides"."id": the slide id should be unique and cannot be changed once created, like "slide1", "slide2"
-    "slides"."content": the content for the slide, dont use any text formatting and keep it precise if the video duration is not long.
+    "slides"."content": the content for the slide, don't use any text formatting and keep it precise if the video duration is not long.
     "slides"."totalTime": the total time for the slide, adjust it according to the slide's content, so user can read it.
     "slides"."showAt": the time when the slide will be visible.
     "slides"."hideAt": the time when the slide will hide, and next slide will show.
-    "slides"."image": this contain the default image for the slide.`;
+    "slides"."image": the slide's image that will be displayed, you cannot set the value for this.`;
 
     GENERATIVE = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_API);
     MODEL = GENERATIVE.getGenerativeModel({

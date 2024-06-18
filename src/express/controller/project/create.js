@@ -6,8 +6,6 @@ import { FFScene, FFText, FFVideo, FFAlbum, FFImage, FFCreator, FFAudio } from "
 import { CreateProject } from "../../service/project.js";
 import { GenerativeRun } from "../../service/gemini.js";
 
-
-
 /**
     * 
     * @param {import("express").Request} request 

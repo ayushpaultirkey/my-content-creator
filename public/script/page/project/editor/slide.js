@@ -20,6 +20,7 @@ export default class Slide extends H12.Component {
             this.Load();
 
             // Register on dispatcher event
+            Dispatcher.On("OnProjectUpdate", this.OnProjectUpdate.bind(this));
             Dispatcher.On("OnViewportSlideSelected", this.OnViewportSlideSelected.bind(this));
             
         };
@@ -126,9 +127,6 @@ export default class Slide extends H12.Component {
                 throw new Error(_response.message);
             };
 
-            // Reload slide
-            this.Load();
-
             // Update project data
             Dispatcher.Call("OnProjectUpdate", _response.data);
 
@@ -166,5 +164,14 @@ export default class Slide extends H12.Component {
         this.Load(index);
 
     }
+
+    OnProjectUpdate(event, project) {
+
+        if(ProjectIsValid(project)) {
+            this.Project = project;
+            this.Load();
+        };
+
+    };
 
 };

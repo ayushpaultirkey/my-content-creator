@@ -35,7 +35,7 @@ async function Update(request, response) {
 
         // Update response body
         _response.success = true;
-        _response.data = _project;
+        _response.data = { id: _projectId, ... _project };
 
     }
     catch(error) {

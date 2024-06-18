@@ -4,6 +4,7 @@ import wait from "./wait.js";
 import directory from "../../library/directory.js";
 import { FFScene, FFText, FFImage, FFCreator, FFAudio, FFRect } from "ffcreator";
 import { RenderSlide, renderSlides } from "./slide.js";
+import { GenerativeRun } from "./gemini.js";
 
 
 const project = null;
@@ -56,6 +57,59 @@ async function UpdateProject(projectId = "", project = {}) {
     };
 
 };
+
+async function SaveProject(projectId = "", project = {}) {
+
+    try {
+        
+        // Get current directory path
+        const { __dirname } = directory();
+
+        // Get project path and update the project json file
+        const _path = path.join(__dirname, `../../public/project/${projectId}/project.json`);
+        await fs.writeFile(_path, JSON.stringify(project));
+
+    }
+    catch (error) {
+
+        throw new Error("Failed to save project file");
+
+    };
+
+};
+
+
+async function UpdateProjectX(projectId = "", prompt = "") {
+
+    try {
+        
+        // Get project data
+        const _project = await ReadProject(projectId);
+        
+        // Generative run
+        const _answer = await GenerativeRun(prompt, _project.session.context);
+
+        // Create updated project
+        const _projectUpdated = {
+            "config": { ... _project.config },
+            "property": { ... _answer.response },
+            "session": {
+                "context": _answer.context
+            }
+        };
+
+        // Update project file
+        await SaveProject(projectId, _projectUpdated);
+
+        // Return new project
+        return _projectUpdated;
+
+    }
+    catch(error) {
+        throw error;
+    }
+
+}
 
 
 async function DoesProjectExists(projectId = "") {
@@ -262,4 +316,4 @@ async function projectSlideRender(projectId = "", slides = []) {
 
 };
 
-export { readProject, doesProjectExist, projectSlideRender, ReadProject, CreateProject, UpdateProject, DoesProjectExists };
+export { readProject, doesProjectExist, projectSlideRender, ReadProject, CreateProject, UpdateProject, UpdateProjectX, DoesProjectExists, SaveProject };

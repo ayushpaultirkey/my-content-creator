@@ -51,7 +51,7 @@ export default class Project extends H12.Component {
 
                     <div>
                         <label class="text-xs font-semibold text-zinc-400">Backgound Images:</label>
-                        <Asset args id="imageAsset"></Asset>
+                        <Asset args id="ImageAsset"></Asset>
                     </div>
 
                     <div>
@@ -60,7 +60,7 @@ export default class Project extends H12.Component {
                     </div>
 
                     <div class="pt-3">
-                        <button class="p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors">Update</button>
+                        <button class="p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Update }>Update</button>
                     </div>
 
                     <div>
@@ -99,7 +99,8 @@ export default class Project extends H12.Component {
                 throw new Error(_response.message);
             };
 
-            this.child["imageAsset"].Load(_response.data);
+            await this.child["ImageAsset"].Load(_response.data);
+            this.child["ImageAsset"].SetSelected(this.Project.property.backgroundImage);
 
         }
         catch(error) {
@@ -156,6 +157,48 @@ export default class Project extends H12.Component {
             alert(error);
             console.error(error);
         };
+
+    }
+
+    async Update() {
+
+        // Check if the project is valid
+        if(!ProjectIsValid(this.Project)) {
+            return false;
+        };
+
+        // Call dispather show loader
+        Dispatcher.Call("ShowLoader", "AI is updating slide...");
+
+        try {
+
+            // Get project id and the slide's id by the index
+            const _projectId = this.Project.id;
+
+            // Get selected images
+            const _image = this.child["ImageAsset"].Selected;
+            const _query = _image.map((image, index) => `pimage[]=${encodeURIComponent(image)}`).join('&');
+
+            // Perform the update request
+            const _request = await fetch(`/api/project/update?pid=${_projectId}&${_query}`);
+            const _response = await _request.json();
+
+            // Check if the data is updated successfully
+            if(!_response.success) {
+                alert(_response.message);
+                throw new Error(_response.message);
+            };
+
+            // Update project data
+            Dispatcher.Call("OnProjectUpdate", _response.data);
+
+        }
+        catch(error) {
+            console.error(error);
+        };
+
+        // Call dispather hide loader
+        Dispatcher.Call("HideLoader");
 
     }
 

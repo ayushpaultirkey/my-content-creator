@@ -67,19 +67,13 @@ class App extends H12.Component {
 
         },
         Home: async () => {
-
             this.Set("{e.app}", <><Home args></Home></>);
-
         },
         Dashboard: async () => {
-
             this.Set("{e.app}", <><Dashboard args></Dashboard></>);
-
         },
         Editor: async (project = null) => {
-
             this.Set("{e.app}", <><Editor args project={ project }></Editor></>);
-
         }
     }
 };

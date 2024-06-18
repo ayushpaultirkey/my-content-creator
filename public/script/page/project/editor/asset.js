@@ -21,16 +21,22 @@ export default class Asset extends H12.Component {
         this.Set("{p.asset}", "");
 
         for(var i = 0, l = asset.length; i < l; i++) {
-
             if(asset[i].type !== filter) {
                 continue;
             };
-
             this.Set("{p.asset}++", <><Item args id={ asset[i].name } url={ asset[i].url } name={ asset[i].name } index={ i + 1 }></Item></>);
-
         };
 
     }
+    SetSelected(id = []) {
+
+        this.Selected = id;
+        for(var item in this.child) {
+            this.child[item].SetIndex(id.indexOf(item));
+        };
+
+    }
+
     OnSelectItem(id) {
 
         const _index = this.Selected.indexOf(id);

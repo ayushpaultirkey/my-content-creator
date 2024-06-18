@@ -112,6 +112,11 @@ export default class Prompt extends H12.Component {
 
     async Update() {
 
+        // Check if the project is valid
+        if(!ProjectIsValid(this.Project)) {
+            return false;
+        };
+        
         // Call dispather show loader
         Dispatcher.Call("ShowLoader", "AI is updating slide...");
 
@@ -125,7 +130,7 @@ export default class Prompt extends H12.Component {
             if(_prompt.length < 5) {
                 alert("Enter prompt !");
                 throw new Error("Enter prompt");
-            }
+            };
 
             // Perform the update request
             const _request = await fetch(`/api/prompt/run?pid=${_projectId}&prompt=${_prompt}`);
