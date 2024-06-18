@@ -19,7 +19,7 @@ export default async function Upload(request, response) {
 
         // Get project is from query string
         const _projectId = request.query.pid;
-        if(!_projectId) {
+        if((typeof(_projectId) !== "string" || _projectId.length < 2)) {
             throw new Error("Project ID is required");
         };
 
@@ -44,20 +44,25 @@ export default async function Upload(request, response) {
                 // Process files here, e.g., resize images using sharp
                 await Promise.all(request.files.map(async (file) => {
 
-                    //
-                    const _path = file.path;
+                    // Crop all images to match video dimension
+                    if(file.mimetype.startsWith("image/")) {
 
-                    // Resize image to width and height according to video dimension
-                    await sharp(_path)
-                    .resize({
-                        width: _project.config.width,
-                        height: _project.config.height,
-                        fit: 'cover'
-                    })
-                    .toFile(_path.replace(path.extname(_path), 'P' + path.extname(_path)));
+                        // Get the uploaded file path
+                        const _path = file.path;
+    
+                        // Resize image to width and height according to video dimension
+                        await sharp(_path)
+                        .resize({
+                            width: _project.config.width,
+                            height: _project.config.height,
+                            fit: 'cover'
+                        })
+                        .toFile(_path.replace(path.extname(_path), 'P' + path.extname(_path)));
+    
+                        // Remove the previous upload
+                        await fs.unlink(_path);
 
-                    // Optionally, you can delete the original file after processing
-                    await fs.unlink(_path);
+                    };
 
                 }));
 

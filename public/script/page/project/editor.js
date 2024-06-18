@@ -6,6 +6,7 @@ import { ProjectIsValid, getProjectList, setProjectList } from "../../module/pro
 import Slide from "./editor/slide";
 import Prompt from "./editor/prompt";
 import Viewport from "./editor/viewport";
+import Project from "./editor/project";
 
 @Component
 export default class Editor extends H12.Component {
@@ -26,6 +27,7 @@ export default class Editor extends H12.Component {
         };
 
     }
+    
     async render() {
         return <>
             <div class="h-full flex flex-row">
@@ -41,44 +43,7 @@ export default class Editor extends H12.Component {
                     
                     <Prompt args id="Prompt" project={ this.args.project }></Prompt>
                     <Slide args id="Slide" project={ this.args.project }></Slide>
-
-                    <div class="w-full h-full overflow-hidden hidden" id="projectTProject">
-                        <div class="w-full h-full p-4 px-5 flex flex-col space-y-3 overflow-auto">
-
-                            <div class="border border-transparent border-b-zinc-700 pb-2">
-                                <label class="font-semibold text-zinc-400">Project</label>
-                            </div>
-
-                            <div>
-                                <label class="text-xs font-semibold text-zinc-400">Backgound Images:</label>
-                                <div class="grid sm:grid-cols-[repeat(auto-fill,56px)] grid-cols-[repeat(auto-fill,auto)] gap-1">
-                                    <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
-                                    <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
-                                    <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
-                                    <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
-                                    <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
-                                    <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="text-xs font-semibold text-zinc-400">Audio:</label>
-                                <input type="file" class="block text-xs font-semibold text-zinc-400" />
-                            </div>
-
-                            <div class="pt-3">
-                                <button class="p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors">Update</button>
-                            </div>
-
-                            <div>
-                                <label class="text-xs font-semibold text-zinc-400">Tips:</label>
-                                <div>
-                                    <label class="text-xs text-zinc-400">Ask the AI in prompt tab to modify the slide, like reorder slides, change color, content, animation, or create new slides.</label>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
+                    <Project args id="Project" project={ this.args.project }></Project>
 
                     <div class="w-full h-full overflow-hidden hidden" id="projectTExport">
                         <div class="w-full h-full p-4 px-5 flex flex-col space-y-3 overflow-auto">

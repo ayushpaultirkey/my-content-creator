@@ -70,8 +70,17 @@ export default class Prompt extends H12.Component {
     
                 //
                 let _messageA = _context[i][0];
-                let _messageB = _context[i][1].replace(/^```json\s*|\s*```$/g, '');
-                let _messageBO = JSON.parse(_messageB);
+                let _messageB = _context[i][1]
+                let _messageBO = "";
+
+                const _regex = /```json(.*)```/gs;
+                const _match = _regex.exec(_messageB);
+                if(_match) {
+                    _messageBO = JSON.parse(_match[1].trim());
+                }
+                else {
+                    throw new Error("Invalid AI response");
+                };
 
                 // Create a template for the message bubble
                 const _chatA = <>

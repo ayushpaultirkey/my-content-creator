@@ -3,8 +3,8 @@ import { UpdateSlide } from "../../service/slide.js";
 
 /**
     * Validates project IDs from request query
-    * @param {import("express").Request} req 
-    * @param {import("express").Response} res 
+    * @param {import("express").Request} request 
+    * @param {import("express").Response} response 
 */
 async function Update(request, response) {
 

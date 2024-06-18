@@ -80,12 +80,19 @@ async function GenerativeRun(prompt = "", context = []) {
     
         _context.push([prompt, _response]);
 
+        const _regex = /```json(.*)```/gs;
+        const _match = _regex.exec(_response);
+        if(_match) {
+            _answer = JSON.parse(_match[1].trim());
+        }
+        else {
+            throw new Error("Invalid AI response");
+        };
+
         //
-        let _jsonString = _response.replace(/^```json\s*|\s*```/g, '').trim();
-        let _jsonObject = JSON.parse(_jsonString);
-
-
-        _answer = _jsonObject;
+        //let _jsonString = _response.replace(/^```json\s*|\s*```/g, '').trim();
+        //let _jsonObject = JSON.parse(_jsonString);
+        //_answer = _jsonObject;
     
     }
     catch(error) {
