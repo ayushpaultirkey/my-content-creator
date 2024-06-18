@@ -1,7 +1,9 @@
 import "./../../../style/output.css";
 import H12 from "@library/h12";
-import { getProjectList, setProjectList } from "../../module/project";
+import Dispatcher from "@library/h12.dispatcher";
+
 import Card from "./dashboard/card";
+import { getProjectList, setProjectList } from "../../module/project";
 
 @Component
 export default class Dashboard extends H12.Component {
@@ -125,4 +127,5 @@ export default class Dashboard extends H12.Component {
         this.element.projectCreateBox.value = _example[index];
 
     }
+
 };

@@ -48,4 +48,9 @@ async function setProjectList(project = {}) {
 
 }
 
-export { getProjectList, setProjectList }
+
+function ProjectIsValid(project) {
+    return !(!project || typeof(project) === "undefined");
+}
+
+export { getProjectList, setProjectList, ProjectIsValid }

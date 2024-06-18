@@ -1,48 +1,170 @@
-import "./../../../style/output.css";
-import Dispatcher from "@library/h12.dispatcher";
+import "@style/output.css";
 import H12 from "@library/h12";
+import Dispatcher from "@library/h12.dispatcher";
+import { ProjectIsValid } from "../../../module/project";
 
 @Component
 export default class Slide extends H12.Component {
     constructor() {
         super();
+        this.Index = 0;
+        this.Project = null;
     }
-    async init() {
+    async init(args = { project }) {
 
-        Dispatcher.On("ProjectLoaded", this.CreateSlide.bind(this));
+        // Check if the project is valid and load it
+        if(ProjectIsValid(args.project)) {
+
+            // Get project data and load it
+            this.Project = args.project;
+            this.Load();
+
+            // Register on dispatcher event
+            Dispatcher.On("OnViewportSlideSelected", this.OnViewportSlideSelected.bind(this));
+            
+        };
 
     }
     async render() {
         return <>
-            <div class="bg-zinc-800 w-full h-24 relative">
-                <button class="fa fa-{e.slidePlay} top-2 right-1 absolute text-zinc-500" onclick={ this.editorSlideRefresh }></button>
-                <div class="flex flex-row border-t border-zinc-700 h-full p-3 space-x-2 overflow-auto" id="editorSlides">
-                    {e.slide}
+            <div class="w-full h-full overflow-hidden hidden">
+                <div class="w-full h-full p-4 px-5 flex flex-col space-y-3 overflow-auto">
+
+                    <div class="border border-transparent border-b-zinc-700 pb-2">
+                        <label class="font-semibold text-zinc-400">Slide</label>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-semibold text-zinc-400">Content:</label>
+                        <textarea class="block w-full h-24 text-xs font-semibold bg-zinc-600 p-2 rounded-md shadow-md resize-none placeholder:text-zinc-600 text-zinc-200" placeholder="Slide's content" id="slideContent"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-semibold text-zinc-400">Background Color:</label>
+                        <input type="color" class="block w-10 h-10 appearance-none border-none bg-transparent" />
+                    </div>
+                    
+                    <div>
+                        <label class="text-xs font-semibold text-zinc-400">Images:</label>
+                        <div class="grid sm:grid-cols-[repeat(auto-fill,56px)] grid-cols-[repeat(auto-fill,auto)] gap-1">
+                            <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
+                            <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
+                            <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
+                            <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
+                            <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
+                            <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
+                        </div>
+                    </div>
+
+                    <div class="pt-3">
+                        <button class="p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Update }>Update</button>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-semibold text-zinc-400">Tips:</label>
+                        <div class="flex flex-col">
+                            <label class="text-xs text-zinc-400">Ask the AI in prompt tab to modify the slide, like reorder slides, change color, content, animation, or create new slides.</label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-semibold text-zinc-400">Example:</label>
+                        <div class="flex flex-col">
+                            <label class="text-xs text-zinc-400 cursor-pointer" onclick={ () => { this.SetExample(0); } }>&bull; Can you shorten the content of the 1st slide ?</label>
+                            <label class="text-xs text-zinc-400 cursor-pointer" onclick={ () => { this.SetExample(1); } }>&bull; Add a red background color on last slide.</label>
+                            <label class="text-xs text-zinc-400 cursor-pointer" onclick={ () => { this.SetExample(2); } }>&bull; Add a new outro slide.</label>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </>;
     }
 
-    CreateSlide(project = {}) {
+    Load() {
 
-
-        for(var i = 0, len = project.data.slide.length; i < len; i++) {
-
-            let id = project.data.slide[i].id;
-            let index = i;
-
-            this.Set("{e.slide}++",
-                <>
-                    <div class="bg-zinc-900 w-20 min-w-20 h-full rounded-md shadow-md" id="num" onclick={ () => { this.loadSlide(id, index); } }>
-                        <video class="w-full h-full pointer-events-none" loop autoplay muted>
-                            <source type="video/mp4" src={ `./project/${project.id}/cache/${project.data.slide[i].id}.mp4` }/>
-                        </video>
-                    </div>
-                </>
-            );
-
+        // Check if the project is valid
+        if(!ProjectIsValid(this.Project)) {
+            return false;
         };
+
+        // Try and load the slide's content
+        try {
+            this.element.slideContent.value = this.Project.property.slides[this.Index].content;
+        }
+        catch(error) {
+            console.error(error);
+        };
+
+    }
+
+    async Update() {
         
+        // Call dispather show loader
+        Dispatcher.Call("ShowLoader", "AI is updating slide...");
+
+        try {
+
+            // Check if the slide's content is not empty
+            const _slideContent = this.element.slideContent.value;
+            if(_slideContent.length < 5) {
+                alert("Please enter slide's content");
+                throw new Error("Please enter slide's content");
+            };
+
+            // Get project id and the slide's id by the index
+            const _projectId = this.Project.id;
+            const _slideId = this.Project.property.slides[this.Index].id;
+
+            // Perform the update request
+            const _request = await fetch(`/api/slide/update?pid=${_projectId}&sid=${_slideId}&scontent=${_slideContent}`);
+            const _response = await _request.json();
+
+            // Check if the data is updated successfully
+            if(!_response.success) {
+                alert(_response.message);
+                throw new Error(_response.message);
+            };
+
+            // Reload slide
+            this.Load();
+
+            // Update project data
+            Dispatcher.Call("OnProjectUpdate", _response.data);
+
+        }
+        catch(error) {
+            console.error(error);
+        };
+
+        // Call dispather hide loader
+        Dispatcher.Call("HideLoader");
+
+    }
+
+    SetExample(index = 0) {
+
+        const _example = [
+            "Can you shorten the content of the 1st slide ?",
+            "Add a red background color on last slide.",
+            "Add a new outro slide."
+        ];
+
+        // Try and set the example text
+        try {
+            this.element.slideContent.value = _example[index];
+        }
+        catch(error) {
+            console.error(error);
+        };
+
+    }
+
+    OnViewportSlideSelected(event, { id, index }) {
+
+        this.Index = index;
+        this.Load(index);
+
     }
 
 };

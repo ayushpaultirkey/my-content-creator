@@ -11,7 +11,7 @@ const project = null;
 /**
  * Generates video content data for a health and fitness video.
  * 
- * @returns {{ prompt: [any], config: { width, height }, data: { title, totalTime, slide: [{ id, content, time, showAt, hideAy }] } }} The video content data.
+ * @returns {{ config: { width, height }, property: { response, title, description, totalTime, slides: [{ id, content, totalTime, showAt, hideAt }] }, session: { context: [], message: [{ role, parts }] } }}
 */
 async function ReadProject(projectId = "") {
 
@@ -28,9 +28,9 @@ async function ReadProject(projectId = "") {
         return JSON.parse(_content);
 
     }
-    catch (error) {
+    catch(error) {
 
-        throw new Error("Failed to read or parse json file");
+        throw new Error("Failed to read or parse json file, or project not found");
 
     };
 

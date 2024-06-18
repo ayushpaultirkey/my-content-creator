@@ -10,7 +10,8 @@ export default defineConfig({
     ],
     resolve: {
         alias: [
-            { find: "@library", replacement: fileURLToPath(new URL("./public/library", import.meta.url)) }
+            { find: "@library", replacement: fileURLToPath(new URL("./public/library", import.meta.url)) },
+            { find: "@style", replacement: fileURLToPath(new URL("./public/style", import.meta.url)) }
         ]
     }
 })

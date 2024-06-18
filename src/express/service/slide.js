@@ -5,6 +5,7 @@ import directory from "../../library/directory.js";
 import { FFScene, FFText, FFImage, FFCreator, FFAudio, FFRect } from "ffcreator";
 import wait from "./wait.js";
 import { DoesProjectExists, ReadProject, UpdateProject } from "./project.js";
+import { GenerativeRun } from "./gemini.js";
 
 
 const findUpdatedSlides = (originalSlides, newSlides) => {
@@ -186,58 +187,39 @@ function FindUpdatedSlide(originalSlides = [], newSlides = []) {
 
 }
 
-async function UpdateSlideByProperty(projectId = "", property = [{ id, content, contentSize, bgColor }]) {
+/**
+ * 
+ * @param {*} projectId 
+ * @param {{ response, title, description, totalTime, slides: [{ id, content, totalTime, showAt, hideAt }] }} project 
+ */
+async function UpdateSlide(projectId = "", prompt = "") {
 
     try {
-
-        //
-        const _project = await ReadProject(projectId);
-        const _projectCopy = _.cloneDeep(_project);
         
-        //
-        for(var i = 0, l1 = _projectCopy.data.slide.length; i < l1; i++) {
-            for(var j = 0, l2 = property.length; j < l2; j++) {
+        // Get project data
+        const _project = await ReadProject(projectId);
+        
+        // Generative run
+        const _answer = await GenerativeRun(prompt, _project.session.context);
 
-                if(_projectCopy.data.slide[i].id == property[j].id) {
-                    _projectCopy.data.slide[i].content = property[j].content;
-                };
-
-            };
-        };
-
-        //
-        const _slideUpdated = FindUpdatedSlide(_project.data.slide, _projectCopy.data.slide);
+        // Get updated slides
+        const _slideUpdated = FindUpdatedSlide(_project.property.slides, _answer.response.slides);
         await RenderSlide(projectId, _slideUpdated.updated.concat(_slideUpdated.added));
 
-        //
-        const _projectUpdate = {
-            "prompt": [ ... _project.prompt ],
+        // Create updated project
+        const _projectUpdated = {
             "config": { ... _project.config },
-            "data": { ... _projectCopy.data }
+            "property": { ... _answer.response },
+            "session": {
+                "context": _answer.context
+            }
         };
 
-        //
-        await UpdateProject(projectId, _projectUpdate);
+        // Update project file
+        await UpdateProject(projectId, _projectUpdated);
 
-    }
-    catch(error) {
-        throw error;
-    }
-
-};
-
-
-async function UpdateSlide(projectId = "", project = {}) {
-
-    try {
-
-        //
-        const _project = await ReadProject(projectId);
-        const _projectUpdate = _.cloneDeep(_project);
-        
-        //
-        const _slideUpdated = FindUpdatedSlide(_project.data.slide, _projectUpdate.data.slide);
-        await renderSlides(projectId, _slideUpdated.updated.concat(_slideUpdated.added));
+        // Return new project
+        return _projectUpdated;
 
     }
     catch(error) {
@@ -363,4 +345,4 @@ async function RenderSlide(projectId = "", slide = []) {
 
 
 
-export { findUpdatedSlides, renderSlides, RenderSlide, UpdateSlideByProperty, UpdateSlide };
+export { findUpdatedSlides, renderSlides, RenderSlide, UpdateSlide };

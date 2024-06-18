@@ -2,10 +2,8 @@ import "./../../../style/output.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
 
-import { ProjectIsValid, getProjectList, setProjectList } from "../../module/project";
-import Slide from "./editor/slide";
+import { getProjectList, setProjectList } from "../../module/project";
 import Prompt from "./editor/prompt";
-import Viewport from "./editor/viewport";
 
 @Component
 export default class Editor extends H12.Component {
@@ -14,16 +12,12 @@ export default class Editor extends H12.Component {
         this.project = null;
         this.projectSlideIndex = 0;
         this.isSlidePreviewPlaying = false;
-        this.SlideIndex = 0;
     }
     async init(args = { project }) {
 
-        if(ProjectIsValid(args.project)) {
-            this.project = args.project;
-        }
-        else {
-            alert("Unable to get project");
-        };
+        //
+        //this.Set("{e.slidePlay}", "play");
+        //await this.projectLoad();
 
     }
     async render() {
@@ -39,8 +33,59 @@ export default class Editor extends H12.Component {
                 </div>
                 <div class="min-w-80 max-w-80 bg-zinc-800 border-r border-zinc-700 flex-col sm:flex hidden" id="projectTab">
                     
-                    <Prompt args id="Prompt" project={ this.args.project }></Prompt>
-                    <Slide args id="Slide" project={ this.args.project }></Slide>
+                    <Prompt args project={ this.args.project }></Prompt>
+
+                    <div class="w-full h-full overflow-hidden hidden" id="projectTSlide">
+                        <div class="w-full h-full p-4 px-5 flex flex-col space-y-3 overflow-auto">
+
+                            <div class="border border-transparent border-b-zinc-700 pb-2">
+                                <label class="font-semibold text-zinc-400">Slide</label>
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-semibold text-zinc-400">Content:</label>
+                                <textarea class="block w-full h-24 text-xs font-semibold bg-zinc-600 p-2 rounded-md shadow-md resize-none placeholder:text-zinc-600 text-zinc-200" placeholder="Slide's content" id="editorSlideContent"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-semibold text-zinc-400">Background Color:</label>
+                                <input type="color" class="block w-10 h-10 appearance-none border-none bg-transparent" />
+                            </div>
+                            
+                            <div>
+                                <label class="text-xs font-semibold text-zinc-400">Images:</label>
+                                <div class="grid sm:grid-cols-[repeat(auto-fill,56px)] grid-cols-[repeat(auto-fill,auto)] gap-1">
+                                    <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
+                                    <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
+                                    <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
+                                    <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
+                                    <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
+                                    <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
+                                </div>
+                            </div>
+
+                            <div class="pt-3">
+                                <button class="p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.editorUpdateSlide }>Update</button>
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-semibold text-zinc-400">Tips:</label>
+                                <div class="flex flex-col">
+                                    <label class="text-xs text-zinc-400">Ask the AI in prompt tab to modify the slide, like reorder slides, change color, content, animation, or create new slides.</label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-semibold text-zinc-400">Example:</label>
+                                <div class="flex flex-col">
+                                    <label class="text-xs text-zinc-400">&bull; Can you shorten the content of the 1st slide ?</label>
+                                    <label class="text-xs text-zinc-400">&bull; Add a red background color on last slide.</label>
+                                    <label class="text-xs text-zinc-400">&bull; Add a new outro slide.</label>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
 
                     <div class="w-full h-full overflow-hidden hidden" id="projectTProject">
                         <div class="w-full h-full p-4 px-5 flex flex-col space-y-3 overflow-auto">
@@ -116,9 +161,27 @@ export default class Editor extends H12.Component {
                     </div>
 
                 </div>
+                <div class="w-full h-full flex flex-col overflow-hidden">
+                    <div class="bg-zinc-800 w-full h-full flex justify-center items-center">
+                        
+                        <div class="bg-zinc-300 h-96 shadow-lg">
+                            <video class="w-full h-full" id="editorViewportVideo" controls loop autoplay>
+                                <source type="video/mp4" id="editorViewport" />
+                            </video>
+                        </div>
 
-                <Viewport args id="Viewport" project={ this.args.project }></Viewport>
+                    </div>
+                    <div class="bg-zinc-800 w-full h-24 relative">
+                        
+                        <button class="fa fa-{e.slidePlay} top-2 right-1 absolute text-zinc-500" onclick={ this.editorSlideRefresh }></button>
 
+                        <div class="flex flex-row border-t border-zinc-700 h-full p-3 space-x-2 overflow-auto" id="editorSlides">
+                            {e.slide}
+                        </div>
+
+
+                    </div>
+                </div>
             </div>
         </>;
     }

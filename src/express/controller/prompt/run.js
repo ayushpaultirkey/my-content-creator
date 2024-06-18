@@ -1,4 +1,4 @@
-import { GenerativeRun } from "../../service/gemini.js";
+import { UpdateSlide } from "../../service/slide.js";
 
 /**
     * 
@@ -10,28 +10,35 @@ export default async function Run(request, response) {
     //Create response object
     const _response = { message: "", success: false, data: "" };
     
-    //Create project
+    //Try and run prompt
     try {
 
         // Check if the query parameter are valid
         const _prompt = request.query.prompt;
-        if(typeof(_prompt) == "undefined" || _prompt.length < 2) {
-            throw new Error("No project description provided");
+        const _projectId = request.query.pid;
+        if((typeof(_projectId) !== "string" || _projectId.length < 2) || (typeof(_prompt) !== "string" || _prompt.length < 2)) {
+            throw new Error("Invalid parameters");
         };
 
-        // 
-        const _output = await GenerativeRun(_prompt);
+        // Update slide by using the prompt
+        const _project = await UpdateSlide(_projectId, _prompt);
 
         // Set success respones
         _response.success = true;
-        _response.data = _output;
+        _response.data = { id: _projectId, ... _project };
         
     }
     catch(error) {
+
+        // Set error message
         _response.message = error.message || "An error occurred";
+
     }
     finally {
+
+        // Send response
         response.send(_response);
+
     };
 
 };

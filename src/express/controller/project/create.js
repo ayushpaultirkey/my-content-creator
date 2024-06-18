@@ -40,7 +40,7 @@ async function Create(request, response) {
                 height: 1280
             },
             property: _answer.response,
-            session: { context: _answer.context, message: _answer.message }
+            session: { context: _answer.context }
         });
 
         // Set success respones
