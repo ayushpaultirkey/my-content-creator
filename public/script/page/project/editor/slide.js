@@ -2,6 +2,7 @@ import "@style/output.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
 import { ProjectIsValid } from "../../../module/project";
+import Asset from "./asset";
 
 @Component
 export default class Slide extends H12.Component {
@@ -47,14 +48,7 @@ export default class Slide extends H12.Component {
                     
                     <div>
                         <label class="text-xs font-semibold text-zinc-400">Images:</label>
-                        <div class="grid sm:grid-cols-[repeat(auto-fill,56px)] grid-cols-[repeat(auto-fill,auto)] gap-1">
-                            <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
-                            <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
-                            <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
-                            <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
-                            <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
-                            <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md" draggable="true"></div>
-                        </div>
+                        <Asset args id="ImageAsset"></Asset>
                     </div>
 
                     <div class="pt-3">
@@ -82,7 +76,7 @@ export default class Slide extends H12.Component {
         </>;
     }
 
-    Load() {
+    async Load() {
 
         // Check if the project is valid
         if(!ProjectIsValid(this.Project)) {
@@ -91,7 +85,21 @@ export default class Slide extends H12.Component {
 
         // Try and load the slide's content
         try {
-            this.element.slideContent.value = this.Project.property.slides[this.Index].content;
+
+            let _slide = this.Project.property.slides[this.Index];
+
+            this.element.slideContent.value = _slide.content;
+
+            const _request = await fetch(`/api/asset/read?pid=${this.Project.id}`);
+            const _response = await _request.json();
+
+            if(!_response.success) {
+                throw new Error(_response.message);
+            };
+            
+            await this.child["ImageAsset"].Load(_response.data);
+            this.child["ImageAsset"].SetSelected(_slide.image);
+
         }
         catch(error) {
             console.error(error);
@@ -117,8 +125,12 @@ export default class Slide extends H12.Component {
             const _projectId = this.Project.id;
             const _slideId = this.Project.property.slides[this.Index].id;
 
+            // Get selected images
+            const _image = this.child["ImageAsset"].Selected;
+            const _imageQuery = _image.map((image, index) => `pimage[]=${encodeURIComponent(image)}`).join('&');
+
             // Perform the update request
-            const _request = await fetch(`/api/slide/update?pid=${_projectId}&sid=${_slideId}&scontent=${_slideContent}`);
+            const _request = await fetch(`/api/slide/update?pid=${_projectId}&sid=${_slideId}&scontent=${_slideContent}&${_imageQuery}`);
             const _response = await _request.json();
 
             // Check if the data is updated successfully

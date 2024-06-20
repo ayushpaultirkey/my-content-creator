@@ -2,10 +2,11 @@ import path from "path";
 import _ from "lodash";
 import fs from "fs/promises";
 import directory from "../../library/directory.js";
-import { FFScene, FFText, FFImage, FFCreator, FFAudio, FFRect } from "ffcreator";
+import { FFScene, FFText, FFImage, FFCreator, FFAudio, FFRect, FFAlbum } from "ffcreator";
 import wait from "./wait.js";
-import { DoesProjectExists, ReadProject, UpdateProject } from "./project.js";
+import { DoesProjectExists, GetProjectPath, ReadProject, SaveProject, UpdateProject } from "./project.js";
 import { GenerativeRun } from "./gemini.js";
+import { CreateVoice } from "./asset.js";
 
 
 const findUpdatedSlides = (originalSlides, newSlides) => {
@@ -203,8 +204,12 @@ async function UpdateSlide(projectId = "", prompt = "") {
         const _answer = await GenerativeRun(prompt, _project.session.context);
 
         // Get updated slides
-        const _slideUpdated = FindUpdatedSlide(_project.property.slides, _answer.response.slides);
-        await RenderSlide(projectId, _slideUpdated.updated.concat(_slideUpdated.added));
+        const _slide = FindUpdatedSlide(_project.property.slides, _answer.response.slides);
+        const _slideUpdated = _slide.updated.concat(_slide.added);
+
+        // Create audio and render the slides
+        await CreateVoice(projectId, _slideUpdated);
+        await RenderSlide(projectId, _slideUpdated);
 
         // Create updated project
         const _projectUpdated = {
@@ -215,8 +220,8 @@ async function UpdateSlide(projectId = "", prompt = "") {
             }
         };
 
-        // Update project file
-        await UpdateProject(projectId, _projectUpdated);
+        // Save project file
+        await SaveProject(projectId, _projectUpdated);
 
         // Return new project
         return _projectUpdated;
@@ -232,7 +237,7 @@ async function UpdateSlide(projectId = "", prompt = "") {
 /**
  * 
  * @param {*} projectId 
- * @param {[{ id, content, totalTime, showAt, hideAt }]} slide 
+ * @param {[{ id, content, totalTime, showAt, hideAt, image }]} slide 
  * @returns 
  */
 async function RenderSlide(projectId = "", slide = []) {
@@ -249,7 +254,7 @@ async function RenderSlide(projectId = "", slide = []) {
         FFCreator.setFFprobePath(path.join(__dirname, "./../../library/ffprobe.exe"));
 
         // Get project path
-        const _path = path.join(__dirname, `../../public/project/${projectId}`);
+        const _path = GetProjectPath(projectId);
 
         // Set video dimension
         const S = 1;
@@ -285,10 +290,35 @@ async function RenderSlide(projectId = "", slide = []) {
                 _creator.addChild(_scene);
 
                 //
+                _scene.addAudio({ path: path.join(_path, `/asset/${_slide.id}.wav`), start: 0 });
+
+                //
                 const _rectangle = new FFRect({ width: W, height: H, x: W / 2, y: H / 2, color: "#FF0000" });
                 _rectangle.addEffect("fadeIn", 1, 0);
                 _rectangle.addEffect("fadeOut", 1, _slide.hideAt - _slide.showAt);
                 _scene.addChild(_rectangle);
+
+                //
+                if(_slide.image.length > 0) {
+
+                    const _image = [];
+                    _slide.image.forEach(x => {
+                        _image.push(path.join(_path, "/asset/", x));
+                    });
+
+                    const _album = new FFAlbum({
+                        list: _image,
+                        x: W / 2, y: H / 2,
+                        width: W,
+                        height: H,
+                        scale: 1.25
+                    });
+                    _album.setTransition();
+                    _album.setDuration(_slide.totalTime / _slide.image.length);
+                    _album.setTransTime(1.5);
+                    _scene.addChild(_album);
+                    
+                };
 
                 //
                 const _text = new FFText({

@@ -34,7 +34,7 @@ export default async function Update(request, response) {
         };
 
         // Update slide by using the prompt
-        const _project = await UpdateProjectX(_projectId, `Override the background image to "${_projectImage}".`);
+        const _project = await UpdateProjectX(_projectId, `Override the background image to [${_projectImage}].`);
 
         // Update response body
         _response.success = true;

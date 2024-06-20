@@ -30,8 +30,14 @@ async function Update(request, response) {
             throw new Error("Invalid project slide parameter");
         };
 
+        // Check if the image is valid else set to default value
+        let _slideImage = request.query.pimage;
+        if(_slideImage == null || !Array.isArray(_slideImage)) {
+            _slideImage = [];
+        };
+
         // Update slide by using the prompt
-        const _project = await UpdateSlide(_projectId, `In slide "${_slideId}" change the content to "${_slideContent}"`);
+        const _project = await UpdateSlide(_projectId, `In slide "${_slideId}" change the content to "${_slideContent}", set it's image to [${_slideImage}]`);
 
         // Update response body
         _response.success = true;

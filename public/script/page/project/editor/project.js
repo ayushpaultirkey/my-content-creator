@@ -89,13 +89,10 @@ export default class Project extends H12.Component {
 
         try {
 
-            this.Set("{p.image}", "");
-
             const _request = await fetch(`/api/asset/read?pid=${this.Project.id}`);
             const _response = await _request.json();
 
             if(!_response.success) {
-                alert(_response.message);
                 throw new Error(_response.message);
             };
 
@@ -126,7 +123,7 @@ export default class Project extends H12.Component {
         const _file = _data.files;
 
         ([..._file]).forEach(x => {
-            if (x.type.startsWith("image/") || x.type.startsWith("video/")) {
+            if(x.type.startsWith("image/") || x.type.startsWith("video/")) {
                 this.UploadFile(x);
             }
             else {

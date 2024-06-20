@@ -1,8 +1,10 @@
 import path from "path";
 import multer from "multer";
 import fs from "fs/promises";
+import say from "say";
 import directory from "../../library/directory.js";
 import mime from "mime-types";
+import { GetProjectPath, ReadProject } from "./project.js";
 
 const Uploader = multer({
     storage: multer.diskStorage({
@@ -98,4 +100,42 @@ async function GetAssetList(projectId = "") {
 
 }
 
-export { Uploader, GetAssetList };
+
+async function CreateVoice(projectId = "", slide = []) {
+
+    // Get project path and update the project json file
+    const _path = GetProjectPath(projectId);
+
+    // Function to export spoken audio to a WAV file
+    function _export(content, filePath) {
+        return new Promise((resolve, reject) => {
+            say.export(content, undefined, 1, filePath, (error) => {
+                if(error) {
+                    reject(error);
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
+    };
+
+    // Create audio files for the slides
+    for(var i = 0, l = slide.length; i < l; i++) {
+
+        // Export spoken audio to a WAV file
+        try {
+            const _filePath = path.join(_path, `/asset/${slide[i].id}.wav`);
+            await _export(slide[i].content, _filePath);
+            console.log(`${slide[i].id} voice created`);
+        }
+        catch (error) {
+            console.error(error);
+        };
+
+    };
+
+}
+
+
+export { Uploader, GetAssetList, CreateVoice };

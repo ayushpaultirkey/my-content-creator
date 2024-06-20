@@ -9,6 +9,17 @@ import { GenerativeRun } from "./gemini.js";
 
 const project = null;
 
+function GetProjectPath(projectId = "") {
+
+    // Get current directory path
+    const { __dirname } = directory();
+
+    // Get project path
+    return path.join(__dirname, `../../public/project/${projectId}/`);
+
+}
+
+
 /**
  * Generates video content data for a health and fitness video.
  * 
@@ -316,4 +327,4 @@ async function projectSlideRender(projectId = "", slides = []) {
 
 };
 
-export { readProject, doesProjectExist, projectSlideRender, ReadProject, CreateProject, UpdateProject, UpdateProjectX, DoesProjectExists, SaveProject };
+export { readProject, doesProjectExist, projectSlideRender, ReadProject, CreateProject, UpdateProject, UpdateProjectX, DoesProjectExists, SaveProject, GetProjectPath };
