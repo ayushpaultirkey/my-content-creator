@@ -228,6 +228,7 @@ async function UpdateSlide(projectId = "", prompt = "") {
 
     }
     catch(error) {
+        console.log("UpdateSlide(): U")
         throw error;
     }
 
@@ -235,12 +236,13 @@ async function UpdateSlide(projectId = "", prompt = "") {
 
 
 /**
- * 
- * @param {*} projectId 
- * @param {[{ id, content, totalTime, showAt, hideAt, image }]} slide 
- * @returns 
- */
-async function RenderSlide(projectId = "", slide = []) {
+    * 
+    * @param {*} projectId 
+    * @param {*} slide 
+    * @param {*} project 
+    * @returns 
+*/
+async function RenderSlide(projectId = "", slide = [], project = {}) {
 
     // Create new promise
     const _wait = new wait();
@@ -264,107 +266,118 @@ async function RenderSlide(projectId = "", slide = []) {
         // Render for all slides into separate files
         let _index = 0;
         let _length = slide.length;
-        const render = () => {
+
+        // Render function to render separate slides
+        const render = async () => {
         
+            // If index > total slides then finish
             if(_index > _length - 1) {
+                console.log("RenderSlide(): Project pre-render completed");
+                _wait.resolve("RenderSlide(): Project pre-render completed");
+                return;
+            };
 
-                console.log("Project pre-render completed");
-                _wait.resolve("Project pre-render completed");
+            // Get current slide by index
+            const _slide = slide[_index];
 
+            // Create new creator
+            const _creator = new FFCreator({
+                width: W,
+                height: H
+            });
+                
+            // Create new slide's scene
+            const _scene = new FFScene();
+            _scene.setBgColor("#000000");
+            _scene.setDuration(_slide.totalTime);
+            _creator.addChild(_scene);
+
+            // Add narration if avaiable
+            try {
+                const _audioPath = path.join(_path, `/asset/${_slide.id}.wav`);
+                await access(_audioPath);
+                _scene.addAudio({ path: _audioPath, start: 0 });
             }
-            else {
+            catch {
+                console.log(`RenderSlide(): Cannot find narration file for ${_slide.id}`);
+            };
 
-                //
-                const _slide = slide[_index];
+            // Add image if avaiable
+            if(_slide.image.length > 0) {
 
-                //
-                const _creator = new FFCreator({
-                    width: W,
-                    height: H
-                });
-                    
-                //
-                const _scene = new FFScene();
-                _scene.setBgColor("#000000");
-                _scene.setDuration(_slide.totalTime);
-                _creator.addChild(_scene);
-
-                //
-                _scene.addAudio({ path: path.join(_path, `/asset/${_slide.id}.wav`), start: 0 });
-
-                //
-                const _rectangle = new FFRect({ width: W, height: H, x: W / 2, y: H / 2, color: "#FF0000" });
-                _rectangle.addEffect("fadeIn", 1, 0);
-                _rectangle.addEffect("fadeOut", 1, _slide.hideAt - _slide.showAt);
-                _scene.addChild(_rectangle);
-
-                //
-                if(_slide.image.length > 0) {
-
-                    const _image = [];
-                    _slide.image.forEach(x => {
-                        _image.push(path.join(_path, "/asset/", x));
-                    });
-
-                    const _album = new FFAlbum({
-                        list: _image,
-                        x: W / 2, y: H / 2,
-                        width: W,
-                        height: H,
-                        scale: 1.25
-                    });
-                    _album.setTransition();
-                    _album.setDuration(_slide.totalTime / _slide.image.length);
-                    _album.setTransTime(1.5);
-                    _scene.addChild(_album);
-                    
+                // Check if the images are valid
+                const _image = [];
+                for(const x of _slide.image) {
+                    try {
+                        const _imagePath = path.join(_path, "/asset/", x);
+                        await access(_imagePath);
+                        _image.push(_imagePath);
+                    }
+                    catch {
+                        console.log(`RenderSlide(): Cannot find ${x} image asset file for ${_slide.id}`);
+                    };
                 };
 
-                //
-                const _text = new FFText({
-                    text: _slide.content,
-                    x: W / 2,
-                    y: H / 2,
+                // Create new album
+                const _album = new FFAlbum({
+                    list: _image,
+                    x: W / 2, y: H / 2,
+                    width: W,
+                    height: H,
+                    scale: 1.25
                 });
-                _text.setColor("#ffffff");
-                _text.addEffect("zoomIn", 1, 0);
-                _text.addEffect("fadeOut", 1, _slide.hideAt - _slide.showAt);
-                _text.alignCenter();
-                _text.setWrap(W / 1.5);
-                _scene.addChild(_text);
-
-                //
-                _creator.output(path.join(_path, `./cache/${_slide.id}.mp4`));
-                _creator.start();
-                _creator.closeLog();
-
-                //
-                _creator.on("start", () => {
-                    console.log(`Project pre-render ${_slide.id} started`);
-                });
-                _creator.on("error", e => {
-                    console.log(`Unable to pre-render project: ${_slide.id}`);
-                    _wait.reject("Unable to pre-render project: ${_slide.id}");
-                });
-                _creator.on("progress", e => {
-                    console.log(`Project pre-render: ${(e.percent * 100) >> 0}%`);
-                });
-                _creator.on("complete", e => {
-                    console.log(`Project pre-render ${_slide.id} completed`);
-                    _index++;
-                    render();
-                });
-
+                _album.setTransition();
+                _album.setDuration(_slide.totalTime / _slide.image.length);
+                _album.setTransTime(1.5);
+                _scene.addChild(_album);
+                
             };
+
+            // Add the slide's content
+            const _text = new FFText({
+                text: _slide.content,
+                x: W / 2,
+                y: H / 2,
+            });
+            _text.setColor("#ffffff");
+            _text.addEffect("zoomIn", 1, 0);
+            _text.addEffect("fadeOut", 1, _slide.hideAt - _slide.showAt);
+            _text.alignCenter();
+            _text.setWrap(W / 1.5);
+            _scene.addChild(_text);
+
+            // Start the rendering
+            _creator.output(path.join(_path, `./cache/${_slide.id}.mp4`));
+            _creator.start();
+            _creator.closeLog();
+
+            // Register events
+            _creator.on("start", () => {
+                console.log(`RenderSlide(): Project pre-render ${_slide.id} started`);
+            });
+            _creator.on("error", e => {
+                console.log(`RenderSlide(): Unable to pre-render project: ${_slide.id}`);
+                _wait.reject("RenderSlide(): Unable to pre-render project: ${_slide.id}");
+            });
+            _creator.on("progress", e => {
+                console.log(`RenderSlide(): Project pre-render: ${(e.percent * 100) >> 0}%`);
+            });
+            _creator.on("complete", e => {
+                console.log(`RenderSlide(): Project pre-render ${_slide.id} completed`);
+                _index++;
+                render();
+            });
 
         };
     
+        // Start slide render
         render();
 
     }
     catch(error) {
+        console.log("RenderSlide():", error);
         _wait.reject(error);
-    }
+    };
 
     return _wait.promise;
 

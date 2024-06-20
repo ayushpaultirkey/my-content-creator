@@ -3,13 +3,10 @@ import fs from "fs";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 
-/**
- * @type {import("@google/generative-ai").GoogleGenerativeAI}
- */
+/** @type {import("@google/generative-ai").GoogleGenerativeAI} */
 let GENERATIVE = null;
-/**
- * @type {import("@google/generative-ai").GenerativeModel}
- */
+
+/** @type {import("@google/generative-ai").GenerativeModel} */
 let MODEL = null;
 
 
@@ -57,29 +54,39 @@ function GenerativeInit() {
 
 };
 
-
+/**
+    * 
+    * @param {string} prompt 
+    * @param {[]} context 
+    * @returns {{ context: [], response: {} }}
+*/
 async function GenerativeRun(prompt = "", context = []) {
 
     let _context = context;
     let _message = [];
     let _answer = "";
-
+    
     try {
         
+        // Create a message history for the model
         for(const [input, response] of _context) {
             _message.push({ role: "user", parts: [{ "text": input }] });
             _message.push({ role: "model", parts: [{ "text": response }] });
         };
     
+        // Set the model message history
         let _chat = MODEL.startChat({
             history: _message
         });
     
+        // Send message to model and get response
         let _result = await _chat.sendMessage(prompt);
         let _response = _result.response.text();
     
+        // Create new context
         _context.push([prompt, _response]);
 
+        // Get the json from the response
         const _regex = /```json(.*)```/gs;
         const _match = _regex.exec(_response);
         if(_match) {
@@ -96,6 +103,7 @@ async function GenerativeRun(prompt = "", context = []) {
     
     }
     catch(error) {
+        console.log("GenerativeRun():", error);
         throw error;
     };
 

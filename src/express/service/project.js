@@ -17,33 +17,33 @@ function GetProjectPath(projectId = "") {
     // Get project path
     return path.join(__dirname, `../../public/project/${projectId}/`);
 
-}
+};
+
 
 
 /**
- * Generates video content data for a health and fitness video.
  * 
- * @returns {{ config: { width, height }, property: { response, title, description, totalTime, slides: [{ id, content, totalTime, showAt, hideAt }] }, session: { context: [], message: [{ role, parts }] } }}
+ * @param {string} projectId 
+ * @returns {{ config: { width, height }, property: { response, title, description, totalTime, slides: [{ id, content, totalTime, showAt, hideAt }] } }}
 */
 async function ReadProject(projectId = "") {
 
     try {
-        
-        // Get current directory path
-        const { __dirname } = directory();
 
         // Get project path and read the project json file
-        const _path = path.join(__dirname, `../../public/project/${projectId}/project.json`);
+        const _path = path.join(GetProjectPath(projectId), "/project.json");
         const _content = await fs.readFile(_path, "utf8");
 
+        // Parse json
+        const _json = JSON.parse(_content);
+
         // Export the json file
-        return JSON.parse(_content);
+        return _json;
 
     }
     catch(error) {
-
-        throw new Error("Failed to read or parse json file, or project not found");
-
+        console.log("ReadProject():", error);
+        throw new Error("Failed to read or parse project file, or project not found");
     };
 
 };
@@ -53,12 +53,12 @@ async function UpdateProject(projectId = "", project = {}) {
 
     try {
         
-        // Get current directory path
-        const { __dirname } = directory();
+        // Get project path and json data
+        const _path = path.join(GetProjectPath(projectId), "/project.json");
+        const _content = JSON.stringify(project);
 
-        // Get project path and update the project json file
-        const _path = path.join(__dirname, `../../public/project/${projectId}/project.json`);
-        await fs.writeFile(_path, JSON.stringify(project));
+        // Write new data
+        await fs.writeFile(_path, _content);
 
     }
     catch (error) {
@@ -69,22 +69,26 @@ async function UpdateProject(projectId = "", project = {}) {
 
 };
 
+/**
+    * 
+    * @param {projectId} projectId 
+    * @param {*} project 
+*/
 async function SaveProject(projectId = "", project = {}) {
 
     try {
         
-        // Get current directory path
-        const { __dirname } = directory();
+        // Get project path and json data
+        const _path = path.join(GetProjectPath(projectId), "/project.json");
+        const _content = JSON.stringify(project);
 
-        // Get project path and update the project json file
-        const _path = path.join(__dirname, `../../public/project/${projectId}/project.json`);
-        await fs.writeFile(_path, JSON.stringify(project));
+        // Write new data
+        await fs.writeFile(_path, _content);
 
     }
-    catch (error) {
-
+    catch(error) {
+        console.log("SaveProject():", error);
         throw new Error("Failed to save project file");
-
     };
 
 };
@@ -147,8 +151,33 @@ async function DoesProjectExists(projectId = "") {
 
 };
 
+
+async function DoesProjectExist(projectId = "") {
+
+    try {
+
+        // Check if the project file exists ?
+        const _path = path.join(GetProjectPath(projectId), "/project.json");
+        await fs.access(_path);
+
+        return true;
+        
+    }
+    catch(error) {
+        if(error.code === "ENOENT") {
+            return false;
+        }
+        else {
+            console.log("DoesProjectExist():", error);
+            throw error;
+        };
+    };
+
+};
+
+
 /**
- * 
+ * Create's a new project and folder
  * @param {*} projectId 
  * @param {{ config: { width, height }, property: { response, title, description, totalTime, slides: [{ id, content, totalTime, showAt, hideAt }] } }} project 
 */
@@ -159,18 +188,24 @@ async function CreateProject(projectId = "", project = {}) {
         // Get current directory path
         const { __dirname } = directory();
 
-        if(await DoesProjectExists(projectId)) {
+        // Check if the folder already exist
+        if(await DoesProjectExist(projectId)) {
             throw new Error("Project already exists")
         };
 
         // Create new project folder and json file
         const _path = path.join(__dirname, `../../public/project/${projectId}/`);
         await fs.mkdir(_path, { recursive: true });
+        await fs.mkdir(path.join(_path, "/asset"), { recursive: true });
+        await fs.mkdir(path.join(_path, "/cache"), { recursive: true });
         await fs.writeFile(path.join(_path, "/project.json"), JSON.stringify(project));
-        await RenderSlide(projectId, project.property.slides);
+
+        // Render out the slides
+        await RenderSlide(projectId, project.property.slides, project);
 
     }
     catch(error) {
+        console.log("CreateProject():", error);
         throw error;
     };
 
