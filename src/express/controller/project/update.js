@@ -1,4 +1,5 @@
-import { UpdateProject, UpdateProjectX } from "../../service/project.js";
+import { UpdateProjectX } from "../../service/project.js";
+
 
 /**
     * Validates project IDs from request query
@@ -45,6 +46,9 @@ export default async function Update(request, response) {
 
         // Set error message
         _response.message = error.message || "An error occurred";
+
+        // Log error message
+        console.log("/project/update:", error);
 
     }
     finally {

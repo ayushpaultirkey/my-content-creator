@@ -89,7 +89,7 @@ export default class Project extends H12.Component {
 
         try {
 
-            const _request = await fetch(`/api/asset/read?pid=${this.Project.id}`);
+            const _request = await fetch(`/api/asset/fetch?pid=${this.Project.id}`);
             const _response = await _request.json();
 
             if(!_response.success) {

@@ -1,14 +1,18 @@
 import path from "path";
 import fs from "fs/promises";
 import wait from "./wait.js";
-import directory from "../../library/directory.js";
 import { FFScene, FFText, FFImage, FFCreator, FFAudio, FFRect } from "ffcreator";
-import { RenderSlide, renderSlides } from "./slide.js";
+
+import directory from "../../library/directory.js";
+import { RenderSlide } from "./slide.js";
 import { GenerativeRun } from "./gemini.js";
 
 
-const project = null;
-
+/**
+    * 
+    * @param {string} projectId 
+    * @returns 
+    */
 function GetProjectPath(projectId = "") {
 
     // Get current directory path
@@ -20,19 +24,18 @@ function GetProjectPath(projectId = "") {
 };
 
 
-
 /**
- * 
- * @param {string} projectId 
- * @returns {{ config: { width, height }, property: { response, title, description, totalTime, slides: [{ id, content, totalTime, showAt, hideAt }] } }}
+    * 
+    * @param {string} projectId 
+    * @returns 
 */
 async function ReadProject(projectId = "") {
 
     try {
 
         // Get project path and read the project json file
-        const _path = path.join(GetProjectPath(projectId), "/project.json");
-        const _content = await fs.readFile(_path, "utf8");
+        const _projectPath = path.join(GetProjectPath(projectId), "/project.json");
+        const _content = await fs.readFile(_projectPath, "utf8");
 
         // Parse json
         const _json = JSON.parse(_content);
@@ -43,57 +46,43 @@ async function ReadProject(projectId = "") {
     }
     catch(error) {
         console.log("ReadProject():", error);
-        throw new Error("Failed to read or parse project file, or project not found");
+        throw error;
     };
 
 };
 
-
-async function UpdateProject(projectId = "", project = {}) {
-
-    try {
-        
-        // Get project path and json data
-        const _path = path.join(GetProjectPath(projectId), "/project.json");
-        const _content = JSON.stringify(project);
-
-        // Write new data
-        await fs.writeFile(_path, _content);
-
-    }
-    catch (error) {
-
-        throw new Error("Failed to update project file");
-
-    };
-
-};
 
 /**
     * 
-    * @param {projectId} projectId 
-    * @param {*} project 
+    * @param {string} projectId 
+    * @param {string} project 
 */
 async function SaveProject(projectId = "", project = {}) {
 
     try {
         
         // Get project path and json data
-        const _path = path.join(GetProjectPath(projectId), "/project.json");
+        const _projectPath = path.join(GetProjectPath(projectId), "/project.json");
         const _content = JSON.stringify(project);
 
         // Write new data
-        await fs.writeFile(_path, _content);
+        await fs.writeFile(_projectPath, _content);
 
     }
     catch(error) {
         console.log("SaveProject():", error);
-        throw new Error("Failed to save project file");
+        throw error;
     };
 
 };
 
 
+/**
+    * 
+    * @param {string} projectId 
+    * @param {string} prompt 
+    * @returns 
+*/
 async function UpdateProjectX(projectId = "", prompt = "") {
 
     try {
@@ -127,6 +116,111 @@ async function UpdateProjectX(projectId = "", prompt = "") {
 }
 
 
+/**
+    * 
+    * @param {string} projectId 
+    * @returns 
+*/
+async function DoesProjectExist(projectId = "") {
+
+    try {
+
+        // Check if the project file exists ?
+        const _projectPath = path.join(GetProjectPath(projectId), "/project.json");
+        await fs.access(_projectPath);
+
+        return true;
+        
+    }
+    catch(error) {
+        if(error.code === "ENOENT") {
+            return false;
+        }
+        else {
+            console.log("DoesProjectExist():", error);
+            throw error;
+        };
+    };
+
+};
+
+
+/**
+    * 
+    * @param {string} projectId 
+    * @param {string} prompt 
+    * @param {number} width 
+    * @param {number} height 
+    * @returns 
+*/
+async function CreateProject(prompt = "", width = 720, height = 1280) {
+
+    try {
+
+        // Generate random id
+        const _projectId = crypto.randomUUID();
+
+        // Check if the folder already exist
+        if(await DoesProjectExist(_projectId)) {
+            throw new Error("Project already exists");
+        };
+
+        // Generative run project prompt
+        const _answer = await GenerativeRun(prompt);
+        const _project = {
+            config: {
+                width: width,
+                height: height
+            },
+            property: _answer.response,
+            session: { context: _answer.context }
+        };
+
+        // Create new project folder and json file
+        const _projectPath = GetProjectPath(_projectId);
+        await fs.mkdir(_projectPath, { recursive: true });
+        await fs.mkdir(path.join(_projectPath, "/asset"), { recursive: true });
+        await fs.mkdir(path.join(_projectPath, "/cache"), { recursive: true });
+        await fs.writeFile(path.join(_projectPath, "/project.json"), JSON.stringify(_project));
+
+        // Render out the slides
+        await RenderSlide(_projectId, _project.property.slides, project);
+
+        // Return newly created project
+        return { ... _project, id: _projectId };
+
+    }
+    catch(error) {
+        console.log("CreateProject():", error);
+        throw error;
+    };
+
+};
+
+
+
+
+
+
+async function UpdateProject(projectId = "", project = {}) {
+
+    try {
+        
+        // Get project path and json data
+        const _path = path.join(GetProjectPath(projectId), "/project.json");
+        const _content = JSON.stringify(project);
+
+        // Write new data
+        await fs.writeFile(_path, _content);
+
+    }
+    catch (error) {
+
+        throw new Error("Failed to update project file");
+
+    };
+
+};
 async function DoesProjectExists(projectId = "") {
 
     try {
@@ -150,71 +244,6 @@ async function DoesProjectExists(projectId = "") {
     };
 
 };
-
-
-async function DoesProjectExist(projectId = "") {
-
-    try {
-
-        // Check if the project file exists ?
-        const _path = path.join(GetProjectPath(projectId), "/project.json");
-        await fs.access(_path);
-
-        return true;
-        
-    }
-    catch(error) {
-        if(error.code === "ENOENT") {
-            return false;
-        }
-        else {
-            console.log("DoesProjectExist():", error);
-            throw error;
-        };
-    };
-
-};
-
-
-/**
- * Create's a new project and folder
- * @param {*} projectId 
- * @param {{ config: { width, height }, property: { response, title, description, totalTime, slides: [{ id, content, totalTime, showAt, hideAt }] } }} project 
-*/
-async function CreateProject(projectId = "", project = {}) {
-
-    try {
-
-        // Get current directory path
-        const { __dirname } = directory();
-
-        // Check if the folder already exist
-        if(await DoesProjectExist(projectId)) {
-            throw new Error("Project already exists")
-        };
-
-        // Create new project folder and json file
-        const _path = path.join(__dirname, `../../public/project/${projectId}/`);
-        await fs.mkdir(_path, { recursive: true });
-        await fs.mkdir(path.join(_path, "/asset"), { recursive: true });
-        await fs.mkdir(path.join(_path, "/cache"), { recursive: true });
-        await fs.writeFile(path.join(_path, "/project.json"), JSON.stringify(project));
-
-        // Render out the slides
-        await RenderSlide(projectId, project.property.slides, project);
-
-    }
-    catch(error) {
-        console.log("CreateProject():", error);
-        throw error;
-    };
-
-};
-
-
-
-
-
 async function readProject(projectId = "") {
     try {
         
@@ -361,5 +390,7 @@ async function projectSlideRender(projectId = "", slides = []) {
     return sleep.promise;
 
 };
+
+
 
 export { readProject, doesProjectExist, projectSlideRender, ReadProject, CreateProject, UpdateProject, UpdateProjectX, DoesProjectExists, SaveProject, GetProjectPath };

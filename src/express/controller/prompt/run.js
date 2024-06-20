@@ -33,6 +33,9 @@ export default async function Run(request, response) {
         // Set error message
         _response.message = error.message || "An error occurred";
 
+        // Log error message
+        console.log("/prompt/run:", error);
+
     }
     finally {
 

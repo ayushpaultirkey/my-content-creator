@@ -56,9 +56,9 @@ function GenerativeInit() {
 
 /**
     * 
-    * @param {string} prompt 
-    * @param {[]} context 
-    * @returns {{ context: [], response: {} }}
+    * @param {*} prompt 
+    * @param {*} context 
+    * @returns 
 */
 async function GenerativeRun(prompt = "", context = []) {
 

@@ -63,7 +63,7 @@ const Uploader = multer({
     * @param {string} projectId 
     * @returns 
 */
-async function GetAssetList(projectId = "") {
+async function FetchAsset(projectId = "") {
 
     try {
         
@@ -217,4 +217,4 @@ async function CreateVoice(projectId = "", slide = []) {
 }
 
 
-export { Uploader, GetAssetList, CreateVoice, FetchImage };
+export { Uploader, FetchAsset, CreateVoice, FetchImage };

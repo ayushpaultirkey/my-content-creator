@@ -1,61 +1,58 @@
-import path from "path";
-import crypto from "crypto";
-import fs from "fs/promises";
-import directory from "../../../library/directory.js";
-import { FFScene, FFText, FFVideo, FFAlbum, FFImage, FFCreator, FFAudio } from "ffcreator";
 import { CreateProject } from "../../service/project.js";
-import { GenerativeRun } from "../../service/gemini.js";
+
 
 /**
     * 
     * @param {import("express").Request} request 
     * @param {import("express").Response} response 
 */
-async function Create(request, response) {
+export default async function Create(request, response) {
 
     //Create response object
-    const _response = { message: "", success: false, pid: "" };
+    const _response = { message: "", success: false, data: {} };
     
     //Create project
     try {
 
+        // Get query parameter
+        let _prompt = request.query.prompt;
+        let _width = request.query.width;
+        let _height = request.query.height;
+
         // Check if the query parameter are valid
-        const _prompt = request.query.prompt;
-        if(typeof(_prompt) == "undefined" || _prompt.length < 2) {
+        if(typeof(_prompt) === "undefined" || _prompt.length < 2) {
             throw new Error("No project description provided");
         };
-
-        // Generate random id
-        const _projectId = crypto.randomUUID();
-
-        // Generative run
-        const _answer = await GenerativeRun(_prompt);
+        if(typeof(_width) === "undefined" || _width.length < 128) {
+            _width = 720;
+        };
+        if(typeof(_height) === "undefined" || _height.length < 128) {
+            _height = 1280;
+        };
 
         // Create new project
-        await CreateProject(_projectId, {
-            config: {
-                width: 720,
-                height: 1280
-            },
-            property: _answer.response,
-            session: { context: _answer.context }
-        });
+        const _project = await CreateProject(_prompt, _width, _height);
 
         // Set success respones
         _response.success = true;
-        _response.pid = _projectId;
+        _response.data = _project;
         _response.message = "Project created successfully";
         
     }
     catch(error) {
+
+        // Set error message
         _response.message = error.message || "An error occurred";
+
+        // Log error message
+        console.log("/project/create:", error);
+
     }
     finally {
+
+        // Send response
         response.send(_response);
+
     };
 
 };
-
-
-//
-export default Create;

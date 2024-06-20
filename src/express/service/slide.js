@@ -188,11 +188,13 @@ function FindUpdatedSlide(originalSlides = [], newSlides = []) {
 
 }
 
+
 /**
- * 
- * @param {*} projectId 
- * @param {{ response, title, description, totalTime, slides: [{ id, content, totalTime, showAt, hideAt }] }} project 
- */
+    * 
+    * @param {*} projectId 
+    * @param {*} prompt 
+    * @returns 
+*/
 async function UpdateSlide(projectId = "", prompt = "") {
 
     try {
@@ -228,7 +230,7 @@ async function UpdateSlide(projectId = "", prompt = "") {
 
     }
     catch(error) {
-        console.log("UpdateSlide(): U")
+        console.log("UpdateSlide():", error);
         throw error;
     }
 

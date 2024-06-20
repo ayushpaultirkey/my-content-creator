@@ -49,6 +49,9 @@ async function Update(request, response) {
         // Set error message
         _response.message = error.message || "An error occurred";
 
+        // Log error message
+        console.log("/slide/update:", error);
+
     }
     finally {
         

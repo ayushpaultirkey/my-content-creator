@@ -3,15 +3,15 @@ import { DoesProjectExists, ReadProject } from "../../service/project.js";
 
 /**
     * Validates project IDs from request query
-    * @param {import("express").Request} req 
-    * @param {import("express").Response} res 
+    * @param {import("express").Request} request 
+    * @param {import("express").Response} response 
 */
-async function validate(request, response) {
+export default async function Validate(request, response) {
 
-    //Create response object
+    // Create response object
     const _response = { message: "", success: false, data: [] };
     
-    //Create project
+    // Try and validate each projects
     try {
 
         // Check if the query parameter are valid
@@ -29,12 +29,10 @@ async function validate(request, response) {
 
         // Validate each project ID
         for(const projectId of _projectId) {
-
             if(await DoesProjectExists(projectId)) {
                 const project = await ReadProject(projectId);
                 _response.data.push({ id: projectId, ... project });
             };
-
         };
 
         // Set success response
@@ -46,6 +44,9 @@ async function validate(request, response) {
         // Set error message
         _response.message = error.message || "An error occurred";
 
+        // Log error message
+        console.log("/project/validate:", error);
+
     }
     finally {
         
@@ -55,5 +56,3 @@ async function validate(request, response) {
     };
 
 };
-
-export default validate;

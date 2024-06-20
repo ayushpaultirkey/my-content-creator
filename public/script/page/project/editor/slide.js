@@ -90,7 +90,7 @@ export default class Slide extends H12.Component {
 
             this.element.slideContent.value = _slide.content;
 
-            const _request = await fetch(`/api/asset/read?pid=${this.Project.id}`);
+            const _request = await fetch(`/api/asset/fetch?pid=${this.Project.id}`);
             const _response = await _request.json();
 
             if(!_response.success) {

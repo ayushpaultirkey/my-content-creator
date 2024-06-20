@@ -15,12 +15,13 @@ export default async function Upload(request, response) {
     // Create response body
     let _response = { message: "", success: false, data: {} };
 
+    // Try and upload the asset
     try {
 
-        // Get project is from query string
+        // Check if the query parameter are valid
         const _projectId = request.query.pid;
         if((typeof(_projectId) !== "string" || _projectId.length < 2)) {
-            throw new Error("Project ID is required");
+            throw new Error("Invalid project id");
         };
 
         // Read project file
@@ -28,7 +29,6 @@ export default async function Upload(request, response) {
 
         // Use multer to handle file uploads
         Uploader(request, response, async(error) => {
-
             try {
 
                 // An error occurred when uploading.
@@ -59,7 +59,7 @@ export default async function Upload(request, response) {
                         })
                         .toFile(_path.replace(path.extname(_path), 'P' + path.extname(_path)));
     
-                        // Remove the previous upload
+                        // Remove the previous uploaded file
                         await fs.unlink(_path);
 
                     };
@@ -72,9 +72,12 @@ export default async function Upload(request, response) {
 
             }
             catch (error) {
-                
+                        
                 // Set error message
-                _response.message = error.message || "An error occurred";
+                _response.message = error.message || "Unable to upload asset";
+
+                // Log error message
+                console.log("/asset/upload: Upload error", error);
 
             }
             finally {
@@ -83,16 +86,17 @@ export default async function Upload(request, response) {
                 response.send(_response);
 
             };
-
         });
 
     }
     catch(error) {
 
         // Set error message
-        _response.message = error.message || "An error occurred";
-        response.send(_response);
+        _response.message = error.message || "Unable to upload asset";
         
+        // Log error message
+        console.log("/asset/upload: General error", error);
+
     };
 
 };

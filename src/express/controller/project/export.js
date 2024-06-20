@@ -1,14 +1,9 @@
-import path from "path";
-import fs from "fs/promises";
-import directory from "../../../library/directory.js";
-
-
 /**
     * Validates project IDs from request query
     * @param {import("express").Request} request 
     * @param {import("express").Response} response 
 */
-async function Export(request, response) {
+export default async function Export(request, response) {
 
     //Create response object
     const _response = { message: "", success: false, data: [] };
@@ -31,6 +26,9 @@ async function Export(request, response) {
         // Set error message
         _response.message = error.message || "An error occurred";
 
+        // Log error message
+        console.log("/project/export:", error);
+
     }
     finally {
         
@@ -40,5 +38,3 @@ async function Export(request, response) {
     };
 
 };
-
-export default Export;
