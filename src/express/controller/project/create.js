@@ -15,18 +15,18 @@ export default async function Create(request, response) {
     try {
 
         // Get query parameter
-        let _prompt = request.query.prompt;
         let _width = request.query.width;
         let _height = request.query.height;
+        let _prompt = request.query.prompt;
 
         // Check if the query parameter are valid
         if(typeof(_prompt) === "undefined" || _prompt.length < 2) {
             throw new Error("No project description provided");
         };
-        if(typeof(_width) === "undefined" || _width.length < 128) {
+        if(typeof(_width) === "undefined" || _width < 128) {
             _width = 720;
         };
-        if(typeof(_height) === "undefined" || _height.length < 128) {
+        if(typeof(_height) === "undefined" || _height < 128) {
             _height = 1280;
         };
 

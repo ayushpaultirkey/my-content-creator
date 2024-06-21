@@ -1,3 +1,53 @@
+
+async function GetLocalProject() {
+
+    try {
+
+        const _project = localStorage.getItem("PROJECT");
+        if(!_project) {
+            return [];
+        };
+
+        const _projectData = JSON.parse(_project);
+        const _projectId = [];
+
+        _projectData.forEach(project => {
+            _projectId.push(project.id);
+        });
+        
+        const _request = await fetch(`/api/project/validate?pid=${JSON.stringify(_projectId)}`);
+        const _response = await _request.json();
+
+        if(!_response.success) {
+            return [];
+        };
+
+        return _response.data;
+        
+    }
+    catch (error) {
+        console.error("GetLocalProject(): Unable to get validated project list:", error);
+        return null;
+    };
+    
+}
+async function SetLocalProject(project = {}) {
+
+    try {
+        let _project = await getProjectList();
+        if(_project == null) {
+            _project = [];
+        };
+        _project.push(project);
+        localStorage.setItem("PROJECT", JSON.stringify(_project));
+    }
+    catch (error) {
+        console.error("SetLocalProject(): Unable to save local project:", error);
+        return false;
+    }
+
+}
+
 async function getProjectList() {
 
     try {
@@ -53,4 +103,4 @@ function ProjectIsValid(project) {
     return !(!project || typeof(project) === "undefined");
 }
 
-export { getProjectList, setProjectList, ProjectIsValid }
+export { getProjectList, setProjectList, ProjectIsValid, SetLocalProject, GetLocalProject };

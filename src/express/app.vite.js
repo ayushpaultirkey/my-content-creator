@@ -1,4 +1,5 @@
 import "dotenv/config";
+import open from "open";
 import express from "express";
 import viteExpress from "vite-express";
 import compression from "compression";
@@ -6,7 +7,7 @@ import router from "./router.js";
 import { GenerativeInit } from "./service/gemini.js";
 
 //
-function init() {
+export default function init() {
 
     // Start generative ai
     GenerativeInit();
@@ -23,11 +24,16 @@ function init() {
     //Create server
     viteExpress.config({ mode: "development" });
     viteExpress.listen(app, 3000, () => {
-        console.log("> Server started !")
-        console.log("> http://localhost:3000/");
+
+        // Log the server starting
+        console.log("init(): Server started !")
+        console.log("init(): http://localhost:3000/");
+
+        // Open the default browser
+        if(process.env.NODE_ENV !== "production") {
+            open("http://localhost:3000/");
+        };
+        
     });
 
 };
-
-//
-export default init;

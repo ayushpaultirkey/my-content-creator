@@ -5,8 +5,6 @@ import Dispatcher from "@library/h12.dispatcher";
 import Home from "./page/home";
 import Editor from "./page/project/editor";
 import Dashboard from "./page/project/dashboard";
-import Test from "./page/test";
-
 
 @Component
 class App extends H12.Component {
@@ -15,12 +13,14 @@ class App extends H12.Component {
     }
     async init() {
 
+        // Navigate to dashboard
         this.Navigate.To();
         this.Set("{a.loader}", "hidden");
         this.Set("{a.loader.text}", "Please Wait, AI Is Crafting...");
 
-        Dispatcher.On("ShowLoader", this.showLoader.bind(this));
-        Dispatcher.On("HideLoader", this.hideLoader.bind(this));
+        // Register dispatcher event
+        Dispatcher.On("ShowLoader", this.Loader.Show.bind(this));
+        Dispatcher.On("HideLoader", this.Loader.Hide.bind(this));
         Dispatcher.On("OnNavigate", this.Navigate.To.bind(this));
 
     }
@@ -39,16 +39,18 @@ class App extends H12.Component {
             </div>
         </>;
     }
-
-    showLoader(event, args) {
-        this.Set("{a.loader}", "");
-        this.Set("{a.loader.text}", args);
-    }
-    hideLoader() {
-        this.Set("{a.loader}", "hidden");
-    }
     load() {
         Dispatcher.Call("Loaded");
+    }
+
+    Loader = {
+        Show: (event, args) => {
+            this.Set("{a.loader}", "");
+            this.Set("{a.loader.text}", args);
+        },
+        Hide: () => {
+            this.Set("{a.loader}", "hidden");
+        }
     }
     Navigate = {
         To: (event, args = { target: "DASHBOARD" }) => {

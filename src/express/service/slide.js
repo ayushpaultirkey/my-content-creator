@@ -211,7 +211,7 @@ async function UpdateSlide(projectId = "", prompt = "") {
 
         // Create audio and render the slides
         await CreateVoice(projectId, _slideUpdated);
-        await RenderSlide(projectId, _slideUpdated);
+        await RenderSlide(projectId, _slideUpdated, _project);
 
         // Create updated project
         const _projectUpdated = {
@@ -297,26 +297,26 @@ async function RenderSlide(projectId = "", slide = [], project = {}) {
             // Add narration if avaiable
             try {
                 const _audioPath = path.join(_path, `/asset/${_slide.id}.wav`);
-                await access(_audioPath);
+                await fs.access(_audioPath);
                 _scene.addAudio({ path: _audioPath, start: 0 });
             }
-            catch {
-                console.log(`RenderSlide(): Cannot find narration file for ${_slide.id}`);
+            catch(error) {
+                console.log(`RenderSlide(): Cannot find narration voice for ${_slide.id}`, error);
             };
 
             // Add image if avaiable
-            if(_slide.image.length > 0) {
+            if(typeof(_slide.image) !== "undefined" && _slide.image.length > 0) {
 
                 // Check if the images are valid
                 const _image = [];
                 for(const x of _slide.image) {
                     try {
                         const _imagePath = path.join(_path, "/asset/", x);
-                        await access(_imagePath);
+                        await fs.access(_imagePath);
                         _image.push(_imagePath);
                     }
-                    catch {
-                        console.log(`RenderSlide(): Cannot find ${x} image asset file for ${_slide.id}`);
+                    catch(error) {
+                        console.log(`RenderSlide(): Cannot find ${x} image asset file for ${_slide.id}`, error);
                     };
                 };
 

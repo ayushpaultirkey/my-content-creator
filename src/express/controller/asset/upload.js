@@ -53,8 +53,8 @@ export default async function Upload(request, response) {
                         // Resize image to width and height according to video dimension
                         await sharp(_path)
                         .resize({
-                            width: _project.config.width,
-                            height: _project.config.height,
+                            width: (_project.config.width * 1),
+                            height: (_project.config.height * 1),
                             fit: 'cover'
                         })
                         .toFile(_path.replace(path.extname(_path), 'P' + path.extname(_path)));

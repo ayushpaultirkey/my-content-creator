@@ -67,7 +67,7 @@ export default class Viewport extends H12.Component {
                 this.Set("{e.slide}++",
                     <>
                         <div class="bg-zinc-900 w-20 min-w-20 h-full rounded-md shadow-md" onclick={ () => { this.SlideSelected(_id, _index); } }>
-                            <video class="w-full h-full pointer-events-none" loop autoplay muted>
+                            <video class="w-full h-full pointer-events-none" oncanplay="this.muted=true;" loop autoplay muted>
                                 <source type="video/mp4" src={ `./project/${this.Project.id}/cache/${_id}.mp4` }/>
                             </video>
                         </div>

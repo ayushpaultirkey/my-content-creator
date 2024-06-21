@@ -112,7 +112,7 @@ export default class Project extends H12.Component {
         event.stopPropagation();
 
     }
-    HandleDrop(event) {
+    async HandleDrop(event) {
 
         // Check if the project is valid
         if(!ProjectIsValid(this.Project)) {
@@ -122,14 +122,25 @@ export default class Project extends H12.Component {
         const _data = event.dataTransfer;
         const _file = _data.files;
 
-        ([..._file]).forEach(x => {
-            if(x.type.startsWith("image/") || x.type.startsWith("video/")) {
-                this.UploadFile(x);
+        // Filter the files to be uploaded
+        const _filesToUpload = [..._file].filter(x => {
+            if (x.type.startsWith("image/") || x.type.startsWith("video/")) {
+                return true;
             }
             else {
-                console.warn(`File ${x.name} is not supported and was not uploaded.`);
-            }
+                console.warn(`Project/HandleDrop(): File ${x.name} is not supported and was not uploaded.`);
+                return false;
+            };
         });
+
+        // Upload all files and wait for the uploads to complete
+        try {
+            await Promise.all(_filesToUpload.map(file => this.UploadFile(file)));
+            this.Load();
+        }
+        catch(error) {
+            console.error("Project/HandleDrop(): An error occurred during file upload:", error);
+        };
 
     }
     async UploadFile(file) {
@@ -146,8 +157,6 @@ export default class Project extends H12.Component {
             if(!_response.success) {
                 throw new Error(_response.message);
             };
-
-            this.Load();
 
         }
         catch(error) {
