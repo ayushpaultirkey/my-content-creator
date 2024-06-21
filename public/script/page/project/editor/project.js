@@ -51,7 +51,12 @@ export default class Project extends H12.Component {
 
                     <div>
                         <label class="text-xs font-semibold text-zinc-400">Backgound Images:</label>
-                        <Asset args id="ImageAsset"></Asset>
+                        <Asset args id="ImageAsset" type="image"></Asset>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-semibold text-zinc-400">Backgound Video:</label>
+                        <Asset args id="VideoAsset" type="image"></Asset>
                     </div>
 
                     <div>
@@ -63,11 +68,9 @@ export default class Project extends H12.Component {
                         <button class="p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Update }>Update</button>
                     </div>
 
-                    <div>
+                    <div class="flex flex-col">
                         <label class="text-xs font-semibold text-zinc-400">Tips:</label>
-                        <div>
-                            <label class="text-xs text-zinc-400">Ask the AI in prompt tab to modify the slide, like reorder slides, change color, content, animation, or create new slides.</label>
-                        </div>
+                        <label class="text-xs text-zinc-400">Ask the AI in prompt tab to modify the slide, like reorder slides, change color, content, animation, or create new slides.</label>
                     </div>
 
                 </div>
@@ -98,6 +101,9 @@ export default class Project extends H12.Component {
 
             await this.child["ImageAsset"].Load(_response.data);
             this.child["ImageAsset"].SetSelected(this.Project.property.backgroundImage);
+
+            await this.child["VideoAsset"].Load(_response.data, ["video/mp4"]);
+            this.child["VideoAsset"].SetSelected(this.Project.property.backgroundVideo);
 
         }
         catch(error) {

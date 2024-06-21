@@ -6,7 +6,7 @@ export default class Item extends H12.Component {
     constructor() {
         super();
     }
-    async init(args = { url, name, index }) {
+    async init(args = { url, name, index, type }) {
 
         this.Set("{a.visible}", "hidden");
 

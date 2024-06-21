@@ -1,157 +1,21 @@
 import path from "path";
-import _ from "lodash";
 import fs from "fs/promises";
-import directory from "../../library/directory.js";
-import { FFScene, FFText, FFImage, FFCreator, FFAudio, FFRect, FFAlbum } from "ffcreator";
+import { FFScene, FFText, FFCreator, FFAlbum, FFVideo } from "ffcreator";
+
 import wait from "./wait.js";
-import { DoesProjectExists, GetProjectPath, ReadProject, SaveProject, UpdateProject } from "./project.js";
-import { GenerativeRun } from "./gemini.js";
+import directory from "../../library/directory.js";
+
 import { CreateVoice } from "./asset.js";
+import { GenerativeRun } from "./gemini.js";
+import { GetProjectPath, ReadProject, SaveProject } from "./project.js";
 
 
-const findUpdatedSlides = (originalSlides, newSlides) => {
-
-    const updates = {
-        updated: [],
-        removed: [],
-        added: []
-    };
-    
-    // Create a map of original slides by id for quick lookup
-    const originalMap = new Map(originalSlides.map(slide => [slide.id, slide]));
-
-    // Check for updates and additions
-    newSlides.forEach(newSlide => {
-        const originalSlide = originalMap.get(newSlide.id);
-        if (originalSlide) {
-            // Check if content has changed
-            if(JSON.stringify(originalSlide) !== JSON.stringify(newSlide)) {
-                updates.updated.push(newSlide);
-            };
-            // Remove from map to keep track of remaining slides
-            originalMap.delete(newSlide.id);
-        }
-        else {
-            updates.added.push(newSlide);
-        };
-    });
-
-    // Remaining slides in originalMap are considered removed
-    updates.removed = Array.from(originalMap.values());
-
-    return updates;
-
-};
-async function renderSlides(projectId = "", slides = []) {
-
-    // Create new promise
-    const sleep = new wait();
-
-    //
-    try {
-
-        // Get current directory path and filename
-        const { __dirname } = directory();
-        FFCreator.setFFmpegPath(path.join(__dirname, "./../../library/ffmpeg/bin/ffmpeg.exe"));
-        FFCreator.setFFprobePath(path.join(__dirname, "./../../library/ffmpeg/bin/ffprobe.exe"));
-
-        // Get project path
-        const projectPath = path.join(__dirname, `../../public/project/${projectId}`);
-
-        // Set video dimension
-        const S = 1;
-        const W = 720 / S;
-        const H = 1280 / S;
-
-        // Render for all slides into separate files
-        let index = 0;
-        let length = slides.length;
-        const render = () => {
-        
-            if(index > length - 1) {
-
-                console.log("Project pre-render completed");
-                sleep.resolve("Project pre-render completed");
-
-            }
-            else {
-
-                //
-                const slide = slides[index];
-
-                //
-                const creator = new FFCreator({
-                    width: W,
-                    height: H
-                });
-                    
-                //
-                const scene = new FFScene();
-                scene.setBgColor("#000000");
-                scene.setDuration(slide.time);
-                scene.setTransition("GridFlip", 2);
-                creator.addChild(scene);
-
-                //
-                const rectangle = new FFRect({ width: W, height: H, x: W / 2, y: H / 2, color: "#FF0000" });
-                rectangle.addEffect("fadeIn", 1, 0);
-                rectangle.addEffect("fadeOut", 1, slide.hideAt - slide.showAt);
-                scene.addChild(rectangle);
-
-                //
-                const text = new FFText({
-                    text: slide.content,
-                    x: W / 2,
-                    y: H / 2,
-                });
-                text.setColor("#ffffff");
-                text.addEffect("zoomIn", 1, 0);
-                text.addEffect("fadeOut", 1, slide.hideAt - slide.showAt);
-                text.alignCenter();
-                text.setWrap(W / 1.5);
-                scene.addChild(text);
-
-                //
-                creator.output(path.join(projectPath, `./cache/${slide.id}.mp4`));
-                creator.start();
-                creator.closeLog();
-
-                //
-                console.log(path.join(projectPath, `./cache/${slide.id}.mp4`))
-
-                //
-                creator.on("start", () => {
-                    console.log(`Project pre-render started`);
-                });
-                creator.on("error", e => {
-                    console.log(`Unable to pre-render project`);
-                    sleep.reject("Unable to pre-render project");
-                });
-                creator.on("progress", e => {
-                    console.log(`Project pre-render: ${(e.percent * 100) >> 0}%`);
-                });
-                creator.on("complete", e => {
-                    console.log(`Project pre-render ${slide.id} completed`);
-                    index++;
-                    render();
-                });
-
-            };
-
-        };
-    
-        render();
-
-    }
-    catch(error) {
-        sleep.reject(error);
-    }
-
-    return sleep.promise;
-
-};
-
-
+/**
+    * 
+    * @param {*} originalSlides 
+    * @param {*} newSlides 
+    * @returns 
+*/
 function FindUpdatedSlide(originalSlides = [], newSlides = []) {
 
     // Create object to store updated slides
@@ -195,7 +59,7 @@ function FindUpdatedSlide(originalSlides = [], newSlides = []) {
     * @param {*} prompt 
     * @returns 
 */
-async function UpdateSlide(projectId = "", prompt = "") {
+async function UpdateSlide(projectId = "", prompt = "", callback) {
 
     try {
         
@@ -294,11 +158,14 @@ async function RenderSlide(projectId = "", slide = [], project = {}) {
             _scene.setDuration(_slide.totalTime);
             _creator.addChild(_scene);
 
-            // Add narration if avaiable
+            // Try and add narration if avaiable
             try {
+
                 const _audioPath = path.join(_path, `/asset/${_slide.id}.wav`);
                 await fs.access(_audioPath);
+
                 _scene.addAudio({ path: _audioPath, start: 0 });
+
             }
             catch(error) {
                 console.log(`RenderSlide(): Cannot find narration voice for ${_slide.id}`, error);
@@ -311,7 +178,7 @@ async function RenderSlide(projectId = "", slide = [], project = {}) {
                 const _image = [];
                 for(const x of _slide.image) {
                     try {
-                        const _imagePath = path.join(_path, "/asset/", x);
+                        const _imagePath = path.join(_path, "/asset/", x.name);
                         await fs.access(_imagePath);
                         _image.push(_imagePath);
                     }
@@ -323,7 +190,8 @@ async function RenderSlide(projectId = "", slide = [], project = {}) {
                 // Create new album
                 const _album = new FFAlbum({
                     list: _image,
-                    x: W / 2, y: H / 2,
+                    x: W / 2,
+                    y: H / 2,
                     width: W,
                     height: H,
                     scale: 1.25
@@ -333,6 +201,36 @@ async function RenderSlide(projectId = "", slide = [], project = {}) {
                 _album.setTransTime(1.5);
                 _scene.addChild(_album);
                 
+            };
+
+            // Try and add video clip
+            try {
+
+                // Check if the video is valid
+                if(typeof(_slide.video) === "undefined" || typeof (_slide.video.name) === "undefined" || _slide.video.name.length == 0) {
+                    throw new Error("Invalid video or not defined");
+                };
+
+                // Get the transition and the video src
+                const _videoEffect = (typeof(_slide.video.effect) === "undefined" || _slide.video.effect.length < 2) ? "fadeIn" : _slide.video.effect;
+                const _videoPath = path.join(_path, `/asset/${_slide.video.name}`);
+                await fs.access(_videoPath);
+
+                // Create new video and add it scene
+                const _video = new FFVideo({
+                    path: _videoPath,
+                    width: W,
+                    height: H,
+                    x: W / 2,
+                    y: H / 2,
+                    scale: 1.25
+                });
+                _video.addEffect(_videoEffect, 1, 0);
+                _scene.addChild(_video);
+
+            }
+            catch(error) {
+                console.log(`RenderSlide(): Cannot add video ${_slide.id}`, error);
             };
 
             // Add the slide's content
@@ -386,8 +284,4 @@ async function RenderSlide(projectId = "", slide = [], project = {}) {
 };
 
 
-
-
-
-
-export { findUpdatedSlides, renderSlides, RenderSlide, UpdateSlide };
+export { RenderSlide, UpdateSlide };

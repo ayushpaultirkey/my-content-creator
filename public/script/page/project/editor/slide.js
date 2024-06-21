@@ -51,6 +51,11 @@ export default class Slide extends H12.Component {
                         <Asset args id="ImageAsset"></Asset>
                     </div>
 
+                    <div>
+                        <label class="text-xs font-semibold text-zinc-400">Videos:</label>
+                        <Asset args id="VideoAsset"></Asset>
+                    </div>
+
                     <div class="pt-3">
                         <button class="p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Update }>Update</button>
                     </div>
@@ -99,6 +104,9 @@ export default class Slide extends H12.Component {
             
             await this.child["ImageAsset"].Load(_response.data);
             this.child["ImageAsset"].SetSelected(_slide.image);
+
+            await this.child["VideoAsset"].Load(_response.data, ["video/mp4"]);
+            this.child["VideoAsset"].SetSelected(_slide.image);
 
         }
         catch(error) {

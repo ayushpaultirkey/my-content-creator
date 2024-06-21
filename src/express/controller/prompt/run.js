@@ -1,5 +1,6 @@
 import { UpdateSlide } from "../../service/slide.js";
 
+
 /**
     * 
     * @param {import("express").Request} request 

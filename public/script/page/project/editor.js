@@ -17,15 +17,14 @@ export default class Editor extends H12.Component {
         this.isSlidePreviewPlaying = false;
         this.SlideIndex = 0;
     }
-    async init(args = { project }) {
 
+    async init(args = { project }) {
         if(ProjectIsValid(args.project)) {
             this.project = args.project;
         }
         else {
             alert("Unable to get project");
         };
-
     }
     
     async render() {
@@ -70,11 +69,9 @@ export default class Editor extends H12.Component {
                                 <button class="p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-red-500 hover:bg-red-600 active:bg-red-700 transition-colors">Delete Project</button>
                             </div>
 
-                            <div>
+                            <div class="flex flex-col">
                                 <label class="text-xs font-semibold text-zinc-400">Note:</label>
-                                <div>
-                                    <label class="text-xs text-zinc-400">The deleted project cannot be recovered !</label>
-                                </div>
+                                <label class="text-xs text-zinc-400">The deleted project cannot be recovered, all the assets will be deleted.</label>
                             </div>
 
                         </div>

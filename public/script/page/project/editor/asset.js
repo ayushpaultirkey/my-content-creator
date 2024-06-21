@@ -16,23 +16,24 @@ export default class Asset extends H12.Component {
             </div>
         </>;
     }
-    async Load(asset = [], filter = "image/png") {
+    async Load(asset = [], filter = ["image/png"]) {
 
         this.Set("{p.asset}", "");
 
         for(var i = 0, l = asset.length; i < l; i++) {
-            if(asset[i].type !== filter) {
+            if(!filter.includes(asset[i].type)) {
                 continue;
             };
-            this.Set("{p.asset}++", <><Item args id={ asset[i].name } url={ asset[i].url } name={ asset[i].name } index={ i + 1 }></Item></>);
+            this.Set("{p.asset}++", <><Item args type={ this.args.type } id={ asset[i].name } url={ asset[i].url } name={ asset[i].name } index={ i + 1 }></Item></>);
         };
 
     }
-    SetSelected(id = []) {
+    SetSelected(asset = [{ name, effect }]) {
 
-        this.Selected = id;
+        this.Selected = asset.map(x => x.name);
+
         for(var item in this.child) {
-            this.child[item].SetIndex(id.indexOf(item));
+            this.child[item].SetIndex(this.Selected.indexOf(item));
         };
 
     }
