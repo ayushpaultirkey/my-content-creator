@@ -3,11 +3,16 @@ import open from "open";
 import express from "express";
 import viteExpress from "vite-express";
 import compression from "compression";
+
 import router from "./router.js";
 import { GenerativeInit } from "./service/gemini.js";
+import { InitializeCache } from "./service/cache.js";
 
 //
 export default function init() {
+
+    // Initialize Cache
+    InitializeCache();
 
     // Start generative ai
     GenerativeInit();

@@ -1,10 +1,10 @@
 import path from "path";
 import fs from "fs/promises";
 
-import directory from "../../library/directory.js";
 import { RenderSlide } from "./slide.js";
-import { CreateVoice } from "./asset.js";
 import { GenerativeRun } from "./gemini.js";
+import { CreateVoice, FetchExternalAsset } from "./asset.js";
+import directory from "../../library/directory.js";
 
 
 /**
@@ -185,6 +185,7 @@ async function CreateProject(prompt = "", width = 720, height = 1280) {
         await fs.writeFile(path.join(_projectPath, "/project.json"), JSON.stringify(_project));
 
         // Create voide and render out the slides
+        await FetchExternalAsset(_projectId, _project);
         await CreateVoice(_projectId, _project.property.slides);
         await RenderSlide(_projectId, _project.property.slides, _project);
 

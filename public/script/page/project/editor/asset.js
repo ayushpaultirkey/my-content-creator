@@ -16,15 +16,15 @@ export default class Asset extends H12.Component {
             </div>
         </>;
     }
-    async Load(asset = [], filter = ["image/png"]) {
+    async Load(asset = [], filter = "image") {
 
         this.Set("{p.asset}", "");
 
         for(var i = 0, l = asset.length; i < l; i++) {
-            if(!filter.includes(asset[i].type)) {
+            if(!asset[i].type.includes(filter)) {
                 continue;
             };
-            this.Set("{p.asset}++", <><Item args type={ this.args.type } id={ asset[i].name } url={ asset[i].url } name={ asset[i].name } index={ i + 1 }></Item></>);
+            this.Set("{p.asset}++", <><Item args type={ asset[i].type } id={ asset[i].name } url={ asset[i].url } name={ asset[i].name } index={ i + 1 }></Item></>);
         };
 
     }
@@ -37,7 +37,6 @@ export default class Asset extends H12.Component {
         };
 
     }
-
     OnSelectItem(id) {
 
         const _index = this.Selected.indexOf(id);
@@ -53,5 +52,8 @@ export default class Asset extends H12.Component {
             this.child[item].SetIndex(this.Selected.indexOf(item));
         };
         
+    }
+    GenerateQueryString(name = "asset") {
+        return this.Selected.map((item, index) => `${name}[]=${encodeURIComponent(item)}`).join('&');
     }
 };

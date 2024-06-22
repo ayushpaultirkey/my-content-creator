@@ -207,13 +207,13 @@ async function RenderSlide(projectId = "", slide = [], project = {}) {
             try {
 
                 // Check if the video is valid
-                if(typeof(_slide.video) === "undefined" || typeof (_slide.video.name) === "undefined" || _slide.video.name.length == 0) {
+                if(typeof(_slide.video) === "undefined" || _slide.video.length == 0 || typeof(_slide.video[0].name) === "undefined") {
                     throw new Error("Invalid video or not defined");
                 };
 
                 // Get the transition and the video src
-                const _videoEffect = (typeof(_slide.video.effect) === "undefined" || _slide.video.effect.length < 2) ? "fadeIn" : _slide.video.effect;
-                const _videoPath = path.join(_path, `/asset/${_slide.video.name}`);
+                const _videoEffect = (typeof(_slide.video[0].effect) === "undefined" || _slide.video[0].effect.length < 2) ? "fadeIn" : _slide.video[0].effect;
+                const _videoPath = path.join(_path, `/asset/${_slide.video[0].name}`);
                 await fs.access(_videoPath);
 
                 // Create new video and add it scene

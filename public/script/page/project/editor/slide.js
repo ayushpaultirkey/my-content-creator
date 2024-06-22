@@ -101,12 +101,12 @@ export default class Slide extends H12.Component {
             if(!_response.success) {
                 throw new Error(_response.message);
             };
-            
+
             await this.child["ImageAsset"].Load(_response.data);
             this.child["ImageAsset"].SetSelected(_slide.image);
 
-            await this.child["VideoAsset"].Load(_response.data, ["video/mp4"]);
-            this.child["VideoAsset"].SetSelected(_slide.image);
+            await this.child["VideoAsset"].Load(_response.data, "video");
+            this.child["VideoAsset"].SetSelected(_slide.video);
 
         }
         catch(error) {
@@ -116,15 +116,20 @@ export default class Slide extends H12.Component {
     }
 
     async Update() {
-        
+
         // Call dispather show loader
         Dispatcher.Call("ShowLoader", "AI is updating slide...");
 
         try {
 
+            // Check if the project is valid
+            if(!ProjectIsValid(this.Project)) {
+                throw new Error("Invalid project");
+            };
+
             // Check if the slide's content is not empty
-            const _slideContent = this.element.slideContent.value;
-            if(_slideContent.length < 5) {
+            const _content = this.element.slideContent.value;
+            if(_content.length < 5) {
                 alert("Please enter slide's content");
                 throw new Error("Please enter slide's content");
             };
@@ -134,11 +139,11 @@ export default class Slide extends H12.Component {
             const _slideId = this.Project.property.slides[this.Index].id;
 
             // Get selected images
-            const _image = this.child["ImageAsset"].Selected;
-            const _imageQuery = _image.map((image, index) => `pimage[]=${encodeURIComponent(image)}`).join('&');
+            const _image = this.child["ImageAsset"].GenerateQueryString("pimage");
+            const _video = this.child["VideoAsset"].GenerateQueryString("pvideo");
 
             // Perform the update request
-            const _request = await fetch(`/api/slide/update?pid=${_projectId}&sid=${_slideId}&scontent=${_slideContent}&${_imageQuery}`);
+            const _request = await fetch(`/api/slide/update?pid=${_projectId}&sid=${_slideId}&scontent=${_content}&${_image}&${_video}`);
             const _response = await _request.json();
 
             // Check if the data is updated successfully

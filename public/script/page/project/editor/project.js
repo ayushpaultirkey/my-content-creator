@@ -102,7 +102,7 @@ export default class Project extends H12.Component {
             await this.child["ImageAsset"].Load(_response.data);
             this.child["ImageAsset"].SetSelected(this.Project.property.backgroundImage);
 
-            await this.child["VideoAsset"].Load(_response.data, ["video/mp4"]);
+            await this.child["VideoAsset"].Load(_response.data, "video");
             this.child["VideoAsset"].SetSelected(this.Project.property.backgroundVideo);
 
         }
@@ -187,12 +187,12 @@ export default class Project extends H12.Component {
             // Get project id and the slide's id by the index
             const _projectId = this.Project.id;
 
-            // Get selected images
-            const _image = this.child["ImageAsset"].Selected;
-            const _query = _image.map((image, index) => `pimage[]=${encodeURIComponent(image)}`).join('&');
+            // Get selected images and videos
+            const _image = this.child["ImageAsset"].GenerateQueryString("pimage");
+            const _video = this.child["VideoAsset"].GenerateQueryString("pvideo");
 
             // Perform the update request
-            const _request = await fetch(`/api/project/update?pid=${_projectId}&${_query}`);
+            const _request = await fetch(`/api/project/update?pid=${_projectId}&${_image}&${_video}`);
             const _response = await _request.json();
 
             // Check if the data is updated successfully
@@ -216,12 +216,10 @@ export default class Project extends H12.Component {
 
     OnProjectUpdate(event, project) {
 
-        // Check if the project is valid and load it
+        // Check if the project is valid and reload it
         if(ProjectIsValid(project)) {
-
             this.Project = project;
             this.Load();
-
         };
 
     };

@@ -17,6 +17,7 @@ function GenerativeInit() {
     "response": string,
     "title": string,
     "description": string,
+    "keyword": string,
     "totalTime": int,
     "backgroundImage": [{ name: string, effect: string }],
     "backgroundVideo": [{ name: string, effect: string }],
@@ -34,6 +35,7 @@ function GenerativeInit() {
     "response": this the response for the thing you have been asked, you can write anything here in response for the user so the user can interact with you in a more natural way.
     "title": is the title for the video, keep it precise and accurate.
     "description": the detailed description for the video, use seo to make the description stand out by using emojis, hashtag or other things and easy to understand.
+    "keyword": a single word in lower case to describe the video and it can be used to search related contents.
     "totalTime": the total time of the video based on the time of the slides.
     "backgroundImage": in this there will be array of background images for the video, you cannot set the value for this.
     "backgroundImage."name": this will be the name for the background image file, you cannot set the value for this. If its not provided then do not add the entry to array.
@@ -48,12 +50,12 @@ function GenerativeInit() {
     "slides"."showAt": the time when the slide will be visible.
     "slides"."hideAt": the time when the slide will hide, and next slide will show.
     "slides"."image": the array of slide's image that will be displayed, you cannot set the value for this.
-    "slides"."image"."name": this will be the name for the image file, you cannot set the value for this. If its not provided then do not add the entry to array.
+    "slides"."image"."name": this will be the name for the image file, you cannot set the value for this. If its not provided then do not add the entry to array. The default value will be [{ name: <RandomID>.jpg, effect: "" }] where "RandomID" is any random alpha digits and make it unique.
     "slides"."image"."effect": this will contain the transition effect for the image. If its not provided then leave it blank.
     "slides"."video": the array of slide's video that will be displayed, you cannot set the value for this.
     "slides"."video"."name": this will be the name for the video file, you cannot set the value for this. If its not provided then do not add the entry to array.
     "slides"."video"."effect": this will contain the transition effect for the video. If its not provided then leave it blank.
-    
+
     Note:
     When changing or updating content make sure to update the other slide's time based on approximate time taken to read it.`;
 

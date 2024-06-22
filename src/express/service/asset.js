@@ -1,16 +1,20 @@
+import "dotenv/config";
 import say from "say";
 import path from "path";
 import axios from "axios";
 import multer from "multer";
-import fs from "fs/promises";
+import sharp from "sharp";
+import fs from "fs";
+import fsp from "fs/promises";
 import mime from "mime-types";
 
+import { CacheHit, CachePath, SaveCache, UpdateCache } from "./cache.js";
 import directory from "../../library/directory.js";
 import { GetProjectPath } from "./project.js";
 
 
 /**
- * 
+    * 
 */
 const Uploader = multer({
     storage: multer.diskStorage({
@@ -29,7 +33,7 @@ const Uploader = multer({
           
                 // Create project path
                 const _projectPath = path.resolve(__dirname, `../../public/project/${_projectId}/asset`);
-                await fs.mkdir(_projectPath, { recursive: true });
+                await fsp.mkdir(_projectPath, { recursive: true });
                 
                 callback(null, _projectPath);
 
@@ -74,21 +78,21 @@ async function FetchAsset(projectId = "") {
         const _path = path.join(__dirname, `../../public/project/${projectId}/asset/`);
 
         // Get files
-        const _files = await fs.readdir(_path);
+        const _files = await fsp.readdir(_path);
         const _fileList = [];
 
         // Iterate for each file
         for(const file of _files) {
 
             const _filePath = path.join(_path, file);
-            const _fileStat = await fs.stat(_filePath);
+            const _fileStat = await fsp.stat(_filePath);
       
             if(_fileStat.isFile()) {
 
                 const _mime = mime.lookup(_filePath);
               
                 // Check if the file is an image, video, or audio
-                if(_mime && (_mime.startsWith('image/') || _mime.startsWith('video/') || _mime.startsWith('audio/'))) {
+                if(_mime && (_mime.startsWith("image/") || _mime.startsWith("video/") || _mime.startsWith("audio/"))) {
                     _fileList.push({
                         name: file,
                         type: _mime,
@@ -113,54 +117,232 @@ async function FetchAsset(projectId = "") {
 
 
 /**
-    * Download the image for the slides
-    * @param {string} projectId 
+    * 
+    * @param {*} images 
+    * @param {*} projectId 
     * @param {*} project 
 */
-async function FetchImage(projectId, project = {}) {
+async function CropImage(images = [], projectId, project = []) {
+
+    try {
+
+        let _slide = project.property.slides;
+        let _promise = [];
+
+        // Crop image function
+        const _crop = async(image, index) => {
+            return new Promise(async(resolve, reject) => {
+
+                if(typeof(_slide[index]) !== "undefined" && _slide[index].image.length !== 0) {
+
+                    const inputPath = path.join(CachePath(), image.name);
+                    const outputPath = path.join(GetProjectPath(projectId), `/asset/${_slide[index].image[0].name}`);
+        
+                    await sharp(inputPath)
+                    .resize({
+                        width: (project.config.width * 1),
+                        height: (project.config.height * 1),
+                        fit: "cover"
+                    })
+                    .toFile(outputPath)
+                    .then(resolve)
+                    .catch(reject);
+
+                    console.log(`Asset/CropImage(): Image cropped ${outputPath}`);
+
+                };
+
+            });
+        };
+
+        // All images and crop it
+        for(var i = 0, l = images.length; i < l; i++) {
+            _promise.push(_crop(images[i], i));
+        };
+
+        await Promise.all(_promise);
+
+        console.log("Asset/CropImages(): All images cropped");
+
+    }
+    catch(error) {
+        console.log("Asset/CropImages(): Error cropping images", error);
+        throw error;
+    };
+
+};
+
+
+async function DownloadImage(image = [{ url, name }]) {
 
     // Try and download image
     try {
 
-        // Get project path and update the project json file
-        const _path = GetProjectPath(projectId);
-        const _slides = project.property.slides;
-    
+        // Ensure cache directory exists
+        const _cachePath = CachePath();
+        if(!fs.existsSync(_cachePath)) {
+            fs.mkdirSync(_cachePath, { recursive: true });
+        };
+
         // Promise array for downloading image
         const _promise = [];
     
         // Download image function
         const _download = async(url, filePath) => {
-            const _response = await axios({
-                url: url,
-                responseType: 'stream',
-            });
+
+            const _response = await axios({ url: url, responseType: "stream" });
+
             return new Promise((resolve, reject) => {
-                _response.data.pipe(fs.createWriteStream(filePath)).on("finish", () => resolve()).on("error", error => reject(error));
+
+                const _writer = fs.createWriteStream(filePath);
+            
+                _response.data.pipe(_writer);
+            
+                _writer.on("finish", resolve);
+                _writer.on("error", reject);
+
             });
+            
         };
     
         // Get slides and download image
-        for(var i = 0, l = _slides.length; i < l; i++) {
+        for(var i = 0, l = image.length; i < l; i++) {
     
-            if(typeof(_slides[i].image) === "undefined" || _slides[i].image == null || _slides[i].image.length == 0) {
-                continue;
-            };
-    
-            const _url = `https://picsum.photos/${project.config.width}/${project.config.height}?random=${i}`;
-            const _imagePath = path.join(_path, `/asset/${_slides[i].image[0]}.jpg`);
-            _promise.push(_download(_url, _imagePath));
+            const _imagePath = path.join(_cachePath, `/${image[i].name}`);
+
+            _promise.push(_download(image[i].url, _imagePath));
     
         };
     
         // Wait for all images to download
         await Promise.all(_promise);
-        console.log("DownloadImage(): All images downloaded");
+        console.log("Asset/DownloadImage(): All images downloaded");
 
     }
     catch(error) {
-        console.log("DownloadImage(): General error", error);
+        console.log("Asset/DownloadImage(): General error", error);
         throw error;
+    };
+
+};
+
+
+/**
+    * Download the image for the slides
+    * @param {string} projectId 
+    * @param {*} project 
+*/
+async function FetchExternalAsset(projectId, project = {}) {
+
+    try {
+
+        //
+        if(typeof(project.property) === "undefined" || typeof(project.property.keyword) === "undefined" || project.property.keyword.length == 0) {
+            throw new Error("Invalid project keyword");
+        };
+
+        //
+        const _slide = project.property.slides;
+        const _query = project.property.keyword;
+        const _cache = CacheHit(_query);
+
+        //
+        if(_cache == null) {
+    
+            //
+            console.log("Asset/FetchAsset(): NO CACHE FOUND");
+    
+            //
+            const _response = await axios.get("https://pixabay.com/api/", {
+                params: {
+                    key: process.env.PIXABAY_API,
+                    q: _query,
+                    per_page: _slide.length + 10,
+                },
+            });
+
+            //
+            console.log(`Asset/FetchAsset(): Rate Limit: ${_response.headers["x-ratelimit-limit"]}`);
+            console.log(`Asset/FetchAsset(): Rate Limit Remaining: ${_response.headers["x-ratelimit-reset"]}`);
+            console.log(`Asset/FetchAsset(): Rate Limit Resets in: ${_response.headers["x-ratelimit-remaining"]} seconds`);
+
+            //
+            if(_response.data.hits.length < _slide.length) {
+                console.log("Asset/FetchAsset(): Mismatch slides and default images");
+            };
+
+            //
+            const _image = [];
+            for(var i = 0, len = _slide.length; i < len; i++) {
+
+                if(typeof(_response.data.hits[i]) === "undefined") {
+                    console.log("Asset/FetchAsset(): Invalid response hit at index", i);
+                    break;
+                };
+
+                if(typeof(_slide[i].image) === "undefined" || _slide[i].image.length == 0) {
+                    continue;
+                };
+
+                _image.push({
+                    url: _response.data.hits[i].largeImageURL,
+                    name: `${crypto.randomUUID()}.jpg`
+                });
+
+            };
+
+            console.log(_query, _image)
+
+            // 
+            UpdateCache(_query, _image);
+            console.log("Asset/FetchAsset(): CACHE UPDATED");
+
+            //
+            await SaveCache();
+            console.log("Asset/FetchAsset(): CACHE SAVED");
+
+            //
+            await DownloadImage(_image);
+
+            //
+            await CropImage(_image, projectId, project);
+
+        }
+        else {
+
+            console.log("Asset/FetchAsset(): CACHE FOUND");
+
+            //
+            if(_cache.length < _slide.length) {
+                console.log("Asset/FetchAsset(): Mismatch slides and default images");
+            };
+
+            //
+            const _image = [];
+            for(var i = 0, len = _slide.length; i < len; i++) {
+
+                if(typeof(_cache[i]) === "undefined") {
+                    console.log("Asset/FetchAsset(): Invalid response hit at index", i, " using fallback index 0");
+                    _image.push(_cache[0]);
+                    continue;
+                };
+
+                if(typeof(_slide[i].image) === "undefined" || _slide[i].image.length == 0) {
+                    continue;
+                };
+
+                _image.push(_cache[i]);
+
+            };
+
+            //
+            await CropImage(_image, projectId, project);
+
+        };
+
+    }
+    catch(error) {
+        console.log("Asset/FetchAsset():", error);
     };
 
 }
@@ -217,4 +399,4 @@ async function CreateVoice(projectId = "", slide = []) {
 }
 
 
-export { Uploader, FetchAsset, CreateVoice, FetchImage };
+export { Uploader, FetchAsset, CreateVoice, FetchExternalAsset };
