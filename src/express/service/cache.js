@@ -14,6 +14,16 @@ function CachePath(file = "") {
     return path.join(__dirname, `../../public/cache/${file}`);
 }
 
+async function CacheExist() {
+    try {
+        await fs.access(CachePath("cache.json"));
+        return true;
+    }
+    catch (error) {
+        return false;
+    }
+}
+
 
 /**
     * 
@@ -22,6 +32,14 @@ function CachePath(file = "") {
 async function InitializeCache() {
     
     try {
+
+        // Check if cache.json exists
+        const _cacheExist = await CacheExist();
+
+        // Create empty cache folder if not exists
+        if(!_cacheExist) {
+            await fs.writeFile(CachePath("cache.json"), JSON.stringify({}));
+        };
 
         const _data = await fs.readFile(CachePath("cache.json"), "utf8");
         const _json = JSON.parse(_data);

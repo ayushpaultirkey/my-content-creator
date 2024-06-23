@@ -243,6 +243,7 @@ async function RenderSlide(projectId = "", slide = [], project = {}) {
             _text.addEffect("zoomIn", 1, 0);
             _text.addEffect("fadeOut", 1, _slide.hideAt - _slide.showAt);
             _text.alignCenter();
+            _text.setFont(path.join(__dirname, "../../public/font/static/NotoSans-SemiBold.ttf"));
             _text.setWrap(W / 1.5);
             _scene.addChild(_text);
 

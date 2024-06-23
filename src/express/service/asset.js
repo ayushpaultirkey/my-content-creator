@@ -7,6 +7,7 @@ import sharp from "sharp";
 import fs from "fs";
 import fsp from "fs/promises";
 import mime from "mime-types";
+import { ElevenLabsClient } from "elevenlabs";
 
 import { CacheHit, CachePath, SaveCache, UpdateCache } from "./cache.js";
 import directory from "../../library/directory.js";
@@ -173,6 +174,10 @@ async function CropImage(images = [], projectId, project = []) {
 };
 
 
+/**
+    * 
+    * @param {*} image 
+*/
 async function DownloadImage(image = [{ url, name }]) {
 
     // Try and download image
@@ -321,14 +326,23 @@ async function FetchExternalAsset(projectId, project = {}) {
             const _image = [];
             for(var i = 0, len = _slide.length; i < len; i++) {
 
-                if(typeof(_cache[i]) === "undefined") {
-                    console.log("Asset/FetchAsset(): Invalid response hit at index", i, " using fallback index 0");
-                    _image.push(_cache[0]);
+                // Check if the image is invalid
+                if(typeof(_slide[i].image) === "undefined" || _slide[i].image.length == 0) {
                     continue;
                 };
 
-                if(typeof(_slide[i].image) === "undefined" || _slide[i].image.length == 0) {
+                // If cache is invalid then generate random image
+                if(typeof(_cache[i]) === "undefined") {
+
+                    const _min = Math.ceil(0);
+                    const _max = Math.floor(_cache.length);
+                    const _ind = Math.floor(Math.random() * (_max - _min + 1)) + _min;
+
+                    _image.push(_cache[_ind]);
+
+                    console.log("Asset/FetchAsset(): Invalid cache hit at index", i, " using random index", _ind);
                     continue;
+
                 };
 
                 _image.push(_cache[i]);
@@ -349,45 +363,117 @@ async function FetchExternalAsset(projectId, project = {}) {
 
 
 /**
+    * 
+    * @param {*} projectId 
+*/
+async function VoiceByLocalTTS(projectId = "", slide = []) {
+
+    // Get project path and update the project json file
+    const _path = GetProjectPath(projectId);
+
+    // Function to export spoken audio to a WAV file
+    function _export(content, filePath) {
+        return new Promise((resolve, reject) => {
+            say.export(content, undefined, 1, filePath, (error) => {
+                if(error) {
+                    reject(error);
+                }
+                else {
+                    resolve();
+                };
+            });
+        });
+    };
+
+    // Create audio files for the slides
+    for(var i = 0, l = slide.length; i < l; i++) {
+        // Export spoken audio to a WAV file
+        try {
+            const _filePath = path.join(_path, `/asset/${slide[i].id}.wav`);
+            await _export(slide[i].content, _filePath);
+            console.log(`${slide[i].id} voice created`);
+        }
+        catch(error) {
+            console.log(`VoiceByLocalTTS(): Error creating voice for slide ${slide[i].id}:`, error);
+        };
+    };
+
+};
+
+
+/**
+    * 
+    * @param {*} projectId 
+*/
+async function VoiceByExternalTTS(projectId = "", slide = []) {
+
+    // Get project path and update the project json file
+    const _path = GetProjectPath(projectId);
+
+    // Create client for eleven lab
+    const _client = new ElevenLabsClient({
+        apiKey: process.env.ELEVENLABS_API,
+    });
+
+    // Function to export spoken audio to a WAV file
+    function _export(content, filePath) {
+        return new Promise(async(resolve, reject) => {
+            try {
+
+                const _audio = await _client.generate({
+                    voice: "Rachel",
+                    model_id: "eleven_multilingual_v2",
+                    text: content,
+                });
+
+                const _fileStream = fs.createWriteStream(filePath);
+
+                _audio.pipe(_fileStream);
+
+                _fileStream.on("finish", resolve);
+                _fileStream.on("error", reject);
+
+            }
+            catch(error) {
+                reject(error);
+            };
+        });
+    };
+
+    // Create audio files for the slides
+    for(var i = 0, l = slide.length; i < l; i++) {
+
+        // Export spoken audio to a WAV file
+        try {
+            const _filePath = path.join(_path, `/asset/${slide[i].id}.wav`);
+            await _export(slide[i].content, _filePath);
+            console.log(`${slide[i].id} voice created`);
+        }
+        catch(error) {
+            console.log(`VoiceByExternalTTS(): Error creating voice for slide ${slide[i].id}:`, error);
+        };
+        
+    };
+
+};
+
+
+/**
     * Create voice for the slides
     * @param {string} projectId 
     * @param {[]} slide 
 */
-async function CreateVoice(projectId = "", slide = []) {
+async function CreateVoice(projectId = "", slide = [], useLocalTTS = true) {
 
     // Try and create narration for video
     try {
 
-        // Get project path and update the project json file
-        const _path = GetProjectPath(projectId);
-    
-        // Function to export spoken audio to a WAV file
-        function _export(content, filePath) {
-            return new Promise((resolve, reject) => {
-                say.export(content, undefined, 1, filePath, (error) => {
-                    if(error) {
-                        reject(error);
-                    }
-                    else {
-                        resolve();
-                    };
-                });
-            });
-        };
-    
-        // Create audio files for the slides
-        for(var i = 0, l = slide.length; i < l; i++) {
-    
-            // Export spoken audio to a WAV file
-            try {
-                const _filePath = path.join(_path, `/asset/${slide[i].id}.wav`);
-                await _export(slide[i].content, _filePath);
-                console.log(`${slide[i].id} voice created`);
-            }
-            catch(error) {
-                console.log(`CreateVoice(): Error creating voice for slide ${slide[i].id}:`, error);
-            };
-    
+        // Select service for the TTS
+        if(!useLocalTTS) {
+            VoiceByLocalTTS(projectId, slide);
+        }
+        else {
+            VoiceByExternalTTS(projectId, slide);
         };
 
     }
