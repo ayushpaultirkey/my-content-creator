@@ -1,17 +1,17 @@
 import "dotenv/config";
+import fs from "fs";
 import say from "say";
 import path from "path";
+import sharp from "sharp";
 import axios from "axios";
 import multer from "multer";
-import sharp from "sharp";
-import fs from "fs";
 import fsp from "fs/promises";
 import mime from "mime-types";
 import { ElevenLabsClient } from "elevenlabs";
 
-import { CacheHit, CachePath, SaveCache, UpdateCache } from "./cache.js";
 import directory from "../../library/directory.js";
 import { GetProjectPath } from "./project.js";
+import { CacheHit, CachePath, SaveCache, UpdateCache } from "./cache.js";
 
 
 /**
@@ -231,6 +231,128 @@ async function DownloadImage(image = [{ url, name }]) {
 
 };
 
+/**
+    * 
+    * @param {*} projectId 
+    * @param {*} project 
+*/
+async function FetchExternalImage(projectId, project = {}) {
+
+    //
+    if(typeof(project.property) === "undefined" || typeof(project.property.keyword) === "undefined" || project.property.keyword.length == 0) {
+        throw new Error("Invalid project keyword");
+    };
+
+    // Get values and cache hit
+    const _slide = project.property.slides;
+    const _query = project.property.keyword;
+    const _cache = CacheHit(_query);
+
+    // Check if the cache exists
+    if(_cache == null) {
+
+        //
+        console.log("Asset/FetchExternalImage(): NO CACHE FOUND");
+
+        //
+        const _response = await axios.get("https://pixabay.com/api/", {
+            params: {
+                key: process.env.PIXABAY_API,
+                q: _query,
+                per_page: _slide.length + 10,
+            },
+        });
+
+        //
+        console.log(`Asset/FetchExternalImage(): Rate Limit: ${_response.headers["x-ratelimit-limit"]}`);
+        console.log(`Asset/FetchExternalImage(): Rate Limit Remaining: ${_response.headers["x-ratelimit-reset"]}`);
+        console.log(`Asset/FetchExternalImage(): Rate Limit Resets in: ${_response.headers["x-ratelimit-remaining"]} seconds`);
+
+        //
+        if(_response.data.hits.length < _slide.length) {
+            console.log("Asset/FetchExternalImage(): Mismatch slides and default images");
+        };
+
+        //
+        const _image = [];
+        for(var i = 0, len = _slide.length; i < len; i++) {
+
+            if(typeof(_response.data.hits[i]) === "undefined") {
+                console.log("Asset/FetchExternalImage(): Invalid response hit at index", i);
+                break;
+            };
+
+            if(typeof(_slide[i].image) === "undefined" || _slide[i].image.length == 0) {
+                continue;
+            };
+
+            _image.push({
+                url: _response.data.hits[i].largeImageURL,
+                name: `${crypto.randomUUID()}.jpg`
+            });
+
+        };
+
+        console.log(_query, _image)
+
+        // 
+        UpdateCache(_query, _image);
+        console.log("Asset/FetchExternalImage(): CACHE UPDATED");
+
+        //
+        await SaveCache();
+        console.log("Asset/FetchExternalImage(): CACHE SAVED");
+
+        //
+        await DownloadImage(_image);
+
+        //
+        await CropImage(_image, projectId, project);
+
+    }
+    else {
+
+        console.log("Asset/FetchAsset(): CACHE FOUND");
+
+        //
+        if(_cache.length < _slide.length) {
+            console.log("Asset/FetchAsset(): Mismatch slides and default images");
+        };
+
+        //
+        const _image = [];
+        for(var i = 0, len = _slide.length; i < len; i++) {
+
+            // Check if the image is invalid
+            if(typeof(_slide[i].image) === "undefined" || _slide[i].image.length == 0) {
+                continue;
+            };
+
+            // If cache is invalid then generate random image
+            if(typeof(_cache[i]) === "undefined") {
+
+                const _min = Math.ceil(0);
+                const _max = Math.floor(_cache.length);
+                const _ind = Math.floor(Math.random() * (_max - _min + 1)) + _min;
+
+                _image.push(_cache[_ind]);
+
+                console.log("Asset/FetchAsset(): Invalid cache hit at index", i, " using random index", _ind);
+                continue;
+
+            };
+
+            _image.push(_cache[i]);
+
+        };
+
+        //
+        await CropImage(_image, projectId, project);
+
+    };
+
+};
+
 
 /**
     * Download the image for the slides
@@ -239,124 +361,15 @@ async function DownloadImage(image = [{ url, name }]) {
 */
 async function FetchExternalAsset(projectId, project = {}) {
 
+    // Try and fetch assets
     try {
 
-        //
-        if(typeof(project.property) === "undefined" || typeof(project.property.keyword) === "undefined" || project.property.keyword.length == 0) {
-            throw new Error("Invalid project keyword");
-        };
-
-        //
-        const _slide = project.property.slides;
-        const _query = project.property.keyword;
-        const _cache = CacheHit(_query);
-
-        //
-        if(_cache == null) {
-    
-            //
-            console.log("Asset/FetchAsset(): NO CACHE FOUND");
-    
-            //
-            const _response = await axios.get("https://pixabay.com/api/", {
-                params: {
-                    key: process.env.PIXABAY_API,
-                    q: _query,
-                    per_page: _slide.length + 10,
-                },
-            });
-
-            //
-            console.log(`Asset/FetchAsset(): Rate Limit: ${_response.headers["x-ratelimit-limit"]}`);
-            console.log(`Asset/FetchAsset(): Rate Limit Remaining: ${_response.headers["x-ratelimit-reset"]}`);
-            console.log(`Asset/FetchAsset(): Rate Limit Resets in: ${_response.headers["x-ratelimit-remaining"]} seconds`);
-
-            //
-            if(_response.data.hits.length < _slide.length) {
-                console.log("Asset/FetchAsset(): Mismatch slides and default images");
-            };
-
-            //
-            const _image = [];
-            for(var i = 0, len = _slide.length; i < len; i++) {
-
-                if(typeof(_response.data.hits[i]) === "undefined") {
-                    console.log("Asset/FetchAsset(): Invalid response hit at index", i);
-                    break;
-                };
-
-                if(typeof(_slide[i].image) === "undefined" || _slide[i].image.length == 0) {
-                    continue;
-                };
-
-                _image.push({
-                    url: _response.data.hits[i].largeImageURL,
-                    name: `${crypto.randomUUID()}.jpg`
-                });
-
-            };
-
-            console.log(_query, _image)
-
-            // 
-            UpdateCache(_query, _image);
-            console.log("Asset/FetchAsset(): CACHE UPDATED");
-
-            //
-            await SaveCache();
-            console.log("Asset/FetchAsset(): CACHE SAVED");
-
-            //
-            await DownloadImage(_image);
-
-            //
-            await CropImage(_image, projectId, project);
-
-        }
-        else {
-
-            console.log("Asset/FetchAsset(): CACHE FOUND");
-
-            //
-            if(_cache.length < _slide.length) {
-                console.log("Asset/FetchAsset(): Mismatch slides and default images");
-            };
-
-            //
-            const _image = [];
-            for(var i = 0, len = _slide.length; i < len; i++) {
-
-                // Check if the image is invalid
-                if(typeof(_slide[i].image) === "undefined" || _slide[i].image.length == 0) {
-                    continue;
-                };
-
-                // If cache is invalid then generate random image
-                if(typeof(_cache[i]) === "undefined") {
-
-                    const _min = Math.ceil(0);
-                    const _max = Math.floor(_cache.length);
-                    const _ind = Math.floor(Math.random() * (_max - _min + 1)) + _min;
-
-                    _image.push(_cache[_ind]);
-
-                    console.log("Asset/FetchAsset(): Invalid cache hit at index", i, " using random index", _ind);
-                    continue;
-
-                };
-
-                _image.push(_cache[i]);
-
-            };
-
-            //
-            await CropImage(_image, projectId, project);
-
-        };
+        // Fetch images ad add it to project
+        await FetchExternalImage(projectId, projectId);
 
     }
     catch(error) {
-        console.log("Asset/FetchAsset():", error);
+        console.log("Asset/FetchExternalAsset():", error);
     };
 
 }
@@ -469,11 +482,11 @@ async function CreateVoice(projectId = "", slide = [], useLocalTTS = true) {
     try {
 
         // Select service for the TTS
-        if(!useLocalTTS) {
-            VoiceByLocalTTS(projectId, slide);
+        if(useLocalTTS) {
+            await VoiceByLocalTTS(projectId, slide);
         }
         else {
-            VoiceByExternalTTS(projectId, slide);
+            await VoiceByExternalTTS(projectId, slide);
         };
 
     }
