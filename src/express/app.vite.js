@@ -1,12 +1,17 @@
 import "dotenv/config";
 import open from "open";
+import cors from "cors";
+import path from "path";
 import express from "express";
-import viteExpress from "vite-express";
+import session from "express-session";
+import bodyParser from "body-parser";
 import compression from "compression";
+import viteExpress from "vite-express";
 
 import router from "./router.js";
-import { GenerativeInit } from "./service/gemini.js";
-import { InitializeCache } from "./service/cache.js";
+import { GoogleGeminiInit } from "./service/gemini.js";
+import { InitializeCache } from "../service/cache.js";
+import directory from "#library/directory.js";
 
 //
 export default function init() {
@@ -15,13 +20,31 @@ export default function init() {
     InitializeCache();
 
     // Start generative ai
-    GenerativeInit();
+    GoogleGeminiInit();
 
     // Create express app
     const app = express();
 
+    // Use bodyParser middleware to parse JSON bodies
+    app.use(bodyParser.json());
+
+    // Use CORS middleware
+    app.use(cors());
+
+    // Set session
+    app.use(session({
+        secret: 'APP_SESSION',
+        resave: false,
+        saveUninitialized: true,
+        cookie: { secure: false }
+    }));
+
     // Use response compression
     app.use(compression());
+
+    // Add project path
+    const { __dirname } = directory();
+    app.use("/project", express.static(path.join(__dirname, "../../project/")));
     
     // Serve files
     app.use("/", router);

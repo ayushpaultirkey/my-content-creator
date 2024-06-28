@@ -1,28 +1,31 @@
-import "@style/output.css";
+import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
-import { ProjectIsValid } from "../../../module/project";
-import Asset from "./asset";
+import MyCreator from "@library/mycreator";
+import Asset from "@component/asset";
 
 @Component
-export default class Slide extends H12.Component {
+export default class Slide extends H12 {
+
     constructor() {
         super();
         this.Index = 0;
         this.Project = null;
     }
+
     async init(args = { project }) {
 
         // Check if the project is valid and load it
-        if(ProjectIsValid(args.project)) {
+        if(MyCreator.Project.IsValid(args.project)) {
 
-            // Get project data and load it
+            // Set project and load
             this.Project = args.project;
             this.Load();
 
             // Register on dispatcher event
             Dispatcher.On("OnProjectUpdate", this.OnProjectUpdate.bind(this));
             Dispatcher.On("OnViewportSlideSelected", this.OnViewportSlideSelected.bind(this));
+            Dispatcher.On("OnAssetLoad", this.OnAssetLoad.bind(this));
             
         };
 
@@ -38,14 +41,9 @@ export default class Slide extends H12.Component {
 
                     <div>
                         <label class="text-xs font-semibold text-zinc-400">Content:</label>
-                        <textarea class="block w-full h-24 text-xs font-semibold bg-zinc-600 p-2 rounded-md shadow-md resize-none placeholder:text-zinc-600 text-zinc-200" placeholder="Slide's content" id="slideContent"></textarea>
+                        <textarea class="block w-full h-24 text-xs font-semibold bg-zinc-600 p-2 rounded-md shadow-md resize-none placeholder:text-zinc-600 text-zinc-200" placeholder="Slide's content" id="SlideContent"></textarea>
                     </div>
 
-                    <div>
-                        <label class="text-xs font-semibold text-zinc-400">Background Color:</label>
-                        <input type="color" class="block w-10 h-10 appearance-none border-none bg-transparent" />
-                    </div>
-                    
                     <div>
                         <label class="text-xs font-semibold text-zinc-400">Images:</label>
                         <Asset args id="ImageAsset"></Asset>
@@ -56,8 +54,13 @@ export default class Slide extends H12.Component {
                         <Asset args id="VideoAsset"></Asset>
                     </div>
 
-                    <div class="pt-3">
-                        <button class="p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Update }>Update</button>
+                    <div>
+                        <label class="text-xs font-semibold text-zinc-400 block mb-1">External Asset:</label>
+                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ () => { this.parent.OpenDrive() } }><i class="fa-brands fa-google-drive mr-2 pointer-events-none"></i>Google Drive</button>
+                    </div>
+
+                    <div class="border border-transparent border-t-zinc-700 pt-3">
+                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Update }><i class="fa-solid fa-splotch mr-2 pointer-events-none"></i>Update</button>
                     </div>
 
                     <div>
@@ -81,31 +84,25 @@ export default class Slide extends H12.Component {
         </>;
     }
 
-    async Load() {
+
+    async Load(fetchAsset = true) {
 
         // Check if the project is valid
-        if(!ProjectIsValid(this.Project)) {
+        if(!MyCreator.Project.IsValid(this.Project)) {
             return false;
         };
 
         // Try and load the slide's content
         try {
 
-            let _slide = this.Project.property.slides[this.Index];
+            // Get working slide
+            const _slide = this.Project.property.slides[this.Index];
 
-            this.element.slideContent.value = _slide.content;
+            // Set slid'es content
+            this.element.SlideContent.value = _slide.content;
 
-            const _request = await fetch(`/api/asset/fetch?pid=${this.Project.id}`);
-            const _response = await _request.json();
-
-            if(!_response.success) {
-                throw new Error(_response.message);
-            };
-
-            await this.child["ImageAsset"].Load(_response.data);
+            // Assign selected assets
             this.child["ImageAsset"].SetSelected(_slide.image);
-
-            await this.child["VideoAsset"].Load(_response.data, "video");
             this.child["VideoAsset"].SetSelected(_slide.video);
 
         }
@@ -115,6 +112,26 @@ export default class Slide extends H12.Component {
 
     }
 
+    async OnAssetLoad(event, asset) {
+        
+        // Check if the project is valid
+        if(!MyCreator.Project.IsValid(this.Project)) {
+            return false;
+        };
+
+        // Get working slide
+        let _slide = this.Project.property.slides[this.Index];
+
+        // Update the assets collection
+        await this.child["ImageAsset"].Load(asset);
+        await this.child["VideoAsset"].Load(asset, "video");
+
+        // Assign selected assets
+        this.child["ImageAsset"].SetSelected(_slide.image);
+        this.child["VideoAsset"].SetSelected(_slide.video);
+
+    };
+
     async Update() {
 
         // Call dispather show loader
@@ -123,12 +140,12 @@ export default class Slide extends H12.Component {
         try {
 
             // Check if the project is valid
-            if(!ProjectIsValid(this.Project)) {
+            if(!MyCreator.Project.IsValid(this.Project)) {
                 throw new Error("Invalid project");
             };
 
             // Check if the slide's content is not empty
-            const _content = this.element.slideContent.value;
+            const _content = this.element.SlideContent.value;
             if(_content.length < 5) {
                 alert("Please enter slide's content");
                 throw new Error("Please enter slide's content");
@@ -175,7 +192,7 @@ export default class Slide extends H12.Component {
 
         // Try and set the example text
         try {
-            this.element.slideContent.value = _example[index];
+            this.element.SlideContent.value = _example[index];
         }
         catch(error) {
             console.error(error);
@@ -186,13 +203,13 @@ export default class Slide extends H12.Component {
     OnViewportSlideSelected(event, { id, index }) {
 
         this.Index = index;
-        this.Load(index);
+        this.Load(false);
 
     }
 
     OnProjectUpdate(event, project) {
 
-        if(ProjectIsValid(project)) {
+        if(MyCreator.Project.IsValid(project)) {
             this.Project = project;
             this.Load();
         };

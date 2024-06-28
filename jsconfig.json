@@ -3,6 +3,10 @@
         "paths": {
             "@library/*": ["./public/library/*"],
             "@style/*": ["./public/style/*"],
+            "@component/*": ["./public/script/component/*"],
+            "#serivce/*": [ "./src/serivce/*" ],
+            "#controller/*": [ "./src/express/controller/*" ],
+            "#library/*": [ "./src/library/*" ]
         }
     }
 }

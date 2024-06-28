@@ -1,5 +1,5 @@
 import { Uploader } from "../../service/asset.js";
-import { CreateProject } from "../../service/project.js";
+import { UpdateSlide } from "../../service/slide.js";
 
 
 /**
@@ -7,7 +7,7 @@ import { CreateProject } from "../../service/project.js";
     * @param {import("express").Request} request 
     * @param {import("express").Response} response 
 */
-export default async function Create(request, response) {
+export default async function Gemini(request, response) {
 
     //Create response object
     const _response = { message: "", success: false, data: {} };
@@ -25,14 +25,14 @@ export default async function Create(request, response) {
                 };
 
                 // Get query parameter
-                let _width = request.query.width;
-                let _height = request.query.height;
+                let _projectId = request.query.pid;
                 let _prompt = request.query.prompt;
                 let _file = null;
 
-                // Check video dimension
-                _width = (!_width || _width < 128) ? 720 : _width;
-                _height = (!_height || _height < 128) ? 720 : _height;
+                // Check for prompt and file
+                if(typeof(_projectId) === "undefined") {
+                    throw new Error("Invalid project id");
+                };
 
                 // Check for file
                 if(request.files && request.files.length > 0) {
@@ -45,12 +45,12 @@ export default async function Create(request, response) {
                 };
 
                 // Create project
-                const _project = await CreateProject(_prompt, _file, _width, _height);
+                const _project = await UpdateSlide(_projectId, _prompt, _file);
 
                 // Set the response data
-                _response.message = "Project created";
+                _response.message = "Project updated";
                 _response.success = true;
-                _response.data = _project;
+                _response.data = { id: _projectId, ... _project };
 
             }
             catch (error) {

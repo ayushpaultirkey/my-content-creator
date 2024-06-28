@@ -1,16 +1,19 @@
-import "@style/output.css";
+import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
 
 import Home from "./page/home";
 import Editor from "./page/project/editor";
 import Dashboard from "./page/project/dashboard";
+import ServerEvent from "@library/sse";
 
 @Component
-class App extends H12.Component {
+class App extends H12 {
+
     constructor() {
         super();
     }
+
     async init() {
 
         // Navigate to dashboard
@@ -23,7 +26,11 @@ class App extends H12.Component {
         Dispatcher.On("HideLoader", this.Loader.Hide.bind(this));
         Dispatcher.On("OnNavigate", this.Navigate.To.bind(this));
 
+        // Register server side event
+        ServerEvent.Register("AuthStatus", "/api/google/auth/status");
+
     }
+
     async render() {
         return <>
             <div class="w-full h-full relative">
@@ -39,7 +46,8 @@ class App extends H12.Component {
             </div>
         </>;
     }
-    load() {
+
+    finally() {
         Dispatcher.Call("Loaded");
     }
 
@@ -52,6 +60,7 @@ class App extends H12.Component {
             this.Set("{a.loader}", "hidden");
         }
     }
+
     Navigate = {
         To: (event, args = { target: "DASHBOARD" }) => {
 
@@ -81,4 +90,4 @@ class App extends H12.Component {
 };
 
 //
-H12.Component.Render(App, ".app");
+H12.Render(App, ".app");

@@ -1,10 +1,9 @@
-
-import "./../../style/output.css";
+import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
 
 @Component
-export default class Home extends H12.Component {
+export default class Home extends H12 {
     constructor() {
         super();
     }

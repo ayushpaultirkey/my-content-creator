@@ -2,8 +2,8 @@ import path from "path";
 import fs from "fs/promises";
 
 import { RenderSlide } from "./slide.js";
-import { GenerativeRun } from "./gemini.js";
-import { CreateVoice, FetchExternalAsset } from "./asset.js";
+import { GeminiPrompt, GeminiPromptFile, GenerativeRun } from "./gemini.js";
+import { CreateVoiceAsset, FetchExternalAsset } from "./asset.js";
 import directory from "../../library/directory.js";
 
 
@@ -18,7 +18,7 @@ function GetProjectPath(projectId = "") {
     const { __dirname } = directory();
 
     // Get project path
-    return path.join(__dirname, `../../public/project/${projectId}/`);
+    return path.join(__dirname, `../../project/${projectId}/`);
 
 };
 
@@ -147,13 +147,18 @@ async function DoesProjectExist(projectId = "") {
 /**
     * 
     * @param {string} projectId 
+    * @param {*} file 
     * @param {string} prompt 
     * @param {number} width 
     * @param {number} height 
     * @returns 
 */
-async function CreateProject(prompt = "", width = 720, height = 1280) {
+async function CreateProject(prompt = "", file = null, width = 720, height = 1280) {
 
+    // Log
+    console.log("Service/Project/CreateProject(): Project creation started");
+
+    // Tryand create project
     try {
 
         // Generate random id
@@ -163,18 +168,24 @@ async function CreateProject(prompt = "", width = 720, height = 1280) {
         if(await DoesProjectExist(_projectId)) {
             throw new Error("Project already exists");
         };
+        
+        // Build cat history and check for file
+        let _history = [];
+        if(file !== null) {
+            console.log("Service/Project/CreateProject(): File found");
+            await GeminiPromptFile(file, _history);
+        };
 
-        // Generative run project prompt
-        const _answer = await GenerativeRun(prompt);
+        // Start prompt
+        console.log("Service/Project/CreateProject(): Prompt started");
+        const _answer = await GeminiPrompt(prompt, _history);
         const _project = {
             config: {
                 width: width * 1,
                 height: height * 1
             },
             property: _answer.response,
-            session: {
-                context: _answer.context
-            }
+            history: _history
         };
 
         // Create new project folder and json file
@@ -186,15 +197,18 @@ async function CreateProject(prompt = "", width = 720, height = 1280) {
 
         // Create voide and render out the slides
         await FetchExternalAsset(_projectId, _project);
-        await CreateVoice(_projectId, _project.property.slides);
+        await CreateVoiceAsset(_projectId, _project.property.slides);
         await RenderSlide(_projectId, _project.property.slides, _project);
 
-        // Return newly created project
+        // Log
+        console.log("Service/Project/CreateProject(): Project created", _projectId);
+
+        // Return project data
         return { ... _project, id: _projectId };
 
     }
     catch(error) {
-        console.log("CreateProject():", error);
+        console.log("Service/Project/CreateProject():", error);
         throw error;
     };
 

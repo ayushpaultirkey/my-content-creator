@@ -1,9 +1,9 @@
-import "@style/output.css";
+import "@style/main.css";
 import H12 from "@library/h12";
 import Item from "./asset/item";
 
 @Component
-export default class Asset extends H12.Component {
+export default class Asset extends H12 {
     constructor() {
         super();
         this.Selected = [];

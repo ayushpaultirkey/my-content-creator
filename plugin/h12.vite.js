@@ -1,10 +1,11 @@
-import Transform from "./transform";
+import Transform from "./h12.transform";
 
+// Match for the .js files
 const match = /\.(js)$/;
 
-export default function H12VitePlugin() {
+export default function h12Vite() {
     return {
-        name: "H12VitePlugin",
+        name: "h12VitePlugin",
         transform(src, id) {
             if(match.test(id)) {
                 return {

@@ -1,10 +1,12 @@
-import "@style/output.css";
+import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
-import { ProjectIsValid } from "../../../module/project";
+import MyCreator from "@library/mycreator";
+import Attachment from "@component/attachment";
 
 @Component
-export default class Prompt extends H12.Component {
+export default class Prompt extends H12 {
+
     constructor() {
         super();
         this.Project = null;
@@ -12,9 +14,14 @@ export default class Prompt extends H12.Component {
 
     async init(args = { project }) {
 
-        // Check if the project is valid and load it
-        if(ProjectIsValid(args.project)) {
+        // Set default value
+        this.Set("{c.fname}", "");
+        this.Set("{c.fvisible}", "hidden");
 
+        // Check if the project is valid and load it
+        if(MyCreator.Project.IsValid(args.project)) {
+
+            // Set project and load
             this.Project = args.project;
             this.Load();
 
@@ -27,7 +34,7 @@ export default class Prompt extends H12.Component {
 
     async render() {
         return <>
-            <div class="w-full h-full overflow-hidden" id="projectTPrompt">
+            <div class="w-full h-full overflow-hidden">
                 <div class="w-full h-full p-4 px-5 flex flex-col space-y-3 overflow-auto">
 
                     <div class="border border-transparent border-b-zinc-700 pb-2">
@@ -38,9 +45,13 @@ export default class Prompt extends H12.Component {
                         <div class="h-full space-y-2 pb-2 flex flex-col overflow-auto">
                             {e.message}
                         </div>
-                        <div class="bg-zinc-400 flex rounded-lg overflow-hidden">
-                            <input id="promptBox" type="text" class="text-xs font-semibold bg-transparent placeholder:text-zinc-600 w-full p-3 resize-none" placeholder="Ask anything..." />
-                            <button class="text-xs font-semibold bg-transparent p-3 hover:bg-zinc-500 active:bg-zinc-600" onclick={ this.Update }>Ask</button>
+                        <div>
+                            <Attachment args id="Uploader"></Attachment>
+                            <div class="bg-zinc-400 flex rounded-lg overflow-hidden">
+                                <button class="text-xs font-semibold bg-transparent p-3 hover:bg-zinc-500 active:bg-zinc-600 fa fa-paperclip" onclick={ () => { this.child["Uploader"].Open(); } }></button>
+                                <input id="PromptBox" type="text" class="text-xs font-semibold bg-transparent placeholder:text-zinc-600 w-full p-3 resize-none" placeholder="Ask anything..." />
+                                <button class="text-xs font-semibold bg-transparent p-3 hover:bg-zinc-500 active:bg-zinc-600" onclick={ this.Update }>Ask</button>
+                            </div>
                         </div>
                     </div>
 
@@ -52,7 +63,7 @@ export default class Prompt extends H12.Component {
     async Load() {
 
         // Check if the project is valid
-        if(!ProjectIsValid(this.Project)) {
+        if(!MyCreator.Project.IsValid(this.Project)) {
             return false;
         };
 
@@ -63,44 +74,62 @@ export default class Prompt extends H12.Component {
             this.Set("{e.message}", "");
     
             // Get message array from the project
-            const _context = this.Project.session.context;
+            const _history = this.Project.history;
 
             // Iterate over all project messages
-            for(var i = 0, l = _context.length; i < l; i++) {
-    
-                //
-                let _messageA = _context[i][0];
-                let _messageB = _context[i][1]
-                let _messageBO = "";
+            for(var i = 0, len = _history.length; i < len; i++) {
 
-                const _regex = /```json(.*)```/gs;
-                const _match = _regex.exec(_messageB);
-                if(_match) {
-                    _messageBO = JSON.parse(_match[1].trim());
+                // Check type of message
+                let _part = _history[i].parts[0];
+                let _text = "";
+                let _icon = "";
+                let _visible = "hidden";
+                try {
+                    if(_history[i].role === "user") {
+                        if(typeof(_part.fileData) === "undefined") {
+                            _text = _part.text;
+                        }
+                        else {
+                            const _mime = _part.fileData.mimeType;
+                            if(_mime.includes("image")) {
+                                _text = "Image File";
+                                _icon = "fa-image";
+                            }
+                            else if(_mime.includes("video")) {
+                                _text = "Video File";
+                                _icon = "fa-video";
+                            }
+                            else if(_mime.includes("audio")) {
+                                _text = "Audio File";
+                                _icon = "fa-volume-high";
+                            }
+                            else {
+                                _text = "Unknown File";
+                                _icon = "fa-file";
+                            };
+                            _visible = "";
+                        };
+                    }
+                    else {
+                        let _json = JSON.parse(_part.text);
+                        _text = _json.response
+                    };
                 }
-                else {
-                    throw new Error("Invalid AI response");
+                catch(error) {
+                    console.error("Editor/Prompt/Load():", error);
+                    _text = "<json parse error>";
                 };
 
-                // Create a template for the message bubble
-                const _chatA = <>
-                    <div class="flex justify-end">
-                        <div class={ `w-2/3 bg-zinc-500 text-xs font-semibold p-2 rounded-md rounded-br-none shadow-md` }>
-                            <label>{ ~_messageA }</label>
+                // Add chat bubble
+                const _chat = <>
+                    <div class={ `flex ${(_history[i].role == "user") ? "justify-end" : ""}` }>
+                        <div class={ `w-2/3 bg-zinc-500 text-xs font-semibold p-2 rounded-md shadow-md` }>
+                            <i class={ `fa ${_icon} ${_visible} mr-1` }></i>
+                            <label>{ _text }</label>
                         </div>
                     </div>
                 </>;
-                const _chatB = <>
-                    <div>
-                        <div class={ `w-2/3 bg-zinc-500 text-xs font-semibold p-2 rounded-md rounded-bl-none shadow-md` }>
-                            <label>{ ~_messageBO.response }</label>
-                        </div>
-                    </div>
-                </>;
-    
-                // Add the template at the end
-                this.Set("{e.message}++", _chatA);
-                this.Set("{e.message}++", _chatB);
+                this.Set("{e.message}++", _chat);
     
             };
         }
@@ -113,7 +142,7 @@ export default class Prompt extends H12.Component {
     async Update() {
 
         // Check if the project is valid
-        if(!ProjectIsValid(this.Project)) {
+        if(!MyCreator.Project.IsValid(this.Project)) {
             return false;
         };
         
@@ -124,26 +153,41 @@ export default class Prompt extends H12.Component {
 
             // Get project id and the slide's id by the index
             const _projectId = this.Project.id;
-            const _prompt = this.element.promptBox.value;
+            const _prompt = this.element.PromptBox.value;
+            const _file = this.child["Uploader"].File;
 
-            // Check prompt text
-            if(_prompt.length < 5) {
-                alert("Enter prompt !");
-                throw new Error("Enter prompt");
+            // Check for project description and file
+            if(_prompt.length < 5 && _file == null) {
+                alert("Please enter the project description or attach file");
+                throw new Error("Project description or attachment is required");
             };
 
-            // Perform the update request
-            const _request = await fetch(`/api/prompt/run?pid=${_projectId}&prompt=${_prompt}`);
+            // Prepare data
+            const _url = `/api/google/gemini?pid=${_projectId}&prompt=${_prompt}`;
+            const _form = new FormData();
+            _form.append("files", _file);
+
+            // Send request
+            const _request = await fetch(_url, { method: "POST", body: _form });
             const _response = await _request.json();
 
-            // Check if the data is updated successfully
+            // Check for the error
             if(!_response.success) {
-                alert(_response.message);
                 throw new Error(_response.message);
             };
 
-            // Update project data
-            Dispatcher.Call("OnProjectUpdate", _response.data);
+            // // Perform the update request
+            // const _request = await fetch(`/api/prompt/run?pid=${_projectId}&prompt=${_prompt}`);
+            // const _response = await _request.json();
+
+            // // Check if the data is updated successfully
+            // if(!_response.success) {
+            //     alert(_response.message);
+            //     throw new Error(_response.message);
+            // };
+
+            // // Update project data
+            // Dispatcher.Call("OnProjectUpdate", _response.data);
 
         }
         catch(error) {
@@ -158,7 +202,7 @@ export default class Prompt extends H12.Component {
     OnProjectUpdate(event, project) {
 
         // Check if the project is valid and load it
-        if(ProjectIsValid(project)) {
+        if(MyCreator.Project.IsValid(project)) {
 
             this.Project = project;
             this.Load();

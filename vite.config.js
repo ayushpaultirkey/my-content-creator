@@ -1,17 +1,38 @@
 import { join } from "path";
 import { defineConfig } from "vite";
 import { fileURLToPath, URL } from "url";
-import H12VitePlugin from "./plugin/vite";
+
+import tailwindcss from "tailwindcss";
+import autoprefixer from "autoprefixer";
+
+import h12VitePlugin from "./plugin/h12.vite";
 
 export default defineConfig({
     root: join(__dirname, "/public"),
+    build: {
+        outDir: "../dist"
+    },
+    optimizeDeps: {
+        entries: [
+            'public/script/app.js',
+        ]
+    },
     plugins: [
-        H12VitePlugin()
+        h12VitePlugin()
     ],
     resolve: {
         alias: [
+            { find: "@component", replacement: fileURLToPath(new URL("./public/script/component", import.meta.url)) },
             { find: "@library", replacement: fileURLToPath(new URL("./public/library", import.meta.url)) },
             { find: "@style", replacement: fileURLToPath(new URL("./public/style", import.meta.url)) }
         ]
-    }
+    },
+    css: {
+        postcss: {
+            plugins: [
+                tailwindcss(),
+                autoprefixer()
+            ],
+        },
+    },
 })

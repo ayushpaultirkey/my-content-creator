@@ -5,8 +5,8 @@ import { FFScene, FFText, FFCreator, FFAlbum, FFVideo } from "ffcreator";
 import wait from "./wait.js";
 import directory from "../../library/directory.js";
 
-import { CreateVoice } from "./asset.js";
-import { GenerativeRun } from "./gemini.js";
+import { CreateVoiceAsset } from "./asset.js";
+import { GeminiPrompt, GeminiPromptFile, GenerativeRun } from "./gemini.js";
 import { GetProjectPath, ReadProject, SaveProject } from "./project.js";
 
 
@@ -59,31 +59,37 @@ function FindUpdatedSlide(originalSlides = [], newSlides = []) {
     * @param {*} prompt 
     * @returns 
 */
-async function UpdateSlide(projectId = "", prompt = "", callback) {
+async function UpdateSlide(projectId = "", prompt = "", file = null) {
+
 
     try {
-        
+
         // Get project data
         const _project = await ReadProject(projectId);
-        
+        const _history = _project.history;
+
+        // Check for file
+        if(file !== null) {
+            console.log("Service/Slide/UpdateSlide(): File found");
+            await GeminiPromptFile(file, _history);
+        };
+
         // Generative run
-        const _answer = await GenerativeRun(prompt, _project.session.context);
+        const _answer = await GeminiPrompt(prompt, _history);
 
         // Get updated slides
         const _slide = FindUpdatedSlide(_project.property.slides, _answer.response.slides);
         const _slideUpdated = _slide.updated.concat(_slide.added);
 
         // Create audio and render the slides
-        await CreateVoice(projectId, _slideUpdated);
+        await CreateVoiceAsset(projectId, _slideUpdated);
         await RenderSlide(projectId, _slideUpdated, _project);
 
         // Create updated project
         const _projectUpdated = {
             "config": { ... _project.config },
             "property": { ... _answer.response },
-            "session": {
-                "context": _answer.context
-            }
+            "history": _history
         };
 
         // Save project file
@@ -94,9 +100,46 @@ async function UpdateSlide(projectId = "", prompt = "", callback) {
 
     }
     catch(error) {
-        console.log("UpdateSlide():", error);
+        console.log("Service/Slide/UpdateSlide():", error);
         throw error;
     }
+
+    // try {
+        
+    //     // Get project data
+    //     const _project = await ReadProject(projectId);
+        
+    //     // Generative run
+    //     const _answer = await GenerativeRun(prompt, _project.session.context);
+
+    //     // Get updated slides
+    //     const _slide = FindUpdatedSlide(_project.property.slides, _answer.response.slides);
+    //     const _slideUpdated = _slide.updated.concat(_slide.added);
+
+    //     // Create audio and render the slides
+    //     await CreateVoiceAsset(projectId, _slideUpdated);
+    //     await RenderSlide(projectId, _slideUpdated, _project);
+
+    //     // Create updated project
+    //     const _projectUpdated = {
+    //         "config": { ... _project.config },
+    //         "property": { ... _answer.response },
+    //         "session": {
+    //             "context": _answer.context
+    //         }
+    //     };
+
+    //     // Save project file
+    //     await SaveProject(projectId, _projectUpdated);
+
+    //     // Return new project
+    //     return _projectUpdated;
+
+    // }
+    // catch(error) {
+    //     console.log("UpdateSlide():", error);
+    //     throw error;
+    // }
 
 };
 
@@ -126,8 +169,8 @@ async function RenderSlide(projectId = "", slide = [], project = {}) {
 
         // Set video dimension
         const S = 1;
-        const W = 720 / S;
-        const H = 1280 / S;
+        const W = project.config.width * 1;
+        const H = project.config.height * 1;
 
         // Render for all slides into separate files
         let _index = 0;

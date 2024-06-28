@@ -1,8 +1,9 @@
 import path from "path";
 import fs from "fs/promises";
-import directory from "./../../library/directory.js"
+import directory from "../library/directory.js"
 
 let CACHE = {};
+
 
 /**
     * 
@@ -11,12 +12,17 @@ let CACHE = {};
 */
 function CachePath(file = "") {
     const { __dirname } = directory();
-    return path.join(__dirname, `../../public/cache/${file}`);
-}
+    return path.join(__dirname, `../../project/.cache/${file}`);
+};
 
+
+/**
+    * 
+    * @returns 
+*/
 async function CacheExist() {
     try {
-        await fs.access(CachePath("cache.json"));
+        await fs.access(CachePath(".reference.json"));
         return true;
     }
     catch (error) {
@@ -36,16 +42,19 @@ async function InitializeCache() {
         // Check if cache.json exists
         const _cacheExist = await CacheExist();
 
-        // Create empty cache folder if not exists
+        // Create empty cache if not exists
         if(!_cacheExist) {
-            await fs.writeFile(CachePath("cache.json"), JSON.stringify({}));
+            await fs.writeFile(CachePath(".reference.json"), JSON.stringify({ image: {}, video: {}, audio: {} }));
         };
 
-        const _data = await fs.readFile(CachePath("cache.json"), "utf8");
+        // Read cache fil
+        const _data = await fs.readFile(CachePath(".reference.json"), "utf8");
         const _json = JSON.parse(_data);
 
+        // Store json data
         CACHE = _json;
 
+        //
         return true;
 
     }
@@ -60,10 +69,16 @@ async function InitializeCache() {
 /**
     * 
     * @param {*} query 
+    * @param {"image" | "video" | "audio"} type 
     * @param {*} data 
 */
-function UpdateCache(query = "", data = []) {
-    CACHE[query] = data;
+function UpdateCache(query = "", type = "", data = []) {
+    if(typeof(CACHE[type][query]) === "undefined") {
+        CACHE[type][query] = data;
+    }
+    else {
+        CACHE[type][query].push( ... data);
+    }
 }
 
 
@@ -79,11 +94,12 @@ function ReadCache() {
 /**
     * 
     * @param {*} query 
+    * @param {"image" | "video" | "audio"} type 
     * @returns {[{url, name}]}
 */
-function CacheHit(query = "") {
-    if(typeof(CACHE[query]) !== "undefined") {
-        return CACHE[query];
+function CacheHit(query = "", type = "") {
+    if(typeof(CACHE[type][query]) !== "undefined") {
+        return CACHE[type][query];
     }
     else {
         return null;
@@ -97,7 +113,7 @@ function CacheHit(query = "") {
 */
 async function SaveCache() {
     try {
-        await fs.writeFile(CachePath("cache.json"), JSON.stringify(CACHE));
+        await fs.writeFile(CachePath(".reference.json"), JSON.stringify(CACHE));
         return true;
     }
     catch(error) {

@@ -11,8 +11,7 @@ import { ElevenLabsClient } from "elevenlabs";
 
 import directory from "../../library/directory.js";
 import { GetProjectPath } from "./project.js";
-import { CacheHit, CachePath, SaveCache, UpdateCache } from "./cache.js";
-
+import { CacheHit, CachePath, SaveCache, UpdateCache } from "../../service/cache.js";
 
 /**
     * 
@@ -23,20 +22,14 @@ const Uploader = multer({
 
             try {
 
-                // Get project is from query string
-                const _projectId = request.query.pid;
+                // Get directory
                 const { __dirname } = directory();
 
-                // Check if the project id is valid
-                if(!_projectId) {
-                    return callback(new Error("Project ID is required"));
-                };
-          
-                // Create project path
-                const _projectPath = path.resolve(__dirname, `../../public/project/${_projectId}/asset`);
-                await fsp.mkdir(_projectPath, { recursive: true });
+                // Set upload path
+                const _path = path.join(path.join(__dirname, `../../project/.upload/`));
+                await fsp.mkdir(_path, { recursive: true });
                 
-                callback(null, _projectPath);
+                callback(null, _path);
 
             }
             catch(error) {
@@ -52,11 +45,11 @@ const Uploader = multer({
     }),
     fileFilter: (request, file, callback) => {
 
-        if(file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) {
+        if(file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/") || file.mimetype.startsWith("audio/")) {
             callback(null, true);
         }
         else {
-            callback(new Error("Only images and video are allowed!"), false);
+            callback(new Error("Only images, video, audio are allowed!"), false);
         };
 
     }
@@ -72,20 +65,17 @@ async function FetchAsset(projectId = "") {
 
     try {
         
-        // Get current directory path
-        const { __dirname } = directory();
-
         // Get project path and read the project json file
-        const _path = path.join(__dirname, `../../public/project/${projectId}/asset/`);
+        const _projectPath = path.join(GetProjectPath(projectId), "/asset/")
 
         // Get files
-        const _files = await fsp.readdir(_path);
+        const _files = await fsp.readdir(_projectPath);
         const _fileList = [];
 
         // Iterate for each file
         for(const file of _files) {
 
-            const _filePath = path.join(_path, file);
+            const _filePath = path.join(_projectPath, file);
             const _fileStat = await fsp.stat(_filePath);
       
             if(_fileStat.isFile()) {
@@ -123,7 +113,7 @@ async function FetchAsset(projectId = "") {
     * @param {*} projectId 
     * @param {*} project 
 */
-async function CropImage(images = [], projectId, project = []) {
+async function CropImage(images = [], projectId, project = {}) {
 
     try {
 
@@ -246,13 +236,13 @@ async function FetchExternalImage(projectId, project = {}) {
     // Get values and cache hit
     const _slide = project.property.slides;
     const _query = project.property.keyword;
-    const _cache = CacheHit(_query);
+    const _cache = CacheHit(_query, "image");
 
     // Check if the cache exists
     if(_cache == null) {
 
         //
-        console.log("Asset/FetchExternalImage(): NO CACHE FOUND");
+        console.log("Service/Asset/FetchExternalImage(): NO CACHE FOUND");
 
         //
         const _response = await axios.get("https://pixabay.com/api/", {
@@ -264,13 +254,13 @@ async function FetchExternalImage(projectId, project = {}) {
         });
 
         //
-        console.log(`Asset/FetchExternalImage(): Rate Limit: ${_response.headers["x-ratelimit-limit"]}`);
-        console.log(`Asset/FetchExternalImage(): Rate Limit Remaining: ${_response.headers["x-ratelimit-reset"]}`);
-        console.log(`Asset/FetchExternalImage(): Rate Limit Resets in: ${_response.headers["x-ratelimit-remaining"]} seconds`);
+        console.log(`Service/Asset/FetchExternalImage(): Rate Limit: ${_response.headers["x-ratelimit-limit"]}`);
+        console.log(`Service/Asset/FetchExternalImage(): Rate Limit Remaining: ${_response.headers["x-ratelimit-reset"]}`);
+        console.log(`Service/Asset/FetchExternalImage(): Rate Limit Resets in: ${_response.headers["x-ratelimit-remaining"]} seconds`);
 
         //
         if(_response.data.hits.length < _slide.length) {
-            console.log("Asset/FetchExternalImage(): Mismatch slides and default images");
+            console.log("Service/Asset/FetchExternalImage(): Mismatch slides and default images");
         };
 
         //
@@ -278,7 +268,7 @@ async function FetchExternalImage(projectId, project = {}) {
         for(var i = 0, len = _slide.length; i < len; i++) {
 
             if(typeof(_response.data.hits[i]) === "undefined") {
-                console.log("Asset/FetchExternalImage(): Invalid response hit at index", i);
+                console.log("Service/Asset/FetchExternalImage(): Invalid response hit at index", i);
                 break;
             };
 
@@ -296,12 +286,12 @@ async function FetchExternalImage(projectId, project = {}) {
         console.log(_query, _image)
 
         // 
-        UpdateCache(_query, _image);
-        console.log("Asset/FetchExternalImage(): CACHE UPDATED");
+        UpdateCache(_query, "image", _image);
+        console.log("Service/Asset/FetchExternalImage(): CACHE UPDATED");
 
         //
         await SaveCache();
-        console.log("Asset/FetchExternalImage(): CACHE SAVED");
+        console.log("Service/Asset/FetchExternalImage(): CACHE SAVED");
 
         //
         await DownloadImage(_image);
@@ -312,11 +302,11 @@ async function FetchExternalImage(projectId, project = {}) {
     }
     else {
 
-        console.log("Asset/FetchAsset(): CACHE FOUND");
+        console.log("Service/Asset/FetchAsset(): CACHE FOUND");
 
         //
         if(_cache.length < _slide.length) {
-            console.log("Asset/FetchAsset(): Mismatch slides and default images");
+            console.log("Service/Asset/FetchAsset(): Mismatch slides and default images");
         };
 
         //
@@ -337,7 +327,7 @@ async function FetchExternalImage(projectId, project = {}) {
 
                 _image.push(_cache[_ind]);
 
-                console.log("Asset/FetchAsset(): Invalid cache hit at index", i, " using random index", _ind);
+                console.log("Service/Asset/FetchAsset(): Invalid cache hit at index", i, " using random index", _ind);
                 continue;
 
             };
@@ -365,7 +355,7 @@ async function FetchExternalAsset(projectId, project = {}) {
     try {
 
         // Fetch images ad add it to project
-        await FetchExternalImage(projectId, projectId);
+        await FetchExternalImage(projectId, project);
 
     }
     catch(error) {
@@ -476,7 +466,7 @@ async function VoiceByExternalTTS(projectId = "", slide = []) {
     * @param {string} projectId 
     * @param {[]} slide 
 */
-async function CreateVoice(projectId = "", slide = [], useLocalTTS = true) {
+async function CreateVoiceAsset(projectId = "", slide = [], useLocalTTS = true) {
 
     // Try and create narration for video
     try {
@@ -498,4 +488,4 @@ async function CreateVoice(projectId = "", slide = [], useLocalTTS = true) {
 }
 
 
-export { Uploader, FetchAsset, CreateVoice, FetchExternalAsset };
+export { Uploader, FetchAsset, CreateVoiceAsset, FetchExternalAsset };

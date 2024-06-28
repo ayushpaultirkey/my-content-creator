@@ -3,7 +3,7 @@ import sharp from "sharp";
 import fs from "fs/promises";
 
 import { Uploader } from "../../service/asset.js";
-import { ReadProject } from "../../service/project.js";
+import { GetProjectPath, ReadProject } from "../../service/project.js";
 
 /**
     * Validates project IDs from request query
@@ -44,12 +44,14 @@ export default async function Upload(request, response) {
                 // Process files here, e.g., resize images using sharp
                 await Promise.all(request.files.map(async (file) => {
 
+                    // Get the uploaded file path
+                    const _path = file.path;
+                    const _extension = path.extname(_path);
+                    const _destination = path.join(GetProjectPath(_projectId), `/asset/${crypto.randomUUID()}${_extension}`);
+
                     // Crop all images to match video dimension
                     if(file.mimetype.startsWith("image/")) {
 
-                        // Get the uploaded file path
-                        const _path = file.path;
-    
                         // Resize image to width and height according to video dimension
                         await sharp(_path)
                         .resize({
@@ -57,17 +59,20 @@ export default async function Upload(request, response) {
                             height: (_project.config.height * 1),
                             fit: 'cover'
                         })
-                        .toFile(_path.replace(path.extname(_path), 'P' + path.extname(_path)));
+                        .toFile(_destination);
     
-                        // Remove the previous uploaded file
-                        await fs.unlink(_path);
+                    }
+                    else {
+
+                        // Copy file to project folder
+                        fs.copyFile(_path, _destination);
 
                     };
 
                 }));
 
                 // Set the response data
-                _response.message = `Files uploaded successfully in ${_project.title}`;
+                _response.message = "Files uploaded successfully";
                 _response.success = true;
 
             }
