@@ -1,4 +1,5 @@
-import { GetAuthEvent, GetAuthToken } from "../../../../service/google.js";
+import Google from "../../../../service/google.js";
+
 
 /**
     * 
@@ -11,7 +12,7 @@ export default async function AuthStatus(request, response) {
     try {
 
         //
-        const _authEvent = GetAuthEvent();
+        const _authEvent = Google.GetAuthEvent();
 
         //
         response.setHeader("Content-Type", "text/event-stream");
@@ -38,7 +39,7 @@ export default async function AuthStatus(request, response) {
         });
 
         //
-        _listener({ success: ((GetAuthToken(request) == null) ? false : true) });
+        _listener({ success: ((Google.GetAuthToken(request) == null) ? false : true) });
 
     }
     catch(error) {

@@ -120,4 +120,4 @@ function OAuth2Callback(code = "") {
 };
 
 
-export { OAuth2Client, OAuth2Callback, GetAuthEvent, GetAuthToken, SetAuthToken, HasAuthToken }
+export default { OAuth2Client, OAuth2Callback, GetAuthEvent, GetAuthToken, SetAuthToken, HasAuthToken }

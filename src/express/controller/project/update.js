@@ -1,4 +1,4 @@
-import { UpdateProject } from "../../service/project.js";
+import Project from "../../../service/project.js";
 
 
 /**
@@ -35,7 +35,7 @@ export default async function Update(request, response) {
         };
 
         // Update slide by using the prompt
-        const _project = await UpdateProject(_projectId, `Override the background image to [${_projectImage}].`);
+        const _project = await Project.Update(_projectId, `Override the background image to [${_projectImage}].`);
 
         // Update response body
         _response.success = true;

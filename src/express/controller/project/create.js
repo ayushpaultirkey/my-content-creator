@@ -1,6 +1,5 @@
-import { Uploader } from "../../service/asset.js";
-import { CreateProject } from "../../service/project.js";
-
+import Asset from "../../../service/asset.js";
+import Project from "../../../service/project.js";
 
 /**
     * 
@@ -16,7 +15,7 @@ export default async function Create(request, response) {
     try {
 
         // Use multer to handle file uploads
-        Uploader(request, response, async(error) => {
+        Asset.Uploader(request, response, async(error) => {
             try {
 
                 // An error occurred when uploading.
@@ -28,16 +27,11 @@ export default async function Create(request, response) {
                 let _width = request.query.width;
                 let _height = request.query.height;
                 let _prompt = request.query.prompt;
-                let _file = null;
+                let _file = (request.files && request.files.length > 0) ? request.files[0] : null;
 
                 // Check video dimension
                 _width = (!_width || _width < 128) ? 720 : _width;
                 _height = (!_height || _height < 128) ? 720 : _height;
-
-                // Check for file
-                if(request.files && request.files.length > 0) {
-                    _file = request.files[0];
-                };
 
                 // Check for prompt and file
                 if(_file == null && _prompt.length < 5) {
@@ -45,7 +39,7 @@ export default async function Create(request, response) {
                 };
 
                 // Create project
-                const _project = await CreateProject(_prompt, _file, _width, _height);
+                const _project = await Project.Create(_prompt, _file, _width, _height);
 
                 // Set the response data
                 _response.message = "Project created";

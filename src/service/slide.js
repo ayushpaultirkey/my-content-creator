@@ -2,156 +2,66 @@ import path from "path";
 import fs from "fs/promises";
 import { FFScene, FFText, FFCreator, FFAlbum, FFVideo } from "ffcreator";
 
-import wait from "./wait.js";
-import directory from "../../library/directory.js";
+import wait from "../library/wait.js";
+import directory from "../library/directory.js";
 
-import { CreateVoiceAsset } from "./asset.js";
-import { GeminiPrompt, GeminiPromptFile, GenerativeRun } from "./gemini.js";
-import { GetProjectPath, ReadProject, SaveProject } from "./project.js";
+import Asset from "./asset.js";
+import Gemini from "./google/gemini.js";
 
+import Project from "./project.js";
+import GetUpdatedSlide from "./slide/getUpdatedSlide.js";
 
-/**
-    * 
-    * @param {*} originalSlides 
-    * @param {*} newSlides 
-    * @returns 
-*/
-function FindUpdatedSlide(originalSlides = [], newSlides = []) {
+// Get current directory path and filename
+const { __dirname } = directory();
 
-    // Create object to store updated slides
-    const _update = { updated: [], removed: [], added: [] };
-    
-    // Create original map for the slides
-    const _originalMap = new Map(originalSlides.map(slide => [slide.id, slide]));
-
-    // Check for any updates and additions
-    newSlides.forEach(newSlide => {
-
-        const _originalSlide = _originalMap.get(newSlide.id);
-        if(_originalSlide) {
-
-            // Check if content has changed
-            if(JSON.stringify(_originalSlide) !== JSON.stringify(newSlide)) {
-                _update.updated.push(newSlide);
-            };
-
-            // Remove from map to keep track of remaining slides
-            _originalMap.delete(newSlide.id);
-
-        }
-        else {
-            _originalMap.added.push(newSlide);
-        };
-
-    });
-
-    // Remaining slides in originalMap are considered removed
-    _update.removed = Array.from(_originalMap.values());
-
-    return _update;
-
-}
-
-
-/**
-    * 
-    * @param {*} projectId 
-    * @param {*} prompt 
-    * @returns 
-*/
-async function UpdateSlide(projectId = "", prompt = "", file = null) {
-
+async function Update(projectId = "", prompt = "", file = null) {
 
     try {
 
         // Get project data
-        const _project = await ReadProject(projectId);
+        const _project = await Project.GetActive(projectId);
         const _history = _project.history;
 
         // Check for file
         if(file !== null) {
-            console.log("Service/Slide/UpdateSlide(): File found");
-            await GeminiPromptFile(file, _history);
+            console.log("Service/Slide.Update(): File found");
+            await Gemini.PromptFile(file, _history);
         };
 
         // Generative run
-        const _answer = await GeminiPrompt(prompt, _history);
+        const _answer = await Gemini.Prompt(prompt, _history);
 
         // Get updated slides
-        const _slide = FindUpdatedSlide(_project.property.slides, _answer.response.slides);
+        const _slide = GetUpdatedSlide(_project.property.slides, _answer.response.slides);
         const _slideUpdated = _slide.updated.concat(_slide.added);
-
-        // Create audio and render the slides
-        await CreateVoiceAsset(projectId, _slideUpdated);
-        await RenderSlide(projectId, _slideUpdated, _project);
 
         // Create updated project
         const _projectUpdated = {
-            "config": { ... _project.config },
-            "property": { ... _answer.response },
-            "history": _history
+            config: { ... _project.config },
+            property: { ... _answer.response },
+            history: _history
         };
 
+        // Create audio and render the slides
+        await Asset.CreateVoiceAsset(projectId, _slideUpdated);
+        await Render(projectId, _projectUpdated);
+
         // Save project file
-        await SaveProject(projectId, _projectUpdated);
+        await Project.Update(projectId, _projectUpdated);
 
         // Return new project
         return _projectUpdated;
 
     }
     catch(error) {
-        console.log("Service/Slide/UpdateSlide():", error);
+        console.log("Service/Slide.Update():", error);
         throw error;
     }
-
-    // try {
-        
-    //     // Get project data
-    //     const _project = await ReadProject(projectId);
-        
-    //     // Generative run
-    //     const _answer = await GenerativeRun(prompt, _project.session.context);
-
-    //     // Get updated slides
-    //     const _slide = FindUpdatedSlide(_project.property.slides, _answer.response.slides);
-    //     const _slideUpdated = _slide.updated.concat(_slide.added);
-
-    //     // Create audio and render the slides
-    //     await CreateVoiceAsset(projectId, _slideUpdated);
-    //     await RenderSlide(projectId, _slideUpdated, _project);
-
-    //     // Create updated project
-    //     const _projectUpdated = {
-    //         "config": { ... _project.config },
-    //         "property": { ... _answer.response },
-    //         "session": {
-    //             "context": _answer.context
-    //         }
-    //     };
-
-    //     // Save project file
-    //     await SaveProject(projectId, _projectUpdated);
-
-    //     // Return new project
-    //     return _projectUpdated;
-
-    // }
-    // catch(error) {
-    //     console.log("UpdateSlide():", error);
-    //     throw error;
-    // }
 
 };
 
 
-/**
-    * 
-    * @param {*} projectId 
-    * @param {*} slide 
-    * @param {*} project 
-    * @returns 
-*/
-async function RenderSlide(projectId = "", slide = [], project = {}) {
+async function Render(projectId = "", project = {}) {
 
     // Create new promise
     const _wait = new wait();
@@ -159,13 +69,14 @@ async function RenderSlide(projectId = "", slide = [], project = {}) {
     //
     try {
 
-        // Get current directory path and filename
-        const { __dirname } = directory();
         FFCreator.setFFmpegPath(path.join(__dirname, "./../../library/ffmpeg.exe"));
         FFCreator.setFFprobePath(path.join(__dirname, "./../../library/ffprobe.exe"));
 
         // Get project path
-        const _path = GetProjectPath(projectId);
+        const _path = Project.Path(projectId);
+
+        // Get slides
+        const _slides = project.property.slides;
 
         // Set video dimension
         const S = 1;
@@ -174,20 +85,20 @@ async function RenderSlide(projectId = "", slide = [], project = {}) {
 
         // Render for all slides into separate files
         let _index = 0;
-        let _length = slide.length;
+        let _length = _slides.length;
 
         // Render function to render separate slides
         const render = async () => {
         
             // If index > total slides then finish
             if(_index > _length - 1) {
-                console.log("RenderSlide(): Project pre-render completed");
-                _wait.resolve("RenderSlide(): Project pre-render completed");
+                console.log("Service/Slide.Render(): Project pre-render completed");
+                _wait.resolve("Service/Slide.Render(): Project pre-render completed");
                 return;
             };
 
             // Get current slide by index
-            const _slide = slide[_index];
+            const _slide = _slides[_index];
 
             // Create new creator
             const _creator = new FFCreator({
@@ -211,7 +122,7 @@ async function RenderSlide(projectId = "", slide = [], project = {}) {
 
             }
             catch(error) {
-                console.log(`RenderSlide(): Cannot find narration voice for ${_slide.id}`, error);
+                console.log(`Service/Slide.Render(): Cannot find narration voice for ${_slide.id}`, error);
             };
 
             // Add image if avaiable
@@ -226,7 +137,7 @@ async function RenderSlide(projectId = "", slide = [], project = {}) {
                         _image.push(_imagePath);
                     }
                     catch(error) {
-                        console.log(`RenderSlide(): Cannot find ${x} image asset file for ${_slide.id}`, error);
+                        console.log(`Service/Slide.Render(): Cannot find ${x} image asset file for ${_slide.id}`, error);
                     };
                 };
 
@@ -273,7 +184,7 @@ async function RenderSlide(projectId = "", slide = [], project = {}) {
 
             }
             catch(error) {
-                console.log(`RenderSlide(): Cannot add video ${_slide.id}`, error);
+                console.log(`Service/Slide.Render(): Cannot add video ${_slide.id}`, error);
             };
 
             // Add the slide's content
@@ -286,7 +197,7 @@ async function RenderSlide(projectId = "", slide = [], project = {}) {
             _text.addEffect("zoomIn", 1, 0);
             _text.addEffect("fadeOut", 1, _slide.hideAt - _slide.showAt);
             _text.alignCenter();
-            _text.setFont(path.join(__dirname, "../../public/font/static/NotoSans-SemiBold.ttf"));
+            _text.setFont(path.join(__dirname, "../../project/.font/static/NotoSans-SemiBold.ttf"));
             _text.setWrap(W / 1.5);
             _scene.addChild(_text);
 
@@ -297,17 +208,17 @@ async function RenderSlide(projectId = "", slide = [], project = {}) {
 
             // Register events
             _creator.on("start", () => {
-                console.log(`RenderSlide(): Project pre-render ${_slide.id} started`);
+                console.log(`Service/Slide.Render(): Project pre-render ${_slide.id} started`);
             });
             _creator.on("error", e => {
-                console.log(`RenderSlide(): Unable to pre-render project: ${_slide.id}`);
-                _wait.reject("RenderSlide(): Unable to pre-render project: ${_slide.id}");
+                console.log(`Service/Slide.Render(): Unable to pre-render project: ${_slide.id}`);
+                _wait.reject("Service/Slide.Render(): Unable to pre-render project: ${_slide.id}");
             });
             _creator.on("progress", e => {
-                console.log(`RenderSlide(): Project pre-render: ${(e.percent * 100) >> 0}%`);
+                console.log(`Service/Slide.Render(): Project pre-render: ${(e.percent * 100) >> 0}%`);
             });
             _creator.on("complete", e => {
-                console.log(`RenderSlide(): Project pre-render ${_slide.id} completed`);
+                console.log(`Service/Slide.Render(): Project pre-render ${_slide.id} completed`);
                 _index++;
                 render();
             });
@@ -319,7 +230,7 @@ async function RenderSlide(projectId = "", slide = [], project = {}) {
 
     }
     catch(error) {
-        console.log("RenderSlide():", error);
+        console.log("Service/Slide.Render():", error);
         _wait.reject(error);
     };
 
@@ -328,4 +239,4 @@ async function RenderSlide(projectId = "", slide = [], project = {}) {
 };
 
 
-export { RenderSlide, UpdateSlide };
+export default { Render, Update };

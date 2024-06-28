@@ -1,4 +1,4 @@
-import { GetAuthEvent, OAuth2Callback, SetAuthToken } from "../../../../service/google.js";
+import Google from "../../../../service/google.js";
 
 /**
     * 
@@ -8,17 +8,17 @@ import { GetAuthEvent, OAuth2Callback, SetAuthToken } from "../../../../service/
 export default async function AuthCallback(request, response) {
 
     //
-    const _authEvent = GetAuthEvent();
+    const _authEvent = Google.GetAuthEvent();
 
     //
     try {
 
         //
         const _code = request.query.code;
-        const _token = await OAuth2Callback(_code);
+        const _token = await Google.OAuth2Callback(_code);
 
         //
-        SetAuthToken(request, _token);
+        Google.SetAuthToken(request, _token);
 
         //
         _authEvent.emit("login", { success: true });

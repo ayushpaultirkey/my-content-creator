@@ -57,6 +57,7 @@ export default class Dashboard extends H12 {
                         <div class="bg-blue-500 border-2 border-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors rounded-lg min-h-28 flex flex-col">
                             <button class="fa fa-plus w-full h-full text-2xl text-zinc-900" onclick={ () => { this.CreatorToggle(); } } title="Create Project"></button>
                         </div>
+                        
                         {p.list}
                         
                     </div>

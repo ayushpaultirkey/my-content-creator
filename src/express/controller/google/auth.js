@@ -1,4 +1,4 @@
-import { OAuth2Client } from "../../../service/google.js";
+import Google from "../../../service/google.js";
 
 /**
     * 
@@ -11,7 +11,7 @@ export default async function Auth(request, response) {
     try {
 
         //
-        const _auth = OAuth2Client();
+        const _auth = Google.OAuth2Client();
         
         //
         const _authUrl = _auth.generateAuthUrl({

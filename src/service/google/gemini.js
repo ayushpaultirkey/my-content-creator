@@ -12,8 +12,10 @@ let GENERATIVE = null;
 /** @type {import("@google/generative-ai/server").GoogleAIFileManager} */
 let FILEMANAGER = null;
 
-
-function GoogleGeminiInit() {
+/**
+    * 
+*/
+function Initialize() {
 
     const _instruction =
     `You have to assist the user on creating a content for a video. You should only respond in json data and nothing else is accepted, the json format is explained below.
@@ -63,8 +65,8 @@ function GoogleGeminiInit() {
     Note:
     When changing or updating content make sure to update the other slide's time based on approximate time taken to read it.`;
 
-    GENERATIVE = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_API);
-    FILEMANAGER = new GoogleAIFileManager(process.env.GOOGLE_GENERATIVE_API);
+    GENERATIVE = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API);
+    FILEMANAGER = new GoogleAIFileManager(process.env.GOOGLE_GEMINI_API);
 
     MODEL = GENERATIVE.getGenerativeModel({
         model: "gemini-1.5-flash",
@@ -81,14 +83,17 @@ function GoogleGeminiInit() {
 
 
 /**
- * 
- * @param {{ fieldname, originalname, encoding, mimetype, destination, filename, path, size }} file 
- * @param {*} history 
- * @returns 
+    * 
+    * @param {{ fieldname, originalname, encoding, mimetype, destination, filename, path, size }} file 
+    * @param {*} history 
+    * @returns 
 */
-async function GeminiPromptFile(file = {}, history = [], validate = true) {
+async function PromptFile(file = {}, history = [], validate = true) {
 
-    // Validate the history before prompting, this can check for valid image urls
+    // Log
+    console.log(`Service/Gemini.PromptFile(): Multimodel prompt started`);
+
+    // Validate the history before prompting, this can check for valid asset urls
     if(validate) {
         for(var i = 0, len = history.length; i < len; i++) {
     
@@ -100,14 +105,14 @@ async function GeminiPromptFile(file = {}, history = [], validate = true) {
             }
             catch(error) {
                 delete history[i].parts[0].fileData;
-                history[i].parts[0].text = "Cannot view image since it was expired after 48 hours.";
-                console.log(`Service/Gemini/GeminiPromptFile(): File not exists, it will be removed from history`);
+                history[i].parts[0].text = "Cannot view asset since it was expired after 48 hours.";
+                console.log(`Service/Gemini.PromptFile(): File not exists, it will be removed from history`);
             };
     
         };
     };
 
-    // Try and upload image
+    // Try and upload asset
     try {
 
         // Upload file to file namager
@@ -130,19 +135,21 @@ async function GeminiPromptFile(file = {}, history = [], validate = true) {
             }]
         });
     
-        // Log upload
-        console.log(`Service/Gemini/GeminiPromptFile(): Uploaded file ${_file.name}`);
+        // Log
+        console.log(`Service/Gemini.PromptFile(): Uploaded file ${_file.name}`);
 
         // Return the file with updated history
         return { file: _file, history: history };
 
     }
     catch(error) {
-        console.log("Service/Gemini/GeminiPromptFile(): ", error);
-        throw error;
-    }
 
-}
+        console.log("Service/Gemini.PromptFile(): ", error);
+        throw error;
+
+    };
+
+};
 
 
 /**
@@ -151,9 +158,12 @@ async function GeminiPromptFile(file = {}, history = [], validate = true) {
     * @param {*} history 
     * @returns 
 */
-async function GeminiPrompt(prompt = "", history = []) {
+async function Prompt(prompt = "", history = []) {
 
     try {
+
+        // Log
+        console.log("Service/Gemini.Prompt(): Prompt started");
 
         // Set the model message history
         let _chat = MODEL.startChat({
@@ -165,71 +175,21 @@ async function GeminiPrompt(prompt = "", history = []) {
         let _raw = _result.response.text();
         let _response = JSON.parse(_raw);
 
+        // Log
+        console.log("Service/Gemini.Prompt(): Prompt ended");
+
         // Return data
         return { response: _response, raw: _raw, history: history };
 
     }
     catch(error) {
-        console.log("Service/Gemini/GeminiPrompt():", error);
+        console.log("Service/Gemini.Prompt():", error);
         throw error;
-    }
+    };
 
 };
 
 
-/**
-    * 
-    * @param {*} prompt 
-    * @param {*} context 
-    * @returns 
-*/
-async function GenerativeRun(prompt = "", context = []) {
-
-    let _context = context;
-    let _message = [];
-    let _answer = "";
-    
-    try {
-
-        // Create a message history for the model
-        for(const [input, response] of _context) {
-            _message.push({ role: "user", parts: [{ "text": input }] });
-            _message.push({ role: "model", parts: [{ "text": response }] });
-        };
-
-        // Set the model message history
-        let _chat = MODEL.startChat({
-            history: _message
-        });
-    
-        // Send message to model and get response
-        let _result = await _chat.sendMessage();
-        let _response = _result.response.text();
-    
-        // Create new context
-        _context.push([prompt, _response]);
-
-        console.log(_response)
-
-        // // Get the json from the response
-        // const _regex = /```json(.*)```/gs;
-        // const _match = _regex.exec(_response);
-        // if(_match) {
-        //     _answer = JSON.parse(_match[1].trim());
-        // }
-        // else {
-        //     throw new Error(`Invalid AI response: ${_response}`);
-        // };
-    
-    }
-    catch(error) {
-        console.log("GenerativeRun():", error);
-        throw error;
-    };
-
-    return { context: _context, response: _answer };
-
-}
 
 
-export { GenerativeRun, GoogleGeminiInit, GeminiPromptFile, GeminiPrompt }
+export default { Prompt, PromptFile, Initialize }

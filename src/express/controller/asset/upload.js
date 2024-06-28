@@ -2,8 +2,8 @@ import path from "path";
 import sharp from "sharp";
 import fs from "fs/promises";
 
-import { Uploader } from "../../service/asset.js";
-import { GetProjectPath, ReadProject } from "../../service/project.js";
+import Asset from "../../../service/asset.js";
+import Project from "../../../service/project.js";
 
 /**
     * Validates project IDs from request query
@@ -25,10 +25,10 @@ export default async function Upload(request, response) {
         };
 
         // Read project file
-        const _project = await ReadProject(_projectId);
+        const _project = await Project.GetActive(_projectId);
 
         // Use multer to handle file uploads
-        Uploader(request, response, async(error) => {
+        Asset.Uploader(request, response, async(error) => {
             try {
 
                 // An error occurred when uploading.
@@ -47,7 +47,7 @@ export default async function Upload(request, response) {
                     // Get the uploaded file path
                     const _path = file.path;
                     const _extension = path.extname(_path);
-                    const _destination = path.join(GetProjectPath(_projectId), `/asset/${crypto.randomUUID()}${_extension}`);
+                    const _destination = path.join(Project.Path(_projectId), `/asset/${crypto.randomUUID()}${_extension}`);
 
                     // Crop all images to match video dimension
                     if(file.mimetype.startsWith("image/")) {

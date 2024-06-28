@@ -10,7 +10,7 @@ let CACHE = {};
     * @param {*} file 
     * @returns 
 */
-function CachePath(file = "") {
+function Path(file = "") {
     const { __dirname } = directory();
     return path.join(__dirname, `../../project/.cache/${file}`);
 };
@@ -22,7 +22,7 @@ function CachePath(file = "") {
 */
 async function CacheExist() {
     try {
-        await fs.access(CachePath(".reference.json"));
+        await fs.access(Path(".reference.json"));
         return true;
     }
     catch (error) {
@@ -35,7 +35,7 @@ async function CacheExist() {
     * 
     * @returns 
 */
-async function InitializeCache() {
+async function Initialize() {
     
     try {
 
@@ -44,11 +44,11 @@ async function InitializeCache() {
 
         // Create empty cache if not exists
         if(!_cacheExist) {
-            await fs.writeFile(CachePath(".reference.json"), JSON.stringify({ image: {}, video: {}, audio: {} }));
+            await fs.writeFile(Path(".reference.json"), JSON.stringify({ image: {}, video: {}, audio: {} }));
         };
 
         // Read cache fil
-        const _data = await fs.readFile(CachePath(".reference.json"), "utf8");
+        const _data = await fs.readFile(Path(".reference.json"), "utf8");
         const _json = JSON.parse(_data);
 
         // Store json data
@@ -59,7 +59,7 @@ async function InitializeCache() {
 
     }
     catch(error) {
-        console.log("InitializeCache():", error);
+        console.log("Initialize():", error);
         return false;
     }
 
@@ -72,7 +72,7 @@ async function InitializeCache() {
     * @param {"image" | "video" | "audio"} type 
     * @param {*} data 
 */
-function UpdateCache(query = "", type = "", data = []) {
+function Update(query = "", type = "", data = []) {
     if(typeof(CACHE[type][query]) === "undefined") {
         CACHE[type][query] = data;
     }
@@ -86,7 +86,7 @@ function UpdateCache(query = "", type = "", data = []) {
     * 
     * @returns 
 */
-function ReadCache() {
+function Read() {
     return CACHE;
 }
 
@@ -97,7 +97,7 @@ function ReadCache() {
     * @param {"image" | "video" | "audio"} type 
     * @returns {[{url, name}]}
 */
-function CacheHit(query = "", type = "") {
+function Hit(query = "", type = "") {
     if(typeof(CACHE[type][query]) !== "undefined") {
         return CACHE[type][query];
     }
@@ -111,16 +111,16 @@ function CacheHit(query = "", type = "") {
     * 
     * @returns 
 */
-async function SaveCache() {
+async function Save() {
     try {
-        await fs.writeFile(CachePath(".reference.json"), JSON.stringify(CACHE));
+        await fs.writeFile(Path(".reference.json"), JSON.stringify(CACHE));
         return true;
     }
     catch(error) {
-        console.log("SaveCache():", error);
+        console.log("Save():", error);
         return false;
     };
 }
 
 
-export { ReadCache, UpdateCache, SaveCache, InitializeCache, CacheHit, CachePath };
+export default { Read, Update, Save, Initialize, Hit, Path };

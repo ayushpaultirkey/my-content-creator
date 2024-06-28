@@ -49,7 +49,7 @@ export default class Editor extends H12 {
                         <button onclick={ () => { this.Tab(3); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-cyan-500 fa-solid fa-download"></i>Export</button>
                         <button onclick={ () => { this.Tab(4); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-indigo-500  fa-solid fa-gear"></i>Settings</button>
                     </div>
-                    <div class="min-w-80 max-w-80 bg-zinc-800 border-r border-zinc-700 flex-col sm:flex hidden" id="EditorTab">
+                    <div class="min-w-[340px] max-w-[340px] bg-zinc-800 border-r border-zinc-700 flex-col sm:flex hidden" id="EditorTab">
                         
                         <Prompt args id="Prompt" project={ this.args.project }></Prompt>
                         <Slide args id="Slide" project={ this.args.project }></Slide>

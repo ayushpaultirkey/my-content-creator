@@ -1,5 +1,5 @@
-import { Uploader } from "../../service/asset.js";
-import { UpdateSlide } from "../../service/slide.js";
+import Asset from "../../../service/asset.js";
+import Slide from "../../../service/slide.js";
 
 
 /**
@@ -16,7 +16,7 @@ export default async function Gemini(request, response) {
     try {
 
         // Use multer to handle file uploads
-        Uploader(request, response, async(error) => {
+        Asset.Uploader(request, response, async(error) => {
             try {
 
                 // An error occurred when uploading.
@@ -27,16 +27,11 @@ export default async function Gemini(request, response) {
                 // Get query parameter
                 let _projectId = request.query.pid;
                 let _prompt = request.query.prompt;
-                let _file = null;
+                let _file = (request.files && request.files.length > 0) ? request.files[0] : null;
 
                 // Check for prompt and file
                 if(typeof(_projectId) === "undefined") {
                     throw new Error("Invalid project id");
-                };
-
-                // Check for file
-                if(request.files && request.files.length > 0) {
-                    _file = request.files[0];
                 };
 
                 // Check for prompt and file
@@ -45,7 +40,7 @@ export default async function Gemini(request, response) {
                 };
 
                 // Create project
-                const _project = await UpdateSlide(_projectId, _prompt, _file);
+                const _project = await Slide.Update(_projectId, _prompt, _file);
 
                 // Set the response data
                 _response.message = "Project updated";
@@ -59,7 +54,7 @@ export default async function Gemini(request, response) {
                 _response.message = error.message || "Unable to upload asset";
 
                 // Log error message
-                console.log("/asset/upload: Upload error", error);
+                console.log("/google/gemini: Upload error", error);
 
             }
             finally {
@@ -77,7 +72,7 @@ export default async function Gemini(request, response) {
         _response.message = error.message || "An error occurred";
 
         // Log error message
-        console.log("/project/create:", error);
+        console.log("/google/gemini:", error);
 
         // Send response
         response.send(_response);

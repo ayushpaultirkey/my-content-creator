@@ -9,9 +9,11 @@ import fsp from "fs/promises";
 import mime from "mime-types";
 import { ElevenLabsClient } from "elevenlabs";
 
-import directory from "../../library/directory.js";
-import { GetProjectPath } from "./project.js";
-import { CacheHit, CachePath, SaveCache, UpdateCache } from "../../service/cache.js";
+import directory from "./../library/directory.js";
+
+import Project from "./project.js";
+import Cache from "./cache.js";
+
 
 /**
     * 
@@ -26,7 +28,7 @@ const Uploader = multer({
                 const { __dirname } = directory();
 
                 // Set upload path
-                const _path = path.join(path.join(__dirname, `../../project/.upload/`));
+                const _path = path.join(path.join(__dirname, `../../project/.temp/`));
                 await fsp.mkdir(_path, { recursive: true });
                 
                 callback(null, _path);
@@ -59,27 +61,30 @@ const Uploader = multer({
 /**
     * Get the list of assets
     * @param {string} projectId 
-    * @returns 
+    * @returns {Promise<[{file, type, url}] | undefined>}
 */
-async function FetchAsset(projectId = "") {
+async function GetLocalAsset(projectId = "") {
 
     try {
         
         // Get project path and read the project json file
-        const _projectPath = path.join(GetProjectPath(projectId), "/asset/")
+        const _projectPath = path.join(Project.Path(projectId), "/asset/");
 
         // Get files
-        const _files = await fsp.readdir(_projectPath);
+        const _file = await fsp.readdir(_projectPath);
         const _fileList = [];
 
         // Iterate for each file
-        for(const file of _files) {
+        for(const file of _file) {
 
+            // Get file stat and path
             const _filePath = path.join(_projectPath, file);
             const _fileStat = await fsp.stat(_filePath);
       
+            // Check if its file
             if(_fileStat.isFile()) {
 
+                // Get its mime type
                 const _mime = mime.lookup(_filePath);
               
                 // Check if the file is an image, video, or audio
@@ -100,7 +105,7 @@ async function FetchAsset(projectId = "") {
 
     }
     catch(error) {
-        console.error(`GetAssetList(): Error reading directory for project ${projectId}:`, error);
+        console.error(`Service/Asset.GetLocalAsset(): Error reading directory for project ${projectId}:`, error);
         throw error;
     };
 
@@ -126,8 +131,8 @@ async function CropImage(images = [], projectId, project = {}) {
 
                 if(typeof(_slide[index]) !== "undefined" && _slide[index].image.length !== 0) {
 
-                    const inputPath = path.join(CachePath(), image.name);
-                    const outputPath = path.join(GetProjectPath(projectId), `/asset/${_slide[index].image[0].name}`);
+                    const inputPath = path.join(Cache.Path(), image.name);
+                    const outputPath = path.join(Project.Path(projectId), `/asset/${_slide[index].image[0].name}`);
         
                     await sharp(inputPath)
                     .resize({
@@ -174,7 +179,7 @@ async function DownloadImage(image = [{ url, name }]) {
     try {
 
         // Ensure cache directory exists
-        const _cachePath = CachePath();
+        const _cachePath = Cache.Path();
         if(!fs.existsSync(_cachePath)) {
             fs.mkdirSync(_cachePath, { recursive: true });
         };
@@ -215,11 +220,14 @@ async function DownloadImage(image = [{ url, name }]) {
 
     }
     catch(error) {
+
         console.log("Asset/DownloadImage(): General error", error);
         throw error;
+
     };
 
 };
+
 
 /**
     * 
@@ -236,7 +244,7 @@ async function FetchExternalImage(projectId, project = {}) {
     // Get values and cache hit
     const _slide = project.property.slides;
     const _query = project.property.keyword;
-    const _cache = CacheHit(_query, "image");
+    const _cache = Cache.Hit(_query, "image");
 
     // Check if the cache exists
     if(_cache == null) {
@@ -286,11 +294,11 @@ async function FetchExternalImage(projectId, project = {}) {
         console.log(_query, _image)
 
         // 
-        UpdateCache(_query, "image", _image);
+        Cache.Update(_query, "image", _image);
         console.log("Service/Asset/FetchExternalImage(): CACHE UPDATED");
 
         //
-        await SaveCache();
+        await Cache.Save();
         console.log("Service/Asset/FetchExternalImage(): CACHE SAVED");
 
         //
@@ -302,11 +310,11 @@ async function FetchExternalImage(projectId, project = {}) {
     }
     else {
 
-        console.log("Service/Asset/FetchAsset(): CACHE FOUND");
+        console.log("Service/Asset/GetLocalAsset(): CACHE FOUND");
 
         //
         if(_cache.length < _slide.length) {
-            console.log("Service/Asset/FetchAsset(): Mismatch slides and default images");
+            console.log("Service/Asset/GetLocalAsset(): Mismatch slides and default images");
         };
 
         //
@@ -327,7 +335,7 @@ async function FetchExternalImage(projectId, project = {}) {
 
                 _image.push(_cache[_ind]);
 
-                console.log("Service/Asset/FetchAsset(): Invalid cache hit at index", i, " using random index", _ind);
+                console.log("Service/Asset/GetLocalAsset(): Invalid cache hit at index", i, " using random index", _ind);
                 continue;
 
             };
@@ -349,7 +357,7 @@ async function FetchExternalImage(projectId, project = {}) {
     * @param {string} projectId 
     * @param {*} project 
 */
-async function FetchExternalAsset(projectId, project = {}) {
+async function GetExternalAsset(projectId, project = {}) {
 
     // Try and fetch assets
     try {
@@ -359,10 +367,10 @@ async function FetchExternalAsset(projectId, project = {}) {
 
     }
     catch(error) {
-        console.log("Asset/FetchExternalAsset():", error);
+        console.log("Asset/GetExternalAsset():", error);
     };
 
-}
+};
 
 
 /**
@@ -372,7 +380,7 @@ async function FetchExternalAsset(projectId, project = {}) {
 async function VoiceByLocalTTS(projectId = "", slide = []) {
 
     // Get project path and update the project json file
-    const _path = GetProjectPath(projectId);
+    const _path = Project.Path(projectId);
 
     // Function to export spoken audio to a WAV file
     function _export(content, filePath) {
@@ -411,7 +419,7 @@ async function VoiceByLocalTTS(projectId = "", slide = []) {
 async function VoiceByExternalTTS(projectId = "", slide = []) {
 
     // Get project path and update the project json file
-    const _path = GetProjectPath(projectId);
+    const _path = Project.Path(projectId);
 
     // Create client for eleven lab
     const _client = new ElevenLabsClient({
@@ -485,7 +493,7 @@ async function CreateVoiceAsset(projectId = "", slide = [], useLocalTTS = true) 
         throw error;
     };
 
-}
+};
 
 
-export { Uploader, FetchAsset, CreateVoiceAsset, FetchExternalAsset };
+export default { Uploader, GetLocalAsset, CreateVoiceAsset, GetExternalAsset };

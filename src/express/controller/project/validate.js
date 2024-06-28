@@ -1,4 +1,4 @@
-import { DoesProjectExist, ReadProject } from "../../service/project.js";
+import Project from "../../../service/project.js";
 
 
 /**
@@ -29,10 +29,16 @@ export default async function Validate(request, response) {
 
         // Validate each project ID
         for(const projectId of _projectId) {
-            if(await DoesProjectExist(projectId)) {
-                const project = await ReadProject(projectId);
-                _response.data.push({ id: projectId, ... project });
+
+            // Check if the project exists
+            if(await Project.Exist(projectId)) {
+
+                // Add the new with the project id
+                const _project = await Project.Read(projectId);
+                _response.data.push({ id: projectId, ... _project });
+
             };
+
         };
 
         // Set success response

@@ -1,4 +1,4 @@
-import { UpdateSlide } from "../../service/slide.js";
+import Slide from "../../../service/slide.js";
 
 
 /**
@@ -50,7 +50,7 @@ export default async function Update(request, response) {
         const _videoPrompt = JSON.stringify(_video);
 
         // Update slide by using the prompt
-        const _project = await UpdateSlide(_projectId, `In slide "${_slideId}" change the content to "${_slideContent}", it's image to ${_imagePrompt} and the video to ${_videoPrompt}`);
+        const _project = await Slide.Update(_projectId, `In slide "${_slideId}" change the content to "${_slideContent}", it's image to ${_imagePrompt} and the video to ${_videoPrompt}`);
 
         // Update response body
         _response.success = true;

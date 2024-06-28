@@ -5,17 +5,20 @@ import sharp from "sharp";
 import fs from "fs";
 import fsp from "fs/promises";
 import { google } from "googleapis";
-import { OAuth2Client } from "../google.js";
+
 import directory from "#library/directory.js";
-import { GetProjectPath, ReadProject } from "../../express/service/project.js";
 
+import Google from "../google.js";
+import Project from "../project.js";
 
-async function GetFiles(mimes = []) {
+const { __dirname } = directory();
+
+async function GetFile() {
 
     try {
 
         // Get auth cient
-        const _auth = OAuth2Client();
+        const _auth = Google.OAuth2Client();
 
         // Define google drive
         const _drive = google.drive({ version: "v3", auth: _auth });
@@ -39,7 +42,7 @@ async function GetFiles(mimes = []) {
 
     }
     catch(error) {
-        console.log("Service/Google/Drive/GetFiles():", error)
+        console.log("Service/Google/Drive.GetFiles():", error)
         throw error;
     };
 
@@ -64,15 +67,13 @@ function MimeTypeExtension(mimeType = "") {
 };
 
 
-async function DownloadFiles(projectId = "", id = []) {
+async function ImportFile(projectId = "", id = []) {
 
     try {
 
-        const _project = await ReadProject(projectId);
+        const _project = await Project.GetActive(projectId);
 
-        const { __dirname } = directory();
-
-        const _auth = OAuth2Client();
+        const _auth = Google.OAuth2Client();
         const _drive = google.drive({ version: "v3", auth: _auth });
 
         const _download = async(fileId) => {
@@ -89,7 +90,7 @@ async function DownloadFiles(projectId = "", id = []) {
                 const _name = `${crypto.randomUUID()}.${_extension}`;
     
                 // Create temp download path
-                const _tempPath = path.join(__dirname, `../../project/.download/${_name}`);
+                const _tempPath = path.join(__dirname, `../../project/.temp/${_name}`);
     
                 // Download file in the .download folder
                 await new Promise((resolve, reject) => {
@@ -103,7 +104,7 @@ async function DownloadFiles(projectId = "", id = []) {
                 });
                 
                 // Create project path for the assets when downloaded
-                const _projectPath = path.join(GetProjectPath(projectId), `/asset/${_name}`);
+                const _projectPath = path.join(Project.Path(projectId), `/asset/${_name}`);
 
                 // Once downlaoded finally process if its image or copy the file to project
                 if(_mimeType.startsWith('image/')) {
@@ -123,29 +124,29 @@ async function DownloadFiles(projectId = "", id = []) {
                     // Copy other asset to project folder
                     await fsp.copyFile(_destination, _projectPath);
 
-                }
+                };
 
             }
             catch(error) {
-                throw new Error(`Service/Google/Drive/DownloadFiles(): Error downloading or processing file ${fileId}, ${error.message}`)
+                throw new Error(`Service/Google/Drive.ImportFile(): Error downloading or processing file ${fileId}, ${error.message}`)
             };
             
         };
         
         const _promise = [];
         for(var i = 0, l = id.length; i < l; i++) {
-            _promise.push(_download(id[i]))
+            _promise.push(_download(id[i]));
         };
         
         await Promise.all(_promise);
 
     }
     catch(error) {
-        console.log("Service/Google/Drive/DownloadFiles():", error)
+        console.log("Service/Google/Drive.ImportFile():", error);
         throw error;
     };
 
 };
 
 
-export { GetFiles, DownloadFiles };
+export default { GetFile, ImportFile };

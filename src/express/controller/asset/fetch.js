@@ -1,4 +1,4 @@
-import { FetchAsset } from "../../service/asset.js";
+import Asset from "../../../service/asset.js";
 
 /**
     * 
@@ -20,7 +20,7 @@ export default async function Fetch(request, response) {
         };
 
         // Get all asset list
-        const _asset = await FetchAsset(_projectId);
+        const _asset = await Asset.GetLocalAsset(_projectId);
 
         // Set success respones
         _response.success = true;

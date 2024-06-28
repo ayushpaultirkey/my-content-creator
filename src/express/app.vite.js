@@ -9,18 +9,18 @@ import compression from "compression";
 import viteExpress from "vite-express";
 
 import router from "./router.js";
-import { GoogleGeminiInit } from "./service/gemini.js";
-import { InitializeCache } from "../service/cache.js";
+import Gemini from "./../service/google/gemini.js";
+import Cache from "../service/cache.js";
 import directory from "#library/directory.js";
 
 //
 export default function init() {
 
     // Initialize Cache
-    InitializeCache();
+    Cache.Initialize();
 
     // Start generative ai
-    GoogleGeminiInit();
+    Gemini.Initialize();
 
     // Create express app
     const app = express();
