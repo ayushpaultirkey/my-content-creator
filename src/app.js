@@ -1,2 +1,2 @@
-import init from "./express/app.vite.js";
+import init from "./server/app.vite.js";
 init();
