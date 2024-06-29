@@ -1,11 +1,15 @@
 import fs from "fs/promises";
 import path from "path";
+import crypto from "crypto";
+import { FFScene, FFCreator } from "ffcreator";
 
+import delay from "../library/wait.js";
 import directory from "../library/directory.js";
 
 import Slide from "./slide.js";
 import Gemini from "./google/gemini.js";
 import Asset from "./asset.js";
+import Scene from "./scene.js";
 
 
 // Get directory path
@@ -14,6 +18,226 @@ const { __dirname } = directory();
 // Store current project data
 let PROJECT_ACTIVE_DATA = null;
 let PROJECT_ACTIVE_ID = null;
+
+
+//#region Render
+/**
+    * Render and save to project's export folder
+    * @async
+    * @param {*} projectId 
+    * @param {*} project 
+*/
+async function Render(projectId = "", sse = null) {
+
+    // Create new promise
+    const _delay = new delay();
+
+    //
+    try {
+
+        // Export name for file
+        const _exportName = `${crypto.randomUUID()}.mp4`;
+
+        // Get project
+        const _project = await Project.GetActive(projectId);
+
+        // Set ffmpeg path
+        FFCreator.setFFmpegPath(path.join(__dirname, "./../../library/ffmpeg.exe"));
+        FFCreator.setFFprobePath(path.join(__dirname, "./../../library/ffprobe.exe"));
+
+        // Get project path
+        const _projectPath = Project.Path(projectId);
+
+        // Get slides
+        const _property = _project.property;
+        const _slides = _property.slides;
+
+        // Set video dimension
+        const W = _project.config.width * 1;
+        const H = _project.config.height * 1;
+
+        // Create new creator
+        const _creator = new FFCreator({
+            width: W,
+            height: H
+        });
+
+        // Create new global scene
+        const _scene = new FFScene();
+        _scene.setBgColor("transparent");
+        _scene.setDuration(_property.totalTime);
+        _creator.addChild(_scene);
+
+        // Add audio to background
+        if(_project.backgroundAudio) {
+            await Scene.AddAudio({
+                projectId: projectId,
+                scene: _scene,
+                audio: _project.backgroundAudio,
+                volume: 1,
+                showAt: 0
+            });
+        };
+
+        // Add image to background
+        await Scene.AddImage({
+            projectId: projectId,
+            scene: _scene,
+            image: _property.backgroundImage,
+            totalTime: _property.totalTime,
+            width: W,
+            height: H,
+            showAt: 0,
+            hideAt: _property.totalTime
+        });
+
+        // Add video to background
+        await Scene.AddVideo({
+            projectId: projectId,
+            scene: _scene,
+            video: _property.backgroundVideo,
+            totalTime: _property.totalTime,
+            width: W,
+            height: H,
+            showAt: 0
+        });
+
+        // Render for all slides into separate files
+        let _index = 0;
+        let _length = _slides.length;
+
+        // Create scenes and add it main creator
+        const _build = async () => {
+
+            // If index > total slides then finish
+            if(_index > _length - 1) {
+                console.log("Service/Project.Render(): All scenes builded and added in to creator");
+                sse("Rendering: All Scenes builded");
+                return;
+            };
+
+            // Get current slide by index
+            const _slide = _slides[_index];
+
+            // Add narration to scene
+            await Scene.AddAudio({
+                projectId: projectId,
+                scene: _scene,
+                audio: `${_slide.id}.wav`,
+                volume: 1,
+                showAt: _slide.showAt
+            });
+            
+            // Add image to scene
+            await Scene.AddImage({
+                projectId: projectId,
+                scene: _scene,
+                image: _slide.image,
+                totalTime: _slide.totalTime,
+                width: W,
+                height: H,
+                showAt: _slide.showAt,
+                hideAt: _slide.hideAt
+            });
+
+            // Add video to scene
+            await Scene.AddVideo({
+                projectId: projectId,
+                scene: _scene,
+                video: _slide.video,
+                totalTime: _slide.totalTime,
+                width: W,
+                height: H,
+                showAt: _slide.showAt
+            });
+
+            // Add main content to scene
+            await Scene.AddText({
+                projectId: projectId,
+                scene: _scene,
+                content: _slide.content,
+                width: W,
+                height: H,
+                showAt: _slide.showAt,
+                hideAt: _slide.hideAt
+            });
+            
+            // Log
+            console.log(`Service/Project.Render(): scene ${_slide.id} builded`);
+
+            // Send SSE
+            sse(`Rendering: Scene ${_index + 1} builded`);
+
+            // Proceed to build next slide
+            _index++;
+            await _build();
+
+        };
+
+        // Build all slides
+        await _build();
+
+        // Start the rendering
+        _creator.output(path.join(_projectPath, `./export/${_exportName}`));
+        _creator.start();
+        _creator.closeLog();
+        
+        // Register events
+        _creator.on("start", () => {
+
+            // Send SSE
+            sse(`Rendering: Project rendering started`);
+
+            // Log
+            console.log(`Service/Project.Render(): Project render ${projectId} started`);
+            
+        });
+        _creator.on("error", e => {
+            
+            // Send SSE
+            sse(`Rendering: Error while rendering project`);
+
+            // Log and reject
+            console.log(`Service/Project.Render(): Unable to render project: ${projectId}`);
+            _delay.reject(`Service/Project.Render(): Unable to render project: ${projectId}`);
+
+        });
+        _creator.on("progress", e => {
+
+            // Send SSE
+            sse(`Rendering: Project render status: ${(e.percent * 100) >> 0}%`);
+
+            // Log
+            console.log(`Service/Project.Render(): Project render: ${(e.percent * 100) >> 0}%`);
+
+        });
+        _creator.on("complete", e => {
+
+            // Send SSE
+            sse(`Rendering: Project render completed`);
+
+            // Log and resolve
+            console.log(`Service/Project.Render(): Project render ${projectId} completed`);
+            _delay.resolve(_exportName);
+
+        });
+
+    }
+    catch(error) {
+
+        // Send SSE
+        sse(`Rendering: Error while rendering project`);
+
+        // Log and reject
+        console.log("Service/Project.Render():", error);
+        _delay.reject(error);
+        
+    }
+
+    return _delay.promise;
+
+};
+//#endregion
 
 
 // Project object
@@ -36,7 +260,7 @@ const Project = {
         console.log("Service/Project.GetActive(): Project loaded from cache", projectId);
 
         //
-        return (PROJECT_ACTIVE_DATA || PROJECT_ACTIVE_DATA == null) ? undefined : PROJECT_ACTIVE_DATA;
+        return (!PROJECT_ACTIVE_DATA || PROJECT_ACTIVE_DATA == null) ? undefined : PROJECT_ACTIVE_DATA;
 
     },
     //#endregion
@@ -195,6 +419,7 @@ const Project = {
             await fs.mkdir(_projectPath, { recursive: true });
             await fs.mkdir(path.join(_projectPath, "/asset"), { recursive: true });
             await fs.mkdir(path.join(_projectPath, "/cache"), { recursive: true });
+            await fs.mkdir(path.join(_projectPath, "/export"), { recursive: true });
             await fs.writeFile(path.join(_projectPath, "/project.json"), JSON.stringify(_project));
 
             // Create voide and render out the slides
@@ -217,6 +442,8 @@ const Project = {
     },
     //#endregion
 
+
+    //#region Update
     Update: async function(projectId = "", prompt = "") {
 
 
@@ -252,7 +479,10 @@ const Project = {
 
 
     },
+    //#endregion
 
+
+    //#region Save
     Save: async function(projectId = "") {
 
         try {
@@ -274,8 +504,9 @@ const Project = {
             throw error;
         };
 
-    }
+    },
+    //#endregion
 
-}
+};
 
-export default Project;
+export default { ... Project, Render };

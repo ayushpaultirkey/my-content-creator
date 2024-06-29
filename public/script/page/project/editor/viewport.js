@@ -2,7 +2,7 @@ import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
 import MyCreator from "@library/mycreator";
-import ServerEvent from "@library/sse";
+import ServerEvent from "@library/serverevent";
 
 @Component
 export default class Viewport extends H12 {

@@ -73,7 +73,7 @@ async function Render(projectId = "", project = {}) {
         FFCreator.setFFprobePath(path.join(__dirname, "./../../library/ffprobe.exe"));
 
         // Get project path
-        const _path = Project.Path(projectId);
+        const _projectPath = Project.Path(projectId);
 
         // Get slides
         const _slides = project.property.slides;
@@ -112,12 +112,14 @@ async function Render(projectId = "", project = {}) {
             _scene.setDuration(_slide.totalTime);
             _creator.addChild(_scene);
 
-            // Try and add narration if avaiable
+            // Add narration if available
             try {
 
-                const _audioPath = path.join(_path, `/asset/${_slide.id}.wav`);
+                // Get narration audio path
+                const _audioPath = path.join(_projectPath, `/asset/${_slide.id}.wav`);
                 await fs.access(_audioPath);
 
+                // Add narration file
                 _scene.addAudio({ path: _audioPath, start: 0 });
 
             }
@@ -125,14 +127,14 @@ async function Render(projectId = "", project = {}) {
                 console.log(`Service/Slide.Render(): Cannot find narration voice for ${_slide.id}`, error);
             };
 
-            // Add image if avaiable
+            // Add image if available
             if(typeof(_slide.image) !== "undefined" && _slide.image.length > 0) {
 
                 // Check if the images are valid
                 const _image = [];
                 for(const x of _slide.image) {
                     try {
-                        const _imagePath = path.join(_path, "/asset/", x.name);
+                        const _imagePath = path.join(_projectPath, "/asset/", x.name);
                         await fs.access(_imagePath);
                         _image.push(_imagePath);
                     }
@@ -157,34 +159,34 @@ async function Render(projectId = "", project = {}) {
                 
             };
 
-            // Try and add video clip
-            try {
+            // Add video if available
+            if(typeof(_slide.video) !== "undefined" && _slide.video.length > 0 && typeof(_slide.video[0].name) !== "undefined") {
+            
+                // Try and add video
+                try {
 
-                // Check if the video is valid
-                if(typeof(_slide.video) === "undefined" || _slide.video.length == 0 || typeof(_slide.video[0].name) === "undefined") {
-                    throw new Error("Invalid video or not defined");
+                    // Get the transition and the video src
+                    const _videoEffect = (typeof(_slide.video[0].effect) === "undefined" || _slide.video[0].effect.length < 2) ? "fadeIn" : _slide.video[0].effect;
+                    const _videoPath = path.join(_projectPath, `/asset/${_slide.video[0].name}`);
+                    await fs.access(_videoPath);
+
+                    // Create new video and add it scene
+                    const _video = new FFVideo({
+                        path: _videoPath,
+                        width: W,
+                        height: H,
+                        x: W / 2,
+                        y: H / 2,
+                        scale: 1.25
+                    });
+                    _video.addEffect(_videoEffect, 1, 0);
+                    _scene.addChild(_video);
+
+                }
+                catch(error) {
+                    console.log(`Service/Slide.Render(): Unable to add video ${_slide.video[0].name} for ${_slide.id}`, error);
                 };
 
-                // Get the transition and the video src
-                const _videoEffect = (typeof(_slide.video[0].effect) === "undefined" || _slide.video[0].effect.length < 2) ? "fadeIn" : _slide.video[0].effect;
-                const _videoPath = path.join(_path, `/asset/${_slide.video[0].name}`);
-                await fs.access(_videoPath);
-
-                // Create new video and add it scene
-                const _video = new FFVideo({
-                    path: _videoPath,
-                    width: W,
-                    height: H,
-                    x: W / 2,
-                    y: H / 2,
-                    scale: 1.25
-                });
-                _video.addEffect(_videoEffect, 1, 0);
-                _scene.addChild(_video);
-
-            }
-            catch(error) {
-                console.log(`Service/Slide.Render(): Cannot add video ${_slide.id}`, error);
             };
 
             // Add the slide's content
@@ -195,14 +197,14 @@ async function Render(projectId = "", project = {}) {
             });
             _text.setColor("#ffffff");
             _text.addEffect("zoomIn", 1, 0);
-            _text.addEffect("fadeOut", 1, _slide.hideAt - _slide.showAt);
+            _text.addEffect("fadeOut", 1, (_slide.totalTime < 2) ? _slide.totalTime : (_slide.totalTime - 0.5));
             _text.alignCenter();
             _text.setFont(path.join(__dirname, "../../project/.font/static/NotoSans-SemiBold.ttf"));
             _text.setWrap(W / 1.5);
             _scene.addChild(_text);
 
             // Start the rendering
-            _creator.output(path.join(_path, `./cache/${_slide.id}.mp4`));
+            _creator.output(path.join(_projectPath, `./cache/${_slide.id}.mp4`));
             _creator.start();
             _creator.closeLog();
 

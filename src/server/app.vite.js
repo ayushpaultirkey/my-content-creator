@@ -9,9 +9,9 @@ import compression from "compression";
 import viteExpress from "vite-express";
 
 import router from "./router.js";
+import Cache from "./../service/cache.js";
 import Gemini from "./../service/google/gemini.js";
-import Cache from "../service/cache.js";
-import directory from "#library/directory.js";
+import directory from "./../library/directory.js";
 
 //
 export default function init() {

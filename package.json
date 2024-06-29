@@ -45,7 +45,7 @@
         "vite-express": "^0.11.1"
     },
     "imports": {
-        "#serivce/*": [ "./src/serivce/*" ],
+        "#service/*": [ "./src/service/*" ],
         "#library/*": [ "./src/library/*" ],
         "#controller/*": [ "./src/express/controller/*" ]
     }

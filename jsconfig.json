@@ -4,7 +4,7 @@
             "@library/*": ["./public/library/*"],
             "@style/*": ["./public/style/*"],
             "@component/*": ["./public/script/component/*"],
-            "#serivce/*": [ "./src/serivce/*" ],
+            "#service/*": [ "./src/service/*" ],
             "#controller/*": [ "./src/express/controller/*" ],
             "#library/*": [ "./src/library/*" ]
         }

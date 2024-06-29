@@ -5,7 +5,7 @@ import { fileURLToPath, URL } from "url";
 import tailwindcss from "tailwindcss";
 import autoprefixer from "autoprefixer";
 
-import h12VitePlugin from "./plugin/h12.vite";
+import h12vite from "./plugin/h12.vite";
 
 export default defineConfig({
     root: join(__dirname, "/public"),
@@ -18,7 +18,7 @@ export default defineConfig({
         ]
     },
     plugins: [
-        h12VitePlugin()
+        h12vite()
     ],
     resolve: {
         alias: [

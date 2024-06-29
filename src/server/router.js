@@ -2,6 +2,7 @@ import express from "express";
 
 import SUpdate from "./controller/slide/update.js";
 
+import PExport from "./controller/project/export.js";
 import PCreate from "./controller/project/create.js";
 import PUpdate from "./controller/project/update.js";
 import PValidate from "./controller/project/validate.js";
@@ -9,14 +10,14 @@ import PValidate from "./controller/project/validate.js";
 import AFetch from "./controller/asset/fetch.js";
 import AUpload from "./controller/asset/upload.js";
 
-import GAuth from "#controller/google/auth.js";
-import GAuthStatus from "#controller/google/auth/status.js";
-import GAuthCallback from "#controller/google/auth/callback.js";
+import GAuth from "./controller/google/auth.js";
+import GAuthStatus from "./controller/google/auth/status.js";
+import GAuthCallback from "./controller/google/auth/callback.js";
 
-import GGemini from "#controller/google/gemini.js";
+import GGemini from "./controller/google/gemini.js";
 
-import DGetFile from "#controller/google/drive/getfile.js";
-import DImport from "#controller/google/drive/import.js";
+import DGetFile from "./controller/google/drive/getfile.js";
+import DImport from "./controller/google/drive/import.js";
 
 //
 const router = express.Router();
@@ -25,6 +26,7 @@ const router = express.Router();
 router.post("/api/project/create", PCreate);
 router.get("/api/project/validate", PValidate);
 router.get("/api/project/update", PUpdate);
+router.get("/api/project/export", PExport);
 
 // Slide
 router.get("/api/slide/update", SUpdate);

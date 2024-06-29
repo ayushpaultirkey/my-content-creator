@@ -1,7 +1,7 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
-import ServerEvent from "@library/sse";
+import ServerEvent from "@library/serverevent";
 import MyCreator from "@library/mycreator";
 import Drive from "@component/drive";
 
