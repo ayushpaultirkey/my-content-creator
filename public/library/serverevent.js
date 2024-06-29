@@ -6,6 +6,11 @@ const ServerEvent = {
 
         if(!!window.EventSource) {
 
+            if(SEvent[id]) {
+                console.log("ServerEvent.Register(): id already exists");
+                return false;
+            };
+
             SEvent[id] = new EventSource(url);
             SData[id] = [];
 
@@ -35,6 +40,7 @@ const ServerEvent = {
         SEvent[id].close();
 
         delete SEvent[id];
+        delete SData[id];
 
     },
     /**

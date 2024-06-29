@@ -3,6 +3,7 @@ import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
 import MyCreator from "@library/mycreator";
 import Asset from "@component/asset";
+import ServerEvent from "@library/serverevent";
 
 @Component
 export default class Project extends H12 {
@@ -71,6 +72,9 @@ export default class Project extends H12 {
 
                     <div class="border border-transparent border-t-zinc-700 pt-3">
                         <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Update }>Update</button>
+                    </div>
+                    <div class="border border-transparent border-t-zinc-700 pt-3">
+                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Render } id="RenderButton">Render</button>
                     </div>
 
                     <div class="flex flex-col">
@@ -151,6 +155,86 @@ export default class Project extends H12 {
 
         // Call dispather hide loader
         Dispatcher.Call("HideLoader");
+
+    }
+
+    async Render() {
+
+        // Check if the project is valid
+        if(!MyCreator.Project.IsValid(this.Project)) {
+            return false;
+        };
+
+        // Try and render project
+        try {
+
+            // Disable button
+            this.element.RenderButton.disabled = true;
+
+            // Get project id and the slide's id by the index
+            const _projectId = this.Project.id;
+
+            // Register new server side event
+            ServerEvent.Register("Render", `/api/project/export?pid=${_projectId}`);
+
+            // Bind new on open event
+            ServerEvent.Bind("Render", "open", (event) => {
+
+                // Call dispather show loader
+                Dispatcher.Call("OnLoaderShow");
+
+            });
+
+            // Bind new on message event
+            ServerEvent.Bind("Render", "message", (event) => {
+
+                // Try and get response
+                try {
+
+                    // Get check if its success
+                    const _data = JSON.parse(event.data.split("data:"));
+                    if(!_data.success) {
+                        throw new Error(_data.message);
+                    };
+
+                    // Call dispather show loader
+                    Dispatcher.Call("OnLoaderUpdate", _data.message);
+
+                }
+                catch(error) {
+
+                    // Alert and destory server event
+                    alert(error);
+                    Dispatcher.Call("OnLoaderHide");
+                    ServerEvent.Destroy("Render");
+
+                    // Enable button
+                    this.element.RenderButton.disabled = false;
+
+                };
+
+            });
+    
+            // Bind new on error event
+            ServerEvent.Bind("Render", "error", (event) => {
+
+                // Alert and destory server event
+                Dispatcher.Call("OnLoaderHide");
+                ServerEvent.Destroy("Render");
+
+                // Enable button
+                this.element.RenderButton.disabled = false;
+
+            });
+
+        }
+        catch(error) {
+
+            // Alert and log
+            alert("Unable to render project, try again later");
+            console.error("Editor/Project.Render():", error);
+            
+        };
 
     }
 

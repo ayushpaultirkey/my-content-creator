@@ -24,6 +24,11 @@ class App extends H12 {
         // Register dispatcher event
         Dispatcher.On("ShowLoader", this.Loader.Show.bind(this));
         Dispatcher.On("HideLoader", this.Loader.Hide.bind(this));
+
+        Dispatcher.On("OnLoaderShow", this.Loader.Show.bind(this));
+        Dispatcher.On("OnLoaderHide", this.Loader.Hide.bind(this));
+        Dispatcher.On("OnLoaderUpdate", this.Loader.Update.bind(this));
+        
         Dispatcher.On("OnNavigate", this.Navigate.To.bind(this));
 
         // Register server side event
@@ -54,6 +59,8 @@ class App extends H12 {
     Loader = {
         Show: (event, args) => {
             this.Set("{a.loader}", "");
+        },
+        Update: (event, args) => {
             this.Set("{a.loader.text}", args);
         },
         Hide: () => {
