@@ -12,12 +12,7 @@ export default async function Auth(request, response) {
 
         //
         const _auth = Google.OAuth2Client();
-        
-        //
-        const _authUrl = _auth.generateAuthUrl({
-            access_type: "offline",
-            scope: [ "https://www.googleapis.com/auth/drive" ],
-        });
+        const _authUrl = Google.OAuth2GenerateURL(_auth);
 
         //
         response.redirect(_authUrl);

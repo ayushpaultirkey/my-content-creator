@@ -7,10 +7,12 @@ import axios from "axios";
 import multer from "multer";
 import fsp from "fs/promises";
 import mime from "mime-types";
-import { ElevenLabsClient } from "elevenlabs";
+import util from "util";
+import googlecloud from "@google-cloud/text-to-speech";
 
 import directory from "./../library/directory.js";
 
+import Voice from "./asset/voice.js";
 import Project from "./project.js";
 import Cache from "./cache.js";
 
@@ -374,122 +376,30 @@ async function GetExternalAsset(projectId, project = {}) {
 
 
 /**
-    * 
-    * @param {*} projectId 
+    * Create voice for the project
+    * @param {string} projectId The project id to locate the project directory
+    * @param {boolean} useLocalTTS Use local TTS, by default its set to `true`
 */
-async function VoiceByLocalTTS(projectId = "", slide = []) {
-
-    // Get project path and update the project json file
-    const _path = Project.Path(projectId);
-
-    // Function to export spoken audio to a WAV file
-    function _export(content, filePath) {
-        return new Promise((resolve, reject) => {
-            say.export(content, undefined, 1, filePath, (error) => {
-                if(error) {
-                    reject(error);
-                }
-                else {
-                    resolve();
-                };
-            });
-        });
-    };
-
-    // Create audio files for the slides
-    for(var i = 0, l = slide.length; i < l; i++) {
-        // Export spoken audio to a WAV file
-        try {
-            const _filePath = path.join(_path, `/asset/${slide[i].id}.wav`);
-            await _export(slide[i].content, _filePath);
-            console.log(`${slide[i].id} voice created`);
-        }
-        catch(error) {
-            console.log(`VoiceByLocalTTS(): Error creating voice for slide ${slide[i].id}:`, error);
-        };
-    };
-
-};
-
-
-/**
-    * 
-    * @param {*} projectId 
-*/
-async function VoiceByExternalTTS(projectId = "", slide = []) {
-
-    // Get project path and update the project json file
-    const _path = Project.Path(projectId);
-
-    // Create client for eleven lab
-    const _client = new ElevenLabsClient({
-        apiKey: process.env.ELEVENLABS_API,
-    });
-
-    // Function to export spoken audio to a WAV file
-    function _export(content, filePath) {
-        return new Promise(async(resolve, reject) => {
-            try {
-
-                const _audio = await _client.generate({
-                    voice: "Rachel",
-                    model_id: "eleven_multilingual_v2",
-                    text: content,
-                });
-
-                const _fileStream = fs.createWriteStream(filePath);
-
-                _audio.pipe(_fileStream);
-
-                _fileStream.on("finish", resolve);
-                _fileStream.on("error", reject);
-
-            }
-            catch(error) {
-                reject(error);
-            };
-        });
-    };
-
-    // Create audio files for the slides
-    for(var i = 0, l = slide.length; i < l; i++) {
-
-        // Export spoken audio to a WAV file
-        try {
-            const _filePath = path.join(_path, `/asset/${slide[i].id}.wav`);
-            await _export(slide[i].content, _filePath);
-            console.log(`${slide[i].id} voice created`);
-        }
-        catch(error) {
-            console.log(`VoiceByExternalTTS(): Error creating voice for slide ${slide[i].id}:`, error);
-        };
-        
-    };
-
-};
-
-
-/**
-    * Create voice for the slides
-    * @param {string} projectId 
-    * @param {[]} slide 
-*/
-async function CreateVoiceAsset(projectId = "", slide = [], useLocalTTS = true) {
+async function CreateVoiceAsset(projectId = "", useLocalTTS = true) {
 
     // Try and create narration for video
     try {
 
+        // Get project and its slide
+        const _project = await Project.GetActive(projectId);
+        const _slide = _project.property.slides;
+
         // Select service for the TTS
         if(useLocalTTS) {
-            await VoiceByLocalTTS(projectId, slide);
+            await Voice.ByLocalTTS(projectId, _slide);
         }
         else {
-            await VoiceByExternalTTS(projectId, slide);
+            await Voice.ByExternalTTS(projectId, _slide);
         };
 
     }
     catch(error) {
-        console.log("CreateVoice(): General error", error);
+        console.log("Service/Asset.CreateVoiceAsset(): General error", error);
         throw error;
     };
 

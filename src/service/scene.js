@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import { FFText, FFAlbum, FFVideo } from "ffcreator";
+import { FFText, FFAlbum, FFVideo, FFAudio } from "ffcreator";
 
 import directory from "../library/directory.js";
 
@@ -80,21 +80,11 @@ async function AddImage({ projectId, scene, image, totalTime, showAt, hideAt, wi
     if(typeof(image) !== "undefined" && image.length > 0) {
 
         // Check if the images are valid
-        const _image = [];
-        for(const x of image) {
-            try {
-                const _imagePath = path.join(Project.Path(projectId), "/asset/", x.name);
-                await fs.access(_imagePath);
-                _image.push(_imagePath);
-            }
-            catch(error) {
-                console.log(`Service/Scene.AddImage(): Cannot find ${x} image asset file for ${projectId}`, error);
-            };
-        };
+        const _asset = await ValidateAsset(projectId, image);
 
         // Create new album using images
         const _album = new FFAlbum({
-            list: _image,
+            list: _asset.map(x => x.name),
             x: width / 2,
             y: height / 2,
             width: width,
@@ -102,7 +92,7 @@ async function AddImage({ projectId, scene, image, totalTime, showAt, hideAt, wi
             scale: 1.25
         });
         _album.setTransition();
-        _album.setDuration(totalTime / _image.length);
+        _album.setDuration(totalTime / _asset.length);
         _album.setTransTime(1);
         _album.addEffect("fadeIn", 1, showAt);
         _album.addEffect("fadeOut", 1, hideAt);
@@ -110,10 +100,13 @@ async function AddImage({ projectId, scene, image, totalTime, showAt, hideAt, wi
         
     };
 
-
 };
 
 
+/**
+    * 
+    * @param {} config
+*/
 async function AddAudio({ projectId, scene, audio, volume, showAt }) {
 
     // Add audio if available

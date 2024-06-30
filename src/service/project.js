@@ -1,7 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import { FFScene, FFCreator } from "ffcreator";
+import { FFScene, FFCreator, FFAudio } from "ffcreator";
 
 import delay from "../library/wait.js";
 import directory from "../library/directory.js";
@@ -48,7 +48,7 @@ async function Render(projectId = "", sse = null) {
         // Get project path
         const _projectPath = Project.Path(projectId);
 
-        // Get slides
+        // Get property and slides
         const _property = _project.property;
         const _slides = _property.slides;
 
@@ -77,6 +77,7 @@ async function Render(projectId = "", sse = null) {
                 volume: 1,
                 showAt: 0
             });
+            _scene.addChild()
         };
 
         // Add image to background
@@ -102,82 +103,61 @@ async function Render(projectId = "", sse = null) {
             showAt: 0
         });
 
-        // Render for all slides into separate files
-        let _index = 0;
-        let _length = _slides.length;
-
-        // Create scenes and add it main creator
-        const _build = async () => {
-
-            // If index > total slides then finish
-            if(_index > _length - 1) {
-                console.log("Service/Project.Render(): All scenes builded and added in to creator");
-                sse("Rendering: All Scenes builded");
-                return;
-            };
-
-            // Get current slide by index
-            const _slide = _slides[_index];
+        // Add each slides into the scene
+        for(const slide of _slides) {
 
             // Add narration to scene
             await Scene.AddAudio({
                 projectId: projectId,
                 scene: _scene,
-                audio: `${_slide.id}.wav`,
+                audio: `${slide.id}.wav`,
                 volume: 1,
-                showAt: _slide.showAt
+                showAt: slide.showAt
             });
             
             // Add image to scene
             await Scene.AddImage({
                 projectId: projectId,
                 scene: _scene,
-                image: _slide.image,
-                totalTime: _slide.totalTime,
+                image: slide.image,
+                totalTime: slide.totalTime,
                 width: W,
                 height: H,
-                showAt: _slide.showAt,
-                hideAt: _slide.hideAt
+                showAt: slide.showAt,
+                hideAt: slide.hideAt
             });
 
             // Add video to scene
             await Scene.AddVideo({
                 projectId: projectId,
                 scene: _scene,
-                video: _slide.video,
-                totalTime: _slide.totalTime,
+                video: slide.video,
+                totalTime: slide.totalTime,
                 width: W,
                 height: H,
-                showAt: _slide.showAt
+                showAt: slide.showAt
             });
 
             // Add main content to scene
             await Scene.AddText({
                 projectId: projectId,
                 scene: _scene,
-                content: _slide.content,
+                content: slide.content,
                 width: W,
                 height: H,
-                showAt: _slide.showAt,
-                hideAt: _slide.hideAt
+                showAt: slide.showAt,
+                hideAt: slide.hideAt
             });
             
             // Log
-            console.log(`Service/Project.Render(): scene ${_slide.id} builded`);
+            console.log(`Service/Project.Render(): scene ${slide.id} builded`);
 
             // Send SSE
-            sse(`Rendering: Scene ${_index + 1} builded`);
+            sse(`Rendering: Scene ${slide.id} builded`);
 
-            // Proceed to build next slide
-            _index++;
-            await _build();
+        }
 
-        };
-
-        // Build all slides
-        await _build();
-
-        // Start the rendering
+        // Start rendering        
         _creator.output(path.join(_projectPath, `./export/${_exportName}`));
         _creator.start();
         _creator.closeLog();
@@ -251,16 +231,27 @@ const Project = {
     */
     GetActive: async function(projectId = "") {
 
-        //
-        if(PROJECT_ACTIVE_DATA == null || PROJECT_ACTIVE_ID !== projectId) {
-            return await this.SetActive(projectId);
-        };
+        try {
 
-        //
-        console.log("Service/Project.GetActive(): Project loaded from cache", projectId);
+            // Check if current project is empty or if th id match the current id
+            if(!PROJECT_ACTIVE_DATA || PROJECT_ACTIVE_ID !== projectId) {
+                return await this.SetActive(projectId);
+            };
 
-        //
-        return (!PROJECT_ACTIVE_DATA || PROJECT_ACTIVE_DATA == null) ? undefined : PROJECT_ACTIVE_DATA;
+            // Log
+            console.log("Service/Project.GetActive(): Project loaded from cache", projectId);
+
+            // Return data
+            return PROJECT_ACTIVE_DATA;
+
+        }
+        catch(error) {
+
+            // Log and throw
+            console.log("Service/Project.GetActive():", error);
+            throw error;
+
+        }
 
     },
     //#endregion
@@ -424,7 +415,7 @@ const Project = {
 
             // Create voide and render out the slides
             await Asset.GetExternalAsset(_projectId, _project);
-            await Asset.CreateVoiceAsset(_projectId, _project.property.slides);
+            await Asset.CreateVoiceAsset(_projectId);
             await Slide.Render(_projectId, _project);
 
             // Log

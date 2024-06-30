@@ -1,10 +1,12 @@
 import "dotenv/config";
+import fs from "fs";
+import path from "path";
 import { google } from "googleapis";
 import { EventEmitter } from "events";
 
 
-let G_AUTH_EVENT = new EventEmitter();
-let O_AUTH2_CLIENT = null;
+let OAUTH_EVENT = new EventEmitter();
+let OAUTH2_CLIENT = null;
 
 
 /**
@@ -51,7 +53,7 @@ function SetAuthToken(request, token) {
     * @returns 
 */
 function GetAuthEvent() {
-    return G_AUTH_EVENT;
+    return OAUTH_EVENT;
 };
 
 
@@ -61,27 +63,30 @@ function GetAuthEvent() {
 */
 function OAuth2Client() {
 
-    //
+    // Try and create or read oauth2 client
     try {
 
-        //
-        if(!O_AUTH2_CLIENT) {
+        // Check oauthh2 its valid
+        if(!OAUTH2_CLIENT) {
 
-            //
-            O_AUTH2_CLIENT = new google.auth.OAuth2(
-                process.env.GOOGLE_CLIENT_ID,
-                process.env.GOOGLE_CLIENT_SECRET,
-                [ process.env.GOOGLE_REDIRECT_URIS ]
-            );
+            // Get oauth2 info
+            const _credential = JSON.parse(fs.readFileSync(process.env.GOOGLE_OAUTH2_CLIENT));
+            const { client_id, client_secret, redirect_uris } = _credential.installed || _credential.web;
+
+            // Store oauth2 client
+            OAUTH2_CLIENT = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+
+            // Log
+            console.error("Service/Google.OAuth2Client(): OAuth2 client created");
             
         };
 
         //
-        return O_AUTH2_CLIENT;
+        return OAUTH2_CLIENT;
 
     }
     catch(error) {
-        console.error("Service/Google/OAuth2Client(): Error initializing OAuth2 client:", error);
+        console.error("Service/Google.OAuth2Client(): Error initializing OAuth2 client:", error);
         throw error;
     };
 
@@ -102,10 +107,10 @@ function OAuth2Callback(code = "") {
         return new Promise((resolve, reject) => {
             _client.getToken(code, (error, token) => {
                 if(error) {
-                    console.error("Service/Google/OAuth2Callback(): Error exchanging code for token:", error);
+                    console.error("Service/Google.OAuth2Callback(): Error exchanging code for token:", error);
                     reject(error);
                     return;
-                }
+                };
                 _client.setCredentials(token);
                 resolve(token.access_token);
             });
@@ -113,11 +118,31 @@ function OAuth2Callback(code = "") {
 
     }
     catch(error) {
-        console.error("Service/Google/OAuth2Callback(): Error exchanging code for token:", error);
+        console.error("Service/Google.OAuth2Callback(): Error exchanging code for token:", error);
         throw error;
     };
 
 };
 
 
-export default { OAuth2Client, OAuth2Callback, GetAuthEvent, GetAuthToken, SetAuthToken, HasAuthToken }
+function OAuth2GenerateURL(oauth2 = null) {
+
+    try {
+
+        if(!oauth2) {
+            throw new Error("Invalid oauth2");
+        };
+
+        return oauth2.generateAuthUrl({
+            access_type: "offline",
+            scope: [ "https://www.googleapis.com/auth/drive" ],
+        });
+
+    }
+    catch(error) {
+        throw error;
+    }
+
+};
+
+export default { OAuth2Client, OAuth2Callback, GetAuthEvent, GetAuthToken, SetAuthToken, HasAuthToken, OAuth2GenerateURL }
