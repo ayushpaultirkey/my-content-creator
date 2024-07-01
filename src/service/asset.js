@@ -1,14 +1,11 @@
 import "dotenv/config";
 import fs from "fs";
-import say from "say";
 import path from "path";
 import sharp from "sharp";
 import axios from "axios";
 import multer from "multer";
 import fsp from "fs/promises";
 import mime from "mime-types";
-import util from "util";
-import googlecloud from "@google-cloud/text-to-speech";
 
 import directory from "./../library/directory.js";
 
@@ -85,6 +82,11 @@ async function GetLocalAsset(projectId = "") {
       
             // Check if its file
             if(_fileStat.isFile()) {
+
+                // Check if the file isnt narration file
+                if(file.match(/slide[0-9]+\.wav/g)) {
+                    continue;
+                };
 
                 // Get its mime type
                 const _mime = mime.lookup(_filePath);
@@ -380,21 +382,17 @@ async function GetExternalAsset(projectId, project = {}) {
     * @param {string} projectId The project id to locate the project directory
     * @param {boolean} useLocalTTS Use local TTS, by default its set to `true`
 */
-async function CreateVoiceAsset(projectId = "", useLocalTTS = true) {
+async function CreateVoiceAsset(projectId = "", slide = [], useLocalTTS = true) {
 
     // Try and create narration for video
     try {
 
-        // Get project and its slide
-        const _project = await Project.GetActive(projectId);
-        const _slide = _project.property.slides;
-
         // Select service for the TTS
         if(useLocalTTS) {
-            await Voice.ByLocalTTS(projectId, _slide);
+            await Voice.ByLocalTTS(projectId, slide);
         }
         else {
-            await Voice.ByExternalTTS(projectId, _slide);
+            await Voice.ByExternalTTS(projectId, slide);
         };
 
     }

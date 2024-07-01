@@ -107,10 +107,10 @@ async function ImportFile(projectId = "", id = []) {
                 const _projectPath = path.join(Project.Path(projectId), `/asset/${_name}`);
 
                 // Once downlaoded finally process if its image or copy the file to project
-                if(_mimeType.startsWith('image/')) {
+                if(_mime.startsWith('image/')) {
 
                     // Process image and move it to project asset folder
-                    await sharp(_destination)
+                    await sharp(_tempPath)
                     .resize({
                         width: (_project.config.width * 1),
                         height: (_project.config.height * 1),
@@ -122,7 +122,7 @@ async function ImportFile(projectId = "", id = []) {
                 else {
 
                     // Copy other asset to project folder
-                    await fsp.copyFile(_destination, _projectPath);
+                    await fsp.copyFile(_tempPath, _projectPath);
 
                 };
 

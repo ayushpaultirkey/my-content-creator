@@ -28,6 +28,9 @@ export default class Editor extends H12 {
             this.Project = args.project;
             await this.Load();
 
+            // Bind dispatcher
+            Dispatcher.On("OnAssetUpdated", this.LoadAsset.bind(this));
+
         }
         else {
             // Show message
@@ -39,69 +42,115 @@ export default class Editor extends H12 {
     async render() {
         return <>
             <div class="w-full h-full relative">
-                <div class="w-full h-full flex flex-row">
+                <div class="w-full h-full flex flex-row relative">
 
-                    <div class="bg-zinc-900 flex-col sm:flex hidden p-4">
+                    <div class="w-full h-full bg-zinc-900 flex-col flex p-4 absolute -left-full md:w-auto md:h-auto md:static md:left-auto" id="NavigationTab">
                         <button class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-blue-500 fa fa-grip"></i>Dashboard</button>
                         <button onclick={ () => { this.Tab(0); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-red-500 fa-solid fa-wand-magic-sparkles"></i>Prompt</button>
                         <button onclick={ () => { this.Tab(1); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-green-500 fa-solid fa-film"></i>Slide</button>
                         <button onclick={ () => { this.Tab(2); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-yellow-500 fa-solid fa-folder-open"></i>Project</button>
-                        <button onclick={ () => { this.Tab(3); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-cyan-500 fa-solid fa-download"></i>Export</button>
+                        <button onclick={ () => { this.Tab(3); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-cyan-500 fa-solid fa-cloud-arrow-up"></i>Export</button>
                         <button onclick={ () => { this.Tab(4); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-indigo-500  fa-solid fa-gear"></i>Settings</button>
                     </div>
-                    <div class="min-w-[340px] max-w-[340px] bg-zinc-800 border-r border-zinc-700 flex-col sm:flex hidden" id="EditorTab">
-                        
-                        <Prompt args id="Prompt" project={ this.args.project }></Prompt>
-                        <Slide args id="Slide" project={ this.args.project }></Slide>
-                        <Project args id="Project" project={ this.args.project }></Project>
 
-                        <div class="w-full h-full overflow-hidden hidden" id="projectTExport">
-                            <div class="w-full h-full p-4 px-5 flex flex-col space-y-3 overflow-auto">
+                    <div class="w-full h-full bg-zinc-800 border-r border-zinc-700 absolute -left-full md:min-w-[340px] md:max-w-[340px] md:static md:left-auto" id="PropertyTab">
+                
+                        <div id="EditorTab" class="w-full h-full">
+                            <Prompt args id="Prompt" project={ this.args.project }></Prompt>
+                            <Slide args id="Slide" project={ this.args.project }></Slide>
+                            <Project args id="Project" project={ this.args.project }></Project>
 
-                                <div class="border border-transparent border-b-zinc-700 pb-2">
-                                    <label class="font-semibold text-zinc-400">Export</label>
+                            <div class="w-full h-full overflow-hidden hidden" id="projectTExport">
+                                <div class="w-full h-full p-4 px-5 flex flex-col space-y-3 overflow-auto">
+
+                                    <div class="border border-transparent border-b-zinc-700 pb-2">
+                                        <label class="font-semibold text-zinc-400">Export</label>
+                                    </div>
+
+                                    <div class="pt-3">
+                                        <label class="text-xs font-semibold text-zinc-400 block mb-1">Publish options:</label>
+                                        <button class="block mb-2 w-full p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors"><i class="fa-brands fa-youtube mr-2"></i>Publish To Youtube</button>
+                                        <button class="block mb-2 w-full p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors"><i class="fa-brands fa-google-drive mr-2"></i>Save to Google Drive</button>
+                                        <button class="block mb-2 w-full p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors"><i class="fa-solid fa-download mr-2"></i>Download</button>
+                                    </div>
+
+                                    <div class="pt-3">
+                                    </div>
+
                                 </div>
+                            </div>
 
-                                <div class="pt-3">
-                                    <button class="p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors">Export Video</button>
+                            <div class="w-full h-full overflow-hidden hidden" id="projectTSetting">
+                                <div class="w-full h-full p-4 px-5 flex flex-col space-y-3 overflow-auto">
+
+                                    <div class="border border-transparent border-b-zinc-700 pb-2">
+                                        <label class="font-semibold text-zinc-400">Settings</label>
+                                    </div>
+
+                                    <div class="pt-3">
+                                        <button class="p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-red-500 hover:bg-red-600 active:bg-red-700 transition-colors">Delete Project</button>
+                                    </div>
+
+                                    <div class="flex flex-col">
+                                        <label class="text-xs font-semibold text-zinc-400">Note:</label>
+                                        <label class="text-xs text-zinc-400">The deleted project cannot be recovered, all the assets will be deleted.</label>
+                                    </div>
+
                                 </div>
-
                             </div>
                         </div>
 
-                        <div class="w-full h-full overflow-hidden hidden" id="projectTSetting">
-                            <div class="w-full h-full p-4 px-5 flex flex-col space-y-3 overflow-auto">
-
-                                <div class="border border-transparent border-b-zinc-700 pb-2">
-                                    <label class="font-semibold text-zinc-400">Settings</label>
-                                </div>
-
-                                <div class="pt-3">
-                                    <button class="p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-red-500 hover:bg-red-600 active:bg-red-700 transition-colors">Delete Project</button>
-                                </div>
-
-                                <div class="flex flex-col">
-                                    <label class="text-xs font-semibold text-zinc-400">Note:</label>
-                                    <label class="text-xs text-zinc-400">The deleted project cannot be recovered, all the assets will be deleted.</label>
-                                </div>
-
-                            </div>
+                        <div class="absolute right-10 top-3 flex space-x-6 md:hidden">
+                            <button class="fa-solid fa-bars text-blue-500 text-xl" onclick={ () => { this.Scroll(0); } }></button>
+                            <button class="fa-solid fa-arrow-right text-blue-500 text-xl" onclick={ () => { this.Scroll(2); } }></button>
                         </div>
-
+                    
                     </div>
 
-                    <Viewport args id="Viewport" project={ this.args.project }></Viewport>
+                    <div class="w-full h-full absolute left-0 md:static md:left-auto" id="ViewportTab">
+                        <Viewport args id="Viewport" project={ this.args.project }></Viewport>
+                        <div class="absolute left-10 top-10 flex space-x-6 md:hidden">
+                            <button class="fa-solid fa-bars text-blue-500 text-xl" onclick={ () => { this.Scroll(0); } }></button>
+                            <button class="fa-solid fa-pen-to-square text-blue-500 text-xl" onclick={ () => { this.Scroll(1); } }></button>
+                        </div>
+                    </div>
 
                 </div>
+
                 <div class="absolute w-full h-full bg-zinc-900 backdrop-blur-sm bg-opacity-50 top-0 left-0 pointer-events-none flex justify-center items-center hidden" id="EditorUploader">
                     <div class="flex flex-col text-center">
                         <i class="fa fa-upload text-zinc-100 text-2xl font-semibold space-y-2"></i>
                         <label class="text-zinc-100 text-xs font-semibold">Upload</label>
                     </div>
                 </div>
+
                 <Drive args id="GDrive" project={ this.args.project }></Drive>
+                
             </div>
         </>;
+    }
+
+    Scroll(index = 0) {
+
+        switch(index) {
+            case 0:
+                this.element.NavigationTab.classList.remove("-left-full");
+                this.element.ViewportTab.classList.add("-left-full");
+                this.element.PropertyTab.classList.add("-left-full");
+                break;
+            case 1:
+                this.element.NavigationTab.classList.add("-left-full");
+                this.element.ViewportTab.classList.add("-left-full");
+                this.element.PropertyTab.classList.remove("-left-full");
+                break;
+            case 2:
+                this.element.NavigationTab.classList.add("-left-full");
+                this.element.ViewportTab.classList.remove("-left-full");
+                this.element.PropertyTab.classList.add("-left-full");
+                break;
+
+        }
+
     }
 
     Tab(index = 0) {
@@ -114,6 +163,8 @@ export default class Editor extends H12 {
             });
             _children[index].classList.remove("hidden");
         };
+
+        this.Scroll(1);
 
     }
 
@@ -141,7 +192,7 @@ export default class Editor extends H12 {
             this.ProjectAsset = _response.data;
 
             // Distribute loaded asset
-            Dispatcher.Call("OnAssetLoad", _response.data);
+            Dispatcher.Call("OnAssetLoaded", _response.data);
 
         }
         catch(error) {
@@ -232,8 +283,8 @@ export default class Editor extends H12 {
                 throw new Error(_response.message);
             };
 
-            // Update assets
-            await this.LoadAsset();
+            // Call dispatcher event
+            Dispatcher.Call("OnAssetUpdated");
 
         }
         catch(error) {

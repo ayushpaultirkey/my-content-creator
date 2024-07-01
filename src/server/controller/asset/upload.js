@@ -65,7 +65,7 @@ export default async function Upload(request, response) {
                     else {
 
                         // Copy file to project folder
-                        fs.copyFile(_path, _destination);
+                        await fs.copyFile(_path, _destination);
 
                     };
 

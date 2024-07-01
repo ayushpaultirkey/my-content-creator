@@ -25,5 +25,5 @@ This application requires Google Cloud credentials for authentication and author
 - Add the following lines to your `.env` file, replacing the placeholders with the actual paths to your credential files:
     ```
     GOOGLE_OAUTH2_CLIENT_SECRET="./credentials/googleoauth2-client.json"
-    GOOGLE_CLOUD_SERVICE_ACCOUNT="./credentials/googlecloud-service.json"
+    GOOGLE_APPLICATION_CREDENTIALS="./credentials/googlecloud-service.json"
     ```

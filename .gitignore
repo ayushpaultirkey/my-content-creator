@@ -11,13 +11,16 @@ lerna-debug.log*
 !/src/secret/README.md
 
 project/*
+
 !project/.cache
 project/.cache/*
 !project/.cache/.gitkeep
-!project/.cache/.gitkeep
+
+!project/.temp
+project/.temp/*
+!project/.temp/.gitkeep
 
 !/project/.font
-!/project/.temp
 
 node_modules/*
 dist-ssr

@@ -16,30 +16,33 @@ export default async function Update(request, response) {
 
         // Check if the query parameter are valid
         const _projectId = request.query.pid;
-
-        // Check if the query parameter are valid
         if((typeof(_projectId) !== "string" || _projectId.length < 2)) {
             throw new Error("Invalid project id");
         };
 
-        // Check if the image is valid else set to default value
-        let _projectImage = request.query.pimage;
-        if(_projectImage == null || !Array.isArray(_projectImage)) {
-            _projectImage = [];
-        };
+        // Get project data for comparing
+        const _project = await Project.GetActive(_projectId);
+        const _property = _project.property;
 
-        // Check if the audio is valid else set to default value
-        let _projectAudio = request.query.paudio;
-        if((typeof(_projectAudio) !== "string" || _projectAudio.length < 2)) {
-            _projectAudio = "";
-        };
+        // Check for title and description
+        const _projectTitle = (typeof(request.query.ptitle) !== "string" || request.query.ptitle == _property.title || request.query.ptitle.length < 5) ? "" : `title to "${request.query.ptitle}",`;
+        const _projectDetail = (typeof(request.query.pdetail) !== "string" || request.query.pdetail == _property.description || request.query.pdetail.length < 5) ? "" : `description to "${request.query.pdetail}",`;
+        
+        // Check if the image, video and audio is valid and generate prompt for it
+        const _projectImage = (request.query.pimage == null || !Array.isArray(request.query.pimage)) ? [] : request.query.pimage;
+        const _projectVideo = (request.query.pvideo == null || !Array.isArray(request.query.pvideo)) ? [] : request.query.pvideo;
+        const _projectAudio = (request.query.paudio == null || !Array.isArray(request.query.paudio)) ? [] : request.query.paudio;
 
-        // Update slide by using the prompt
-        const _project = await Project.Update(_projectId, `Override the background image to [${_projectImage}].`);
+        const _imagePrompt = JSON.stringify(_projectImage);
+        const _videoPrompt = JSON.stringify(_projectVideo);
+        const _audioPrompt = JSON.stringify(_projectAudio);
+
+        // Update project data by using the prompt
+        const _projectUpdated = await Project.Update(_projectId, `Change the project's ${_projectTitle} ${_projectDetail} background image to ${_imagePrompt}, background video to ${_videoPrompt} and background audio to ${_audioPrompt}`);
 
         // Update response body
         _response.success = true;
-        _response.data = { id: _projectId, ... _project };
+        _response.data = { id: _projectId, ... _projectUpdated };
 
     }
     catch(error) {

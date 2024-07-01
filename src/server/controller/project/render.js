@@ -6,7 +6,7 @@ import Project from "#service/project.js";
     * @param {import("express").Request} request 
     * @param {import("express").Response} response 
 */
-export default async function Export(request, response) {
+export default async function Render(request, response) {
 
     //Create response object
     const _response = { message: "", success: false };

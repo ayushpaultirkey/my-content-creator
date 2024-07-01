@@ -2,7 +2,7 @@ import express from "express";
 
 import SUpdate from "./controller/slide/update.js";
 
-import PExport from "./controller/project/export.js";
+import PRender from "./controller/project/render.js";
 import PCreate from "./controller/project/create.js";
 import PUpdate from "./controller/project/update.js";
 import PValidate from "./controller/project/validate.js";
@@ -26,7 +26,10 @@ const router = express.Router();
 router.post("/api/project/create", PCreate);
 router.get("/api/project/validate", PValidate);
 router.get("/api/project/update", PUpdate);
-router.get("/api/project/export", PExport);
+router.get("/api/project/render", PRender);
+router.get("/api/project/export/drive", PRender);
+router.get("/api/project/export/youtube", PRender);
+router.get("/api/project/export/dowload", PRender);
 
 // Slide
 router.get("/api/slide/update", SUpdate);
@@ -46,7 +49,6 @@ router.get("/api/google/auth/callback", GAuthCallback);
 // Drive
 router.get("/api/google/drive/getfile", DGetFile);
 router.get("/api/google/drive/import", DImport);
-//router.get("/api/google/drive/upload", Fetch);
 
 //
 export default router;

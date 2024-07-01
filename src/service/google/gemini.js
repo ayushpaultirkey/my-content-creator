@@ -27,6 +27,7 @@ function Initialize() {
     "totalTime": int,
     "backgroundImage": [{ name: string, effect: string }],
     "backgroundVideo": [{ name: string, effect: string }],
+    "backgroundAudio": [{ name: string }],
     "slides": [{
     "id": string,
     "content": string,
@@ -49,10 +50,12 @@ function Initialize() {
     "backgroundVideo": in this there will be array of background videos for the video, you cannot set the value for this.
     "backgroundVideo."name": this will be the name for the background videos file, you cannot set the value for this. If its not provided then do not add the entry to array.
     "backgroundVideo."effect": this will contain the transition effect for the background videos. If its not provided then leave it blank.
+    "backgroundAudio": in this there will be array of background audios for the video, you cannot set the value for this.
+    "backgroundAudio."name": this will be the name for the background audios file, you cannot set the value for this. If its not provided then do not add the entry to array.
     "slides": this is a array that contain multiple slides of the video.
     "slides"."id": the slide id should be unique and cannot be changed once created, like "slide1", "slide2"
     "slides"."content": the content for the slide, don't use any text formatting and keep it precise if the video duration is not long.
-    "slides"."totalTime": the total time for the slide, adjust it according to the slide's content, so user can read it.
+    "slides"."totalTime": the total time for the slide, make it the average time to speak the content.
     "slides"."showAt": the time when the slide will be visible.
     "slides"."hideAt": the time when the slide will hide, and next slide will show.
     "slides"."image": the array of slide's image that will be displayed, you cannot set the value for this.
@@ -60,10 +63,7 @@ function Initialize() {
     "slides"."image"."effect": this will contain the transition effect for the image. If its not provided then leave it blank.
     "slides"."video": the array of slide's video that will be displayed, you cannot set the value for this.
     "slides"."video"."name": this will be the name for the video file, you cannot set the value for this. If its not provided then do not add the entry to array.
-    "slides"."video"."effect": this will contain the transition effect for the video. If its not provided then leave it blank.
-
-    Note:
-    When changing or updating content make sure to update the other slide's time based on approximate time taken to read it.`;
+    "slides"."video"."effect": this will contain the transition effect for the video. If its not provided then leave it blank.`;
 
     GENERATIVE = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API);
     FILEMANAGER = new GoogleAIFileManager(process.env.GOOGLE_GEMINI_API);

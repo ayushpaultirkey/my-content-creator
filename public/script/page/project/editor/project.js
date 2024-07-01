@@ -24,8 +24,8 @@ export default class Project extends H12 {
             this.Load();
             
             // Register on dispatcher event
-            Dispatcher.On("OnProjectUpdate", this.OnProjectUpdate.bind(this));
-            Dispatcher.On("OnAssetLoad", this.OnAssetLoad.bind(this));
+            Dispatcher.On("OnAssetLoaded", this.OnAssetLoaded.bind(this));
+            Dispatcher.On("OnProjectUpdated", this.OnProjectUpdated.bind(this));
 
         };
 
@@ -73,8 +73,10 @@ export default class Project extends H12 {
                     <div class="border border-transparent border-t-zinc-700 pt-3">
                         <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Update }>Update</button>
                     </div>
+
                     <div class="border border-transparent border-t-zinc-700 pt-3">
-                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Render } id="RenderButton">Render</button>
+                        <label class="text-xs font-semibold text-zinc-400 block mb-1">Render Project:</label>
+                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Render } id="ProjectRender">Render</button>
                     </div>
 
                     <div class="flex flex-col">
@@ -94,27 +96,19 @@ export default class Project extends H12 {
             return false;
         };
 
-        this.element.ProjectTitle.value = this.Project.property.title;
-        this.element.ProjectDescription.value = this.Project.property.description;
+        // Get project's property
+        const _property = this.Project.property;
 
-    }
-
-    async OnAssetLoad(event, asset) {
-        
-        // Check if the project is valid
-        if(!MyCreator.Project.IsValid(this.Project)) {
-            return false;
-        };
-
-        // Update the assets collection
-        await this.child["ImageAsset"].Load(asset);
-        await this.child["VideoAsset"].Load(asset, "video");
+        // Set project's detail
+        this.element.ProjectTitle.value = _property.title;
+        this.element.ProjectDescription.value = _property.description;
 
         // Assign selected assets
-        this.child["ImageAsset"].SetSelected(this.Project.property.backgroundImage);
-        this.child["VideoAsset"].SetSelected(this.Project.property.backgroundVideo);
+        this.child["ImageAsset"].SetSelected(_property.backgroundImage);
+        this.child["VideoAsset"].SetSelected(_property.backgroundVideo);
+        this.child["AudioAsset"].SetSelected(_property.backgroundAudio);
 
-    };
+    }
 
     async Update() {
 
@@ -128,15 +122,23 @@ export default class Project extends H12 {
 
         try {
 
-            // Get project id and the slide's id by the index
+            // Get project detail
             const _projectId = this.Project.id;
+            const _projectTitle = this.element.ProjectTitle.value;
+            const _projectDetail = this.element.ProjectDescription.value;
 
-            // Get selected images and videos
+            // Check for data
+            if(!_projectTitle || !_projectDetail) {
+                throw new Error("Please enter project's title and description");
+            };
+
+            // Get selected images, videos and audio
             const _image = this.child["ImageAsset"].GenerateQueryString("pimage");
             const _video = this.child["VideoAsset"].GenerateQueryString("pvideo");
+            const _audio = this.child["AudioAsset"].GenerateQueryString("paudio");
 
             // Perform the update request
-            const _request = await fetch(`/api/project/update?pid=${_projectId}&${_image}&${_video}`);
+            const _request = await fetch(`/api/project/update?pid=${_projectId}&${_image}&${_video}&${_audio}&ptitle=${_projectTitle}&pdetail=${_projectDetail}`);
             const _response = await _request.json();
 
             // Check if the data is updated successfully
@@ -145,12 +147,12 @@ export default class Project extends H12 {
                 throw new Error(_response.message);
             };
 
-            // Update project data
-            Dispatcher.Call("OnProjectUpdate", _response.data);
+            // Call dispatcher
+            Dispatcher.Call("OnProjectUpdated", _response.data);
 
         }
         catch(error) {
-            console.error(error);
+            console.error("/page/editor/project.Update();", error);
         };
 
         // Call dispather hide loader
@@ -162,6 +164,7 @@ export default class Project extends H12 {
 
         // Check if the project is valid
         if(!MyCreator.Project.IsValid(this.Project)) {
+            alert("Invalid project, try reloading");
             return false;
         };
 
@@ -169,13 +172,10 @@ export default class Project extends H12 {
         try {
 
             // Disable button
-            this.element.RenderButton.disabled = true;
+            this.element.ProjectRender.disabled = true;
 
-            // Get project id and the slide's id by the index
-            const _projectId = this.Project.id;
-
-            // Register new server side event
-            ServerEvent.Register("Render", `/api/project/export?pid=${_projectId}`);
+            // Register new server side event and bind
+            ServerEvent.Register("Render", `/api/project/render?pid=${this.Project.id}`);
 
             // Bind new on open event
             ServerEvent.Bind("Render", "open", (event) => {
@@ -209,7 +209,7 @@ export default class Project extends H12 {
                     ServerEvent.Destroy("Render");
 
                     // Enable button
-                    this.element.RenderButton.disabled = false;
+                    this.element.ProjectRender.disabled = false;
 
                 };
 
@@ -223,7 +223,7 @@ export default class Project extends H12 {
                 ServerEvent.Destroy("Render");
 
                 // Enable button
-                this.element.RenderButton.disabled = false;
+                this.element.ProjectRender.disabled = false;
 
             });
 
@@ -238,7 +238,21 @@ export default class Project extends H12 {
 
     }
 
-    OnProjectUpdate(event, project) {
+    async OnAssetLoaded(event, asset) {
+        
+        // Check if the project is valid
+        if(!MyCreator.Project.IsValid(this.Project)) {
+            return false;
+        };
+
+        // Load asset data
+        await this.child["ImageAsset"].Load(asset);
+        await this.child["VideoAsset"].Load(asset, "video");
+        await this.child["AudioAsset"].Load(asset, "audio");
+
+    }
+
+    OnProjectUpdated(event, project) {
 
         // Check if the project is valid and reload it
         if(MyCreator.Project.IsValid(project)) {
@@ -246,6 +260,6 @@ export default class Project extends H12 {
             this.Load();
         };
 
-    };
+    }
 
 };

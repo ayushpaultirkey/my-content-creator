@@ -1,4 +1,5 @@
 import Slide from "../../../service/slide.js";
+import Project from "../../../service/project.js";
 
 
 /**
@@ -32,29 +33,36 @@ export default async function Update(request, response) {
         // Check if the query parameter are valid
         const _projectId = request.query.pid;
         const _slideId = request.query.sid;
-        const _slideContent = request.query.scontent;
 
-        // Check if the query parameter are valid
-        if(!IsValid([_projectId, _slideId, _slideContent])){
-            throw new Error("Invalid project slide parameter");
+        if((typeof(_projectId) !== "string" || _projectId.length < 2) || (typeof(_slideId) !== "string" || _slideId.length < 2)) {
+            throw new Error("Invalid project id or slide id");
         };
 
-        // Check if the image and video is valid and generate prompt for it
+        // Get project data for comparing
+        const _project = await Project.GetActive(_projectId);
+        const _slide = _project.property.slides.find(x => x.id === _slideId);
+        
+        // Check if slide is valid
+        if(!_slide) {
+            throw new Error("Slide not found in project");
+        };
+
+        // Check slide's content
+        const _slideContent = (typeof(request.query.scontent) !== "string" || request.query.scontent == _slide.content || request.query.scontent.length < 5) ? "" : `the content to "${request.query.scontent}",`;
+
+        // Check if the image, video is valid and generate prompt for it
         const _slideImage = (request.query.pimage == null || !Array.isArray(request.query.pimage)) ? [] : request.query.pimage;
         const _slideVideo = (request.query.pvideo == null || !Array.isArray(request.query.pvideo)) ? [] : request.query.pvideo;
 
-        const _image = _slideImage.map(x => ({ name: x }));
-        const _video = _slideVideo.map(x => ({ name: x }));
-
-        const _imagePrompt = JSON.stringify(_image);
-        const _videoPrompt = JSON.stringify(_video);
+        const _imagePrompt = JSON.stringify(_slideImage);
+        const _videoPrompt = JSON.stringify(_slideVideo);
 
         // Update slide by using the prompt
-        const _project = await Slide.Update(_projectId, `In slide "${_slideId}" change the content to "${_slideContent}", it's image to ${_imagePrompt} and the video to ${_videoPrompt}`);
+        const _projectUpdated = await Project.Update(_projectId, `In slide "${_slideId}" change ${_slideContent} the image to ${_imagePrompt} and the the video to ${_videoPrompt}`);
 
         // Update response body
         _response.success = true;
-        _response.data = { id: _projectId, ... _project };
+        _response.data = { id: _projectId, ... _projectUpdated };
 
     }
     catch(error) {

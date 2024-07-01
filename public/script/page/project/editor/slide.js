@@ -23,14 +23,16 @@ export default class Slide extends H12 {
             this.Load();
 
             // Register on dispatcher event
-            Dispatcher.On("OnProjectUpdate", this.OnProjectUpdate.bind(this));
+            Dispatcher.On("OnAssetLoaded", this.OnAssetLoaded.bind(this));
+            Dispatcher.On("OnProjectUpdated", this.OnProjectUpdated.bind(this));
             Dispatcher.On("OnViewportSlideSelected", this.OnViewportSlideSelected.bind(this));
-            Dispatcher.On("OnAssetLoad", this.OnAssetLoad.bind(this));
             
         };
 
     }
+
     async render() {
+        
         return <>
             <div class="w-full h-full overflow-hidden hidden">
                 <div class="w-full h-full p-4 px-5 flex flex-col space-y-3 overflow-auto">
@@ -46,16 +48,16 @@ export default class Slide extends H12 {
 
                     <div>
                         <label class="text-xs font-semibold text-zinc-400">Images:</label>
-                        <Asset args id="ImageAsset"></Asset>
+                        <Asset args id="ImageAsset" projectid={ this.args.project.id }></Asset>
                     </div>
 
                     <div>
                         <label class="text-xs font-semibold text-zinc-400">Videos:</label>
-                        <Asset args id="VideoAsset"></Asset>
+                        <Asset args id="VideoAsset" projectid={ this.args.project.id }></Asset>
                     </div>
 
                     <div>
-                        <label class="text-xs font-semibold text-zinc-400 block mb-1">External Asset:</label>
+                        <label class="text-xs font-semibold text-zinc-400 block mb-1">External Asset: <i class="fa-regular fa-circle-question" title="Request to login into google account"></i></label>
                         <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ () => { this.parent.OpenDrive() } }><i class="fa-brands fa-google-drive mr-2 pointer-events-none"></i>Google Drive</button>
                     </div>
 
@@ -84,7 +86,6 @@ export default class Slide extends H12 {
         </>;
     }
 
-
     async Load(fetchAsset = true) {
 
         // Check if the project is valid
@@ -111,26 +112,6 @@ export default class Slide extends H12 {
         };
 
     }
-
-    async OnAssetLoad(event, asset) {
-        
-        // Check if the project is valid
-        if(!MyCreator.Project.IsValid(this.Project)) {
-            return false;
-        };
-
-        // Get working slide
-        let _slide = this.Project.property.slides[this.Index];
-
-        // Update the assets collection
-        await this.child["ImageAsset"].Load(asset);
-        await this.child["VideoAsset"].Load(asset, "video");
-
-        // Assign selected assets
-        this.child["ImageAsset"].SetSelected(_slide.image);
-        this.child["VideoAsset"].SetSelected(_slide.video);
-
-    };
 
     async Update() {
 
@@ -170,7 +151,7 @@ export default class Slide extends H12 {
             };
 
             // Update project data
-            Dispatcher.Call("OnProjectUpdate", _response.data);
+            Dispatcher.Call("OnProjectUpdated", _response.data);
 
         }
         catch(error) {
@@ -200,6 +181,26 @@ export default class Slide extends H12 {
 
     }
 
+    async OnAssetLoaded(event, asset) {
+        
+        // Check if the project is valid
+        if(!MyCreator.Project.IsValid(this.Project)) {
+            return false;
+        };
+
+        // Get working slide
+        let _slide = this.Project.property.slides[this.Index];
+
+        // Update the assets collection
+        await this.child["ImageAsset"].Load(asset);
+        await this.child["VideoAsset"].Load(asset, "video");
+
+        // Assign selected assets
+        this.child["ImageAsset"].SetSelected(_slide.image);
+        this.child["VideoAsset"].SetSelected(_slide.video);
+
+    }
+
     OnViewportSlideSelected(event, { id, index }) {
 
         this.Index = index;
@@ -207,13 +208,13 @@ export default class Slide extends H12 {
 
     }
 
-    OnProjectUpdate(event, project) {
+    OnProjectUpdated(event, project) {
 
         if(MyCreator.Project.IsValid(project)) {
             this.Project = project;
             this.Load();
         };
 
-    };
+    }
 
 };

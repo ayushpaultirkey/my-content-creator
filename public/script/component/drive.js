@@ -129,7 +129,7 @@ export default class Drive extends H12 {
                     <div class="flex items-center space-x-3">
                         <input type="checkbox" onclick={ () => { this.Select(_id); } } />
                         <i class={ `fa ${_icon}` }></i>
-                        <label class="text-xs font-semibold">{ ~_file[i].name }</label>
+                        <label class="text-xs font-semibold">{ _file[i].name }</label>
                         <a href={ _file[i].webViewLink } target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-blue-700 underline">View</a>
                     </div>
                 </>;
