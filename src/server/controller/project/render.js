@@ -9,7 +9,7 @@ import Project from "#service/project.js";
 export default async function Render(request, response) {
 
     //Create response object
-    const _response = { message: "", success: false };
+    const _response = { message: "", success: false, finished: false };
     
     //Create project
     try {
@@ -37,6 +37,7 @@ export default async function Render(request, response) {
         // Set success response
         _response.message = `/project/${_projectId}/export/${_fileName}`;
         _response.success = true;
+        _response.finished = true;
 
     }
     catch(error) {

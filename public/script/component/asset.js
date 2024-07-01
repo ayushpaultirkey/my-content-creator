@@ -1,8 +1,6 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Item from "./asset/item";
-import Attachment from "./attachment";
-import MyCreator from "@library/mycreator";
 import Dispatcher from "@library/h12.dispatcher";
 
 @Component

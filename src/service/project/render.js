@@ -1,12 +1,16 @@
+import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import { FFScene, FFCreator } from "ffcreator";
+import { FFScene, FFCreator, FFAlbum, FFAudio, FFVideoAlbum } from "ffcreator";
 
+import directory from "../../library/directory.js";
 import delay from "../../library/wait.js";
 
 import Scene from "../scene.js";
 import Project from "../project.js";
 
+// Get directory path
+const { __dirname, __root } = directory();
 
 export default async function Render(projectId = "", sse = null) {
 
@@ -18,13 +22,14 @@ export default async function Render(projectId = "", sse = null) {
 
         // Export name for file
         const _exportName = `${crypto.randomUUID()}.mp4`;
+        const _exportPath = path.join(__root, `/project/.cache/${_exportName}`);
 
         // Get project
         const _project = await Project.GetActive(projectId);
 
         // Set ffmpeg path
-        FFCreator.setFFmpegPath(path.join(__dirname, "./../../library/ffmpeg.exe"));
-        FFCreator.setFFprobePath(path.join(__dirname, "./../../library/ffprobe.exe"));
+        FFCreator.setFFmpegPath(path.join(__root, "/library/ffmpeg.exe"));
+        FFCreator.setFFprobePath(path.join(__root, "/library/ffprobe.exe"));
 
         // Get project path
         const _projectPath = Project.Path(projectId);
@@ -43,58 +48,138 @@ export default async function Render(projectId = "", sse = null) {
             height: H
         });
 
-        // Create new global scene
-        const _scene = new FFScene();
-        _scene.setBgColor("transparent");
-        _scene.setDuration(_property.totalTime);
-        _creator.addChild(_scene);
+        // // Create new global scene
+        // const _scene = new FFScene();
+        // _scene.setBgColor("transparent");
+        // _scene.setDuration(_property.totalTime);
+        // _creator.addChild(_scene);
+        
+        // // Add audio to background
+        // if(_project.backgroundAudio) {
+        //     await Scene.AddAudio({
+        //         projectId: projectId,
+        //         scene: _scene,
+        //         audio: _project.backgroundAudio,
+        //         volume: 0.5,
+        //         showAt: 0,
+        //         creator: _creator
+        //     });
+        //     _scene.addChild()
+        // };
 
-        // Add audio to background
-        if(_project.backgroundAudio) {
-            await Scene.AddAudio({
-                projectId: projectId,
-                scene: _scene,
-                audio: _project.backgroundAudio,
-                volume: 1,
-                showAt: 0
-            });
-            _scene.addChild()
+        // // Add image to background
+        // await Scene.AddImage({
+        //     projectId: projectId,
+        //     scene: _scene,
+        //     image: _property.backgroundImage,
+        //     totalTime: _property.totalTime,
+        //     width: W,
+        //     height: H,
+        //     showAt: 0,
+        //     hideAt: _property.totalTime
+        // });
+
+        // // Add video to background
+        // await Scene.AddVideo({
+        //     projectId: projectId,
+        //     scene: _scene,
+        //     video: _property.backgroundVideo,
+        //     totalTime: _property.totalTime,
+        //     width: W,
+        //     height: H,
+        //     showAt: 0
+        // });
+
+        // // Add each slides into the scene
+        // for(const slide of _slides) {
+
+        //     //
+        //     const _wait = new delay();
+
+        //     // Add narration to scene
+        //     await Scene.AddAudio({
+        //         projectId: projectId,
+        //         scene: _scene,
+        //         audio: `${slide.id}.wav`,
+        //         volume: 1,
+        //         showAt: slide.showAt,
+        //         hideAt: slide.hideAt
+        //     });
+            
+        //     // Add image to scene
+        //     await Scene.AddImage({
+        //         projectId: projectId,
+        //         scene: _scene,
+        //         image: slide.image,
+        //         totalTime: slide.totalTime,
+        //         width: W,
+        //         height: H,
+        //         showAt: slide.showAt,
+        //         hideAt: slide.hideAt
+        //     });
+
+        //     // Add video to scene
+        //     await Scene.AddVideo({
+        //         projectId: projectId,
+        //         scene: _scene,
+        //         video: slide.video,
+        //         totalTime: slide.totalTime,
+        //         width: W,
+        //         height: H,
+        //         showAt: slide.showAt
+        //     });
+
+        //     // Add main content to scene
+        //     await Scene.AddText({
+        //         projectId: projectId,
+        //         scene: _scene,
+        //         content: slide.content,
+        //         width: W,
+        //         height: H,
+        //         showAt: slide.showAt,
+        //         hideAt: slide.hideAt
+        //     });
+            
+        //     // Log
+        //     console.log(`Service/Project/Render(): scene ${slide.id} builded`);
+
+        //     // Send SSE
+        //     sse(`Rendering: Scene ${slide.id} builded`);
+
+        //     //
+        //     setTimeout(() => { _wait.resolve() }, 2000);
+        //     await _wait.promise;
+
+        // };
+        
+
+        function _volumeRange(value, inputStart, inputEnd, outputStart, outputEnd) {
+            return outputStart + (value - inputStart) * (outputEnd - outputStart) / (inputEnd - inputStart);
         };
 
-        // Add image to background
-        await Scene.AddImage({
-            projectId: projectId,
-            scene: _scene,
-            image: _property.backgroundImage,
-            totalTime: _property.totalTime,
-            width: W,
-            height: H,
-            showAt: 0,
-            hideAt: _property.totalTime
-        });
 
-        // Add video to background
-        await Scene.AddVideo({
-            projectId: projectId,
-            scene: _scene,
-            video: _property.backgroundVideo,
-            totalTime: _property.totalTime,
-            width: W,
-            height: H,
-            showAt: 0
-        });
+        let _index = 0;
 
         // Add each slides into the scene
         for(const slide of _slides) {
+
+            // Create new global scene
+            const _scene = new FFScene();
+            _scene.setBgColor("transparent");
+            _scene.setDuration(slide.totalTime);
+            _creator.addChild(_scene);
 
             // Add narration to scene
             await Scene.AddAudio({
                 projectId: projectId,
                 scene: _scene,
                 audio: `${slide.id}.wav`,
-                volume: 1,
-                showAt: slide.showAt
+                volume: 1 + (_volumeRange(_index, 0, _slides.length, 1, 0) * 15),
+                showAt: 0,
+                hideAt: slide.totalTime
             });
+            console.log(1 + (_volumeRange(_index, 0, _slides.length, 1, 0) * 15));
+            _index++;
             
             // Add image to scene
             await Scene.AddImage({
@@ -104,8 +189,8 @@ export default async function Render(projectId = "", sse = null) {
                 totalTime: slide.totalTime,
                 width: W,
                 height: H,
-                showAt: slide.showAt,
-                hideAt: slide.hideAt
+                showAt: 0,
+                hideAt: slide.totalTime
             });
 
             // Add video to scene
@@ -116,7 +201,7 @@ export default async function Render(projectId = "", sse = null) {
                 totalTime: slide.totalTime,
                 width: W,
                 height: H,
-                showAt: slide.showAt
+                showAt: 0
             });
 
             // Add main content to scene
@@ -126,20 +211,20 @@ export default async function Render(projectId = "", sse = null) {
                 content: slide.content,
                 width: W,
                 height: H,
-                showAt: slide.showAt,
-                hideAt: slide.hideAt
+                showAt: 0,
+                hideAt: slide.totalTime
             });
             
             // Log
-            console.log(`Service/Project.Render(): scene ${slide.id} builded`);
+            console.log(`Service/Project/Render(): scene ${slide.id} builded`);
 
             // Send SSE
             sse(`Rendering: Scene ${slide.id} builded`);
 
-        }
+        };
 
         // Start rendering        
-        _creator.output(path.join(_projectPath, `./export/${_exportName}`));
+        _creator.output(_exportPath);
         _creator.start();
         _creator.closeLog();
         
@@ -150,7 +235,7 @@ export default async function Render(projectId = "", sse = null) {
             sse(`Rendering: Project rendering started`);
 
             // Log
-            console.log(`Service/Project.Render(): Project render ${projectId} started`);
+            console.log(`Service/Project/Render(): Project render ${projectId} started`);
             
         });
         _creator.on("error", e => {
@@ -159,8 +244,8 @@ export default async function Render(projectId = "", sse = null) {
             sse(`Rendering: Error while rendering project`);
 
             // Log and reject
-            console.log(`Service/Project.Render(): Unable to render project: ${projectId}`);
-            _delay.reject(`Service/Project.Render(): Unable to render project: ${projectId}`);
+            console.log(`Service/Project/Render(): Unable to render project: ${projectId}`);
+            _delay.reject(`Service/Project/Render(): Unable to render project: ${projectId}`);
 
         });
         _creator.on("progress", e => {
@@ -169,18 +254,32 @@ export default async function Render(projectId = "", sse = null) {
             sse(`Rendering: Project render status: ${(e.percent * 100) >> 0}%`);
 
             // Log
-            console.log(`Service/Project.Render(): Project render: ${(e.percent * 100) >> 0}%`);
+            console.log(`Service/Project/Render(): Project render: ${(e.percent * 100) >> 0}%`);
 
         });
-        _creator.on("complete", e => {
+        _creator.on("complete", async(e) => {
 
-            // Send SSE
-            sse(`Rendering: Project render completed`);
+            try {
 
-            // Log and resolve
-            console.log(`Service/Project.Render(): Project render ${projectId} completed`);
-            _delay.resolve(_exportName);
+                // Copy rendered file to project's export directory
+                await fs.copyFile(_exportPath, path.join(_projectPath, "/render.mp4"));
 
+                // Send SSE
+                sse(`Rendering: Project render completed`);
+    
+                // Log and resolve
+                console.log(`Service/Project/Render(): Project render ${projectId} completed`);
+                _delay.resolve(_exportName);
+
+            }
+            catch(error) {
+
+                // Log and reject
+                console.log("Service/Project/Render(): Failed to move video to project", error);
+                _delay.reject("Service/Project/Render(): Error while moving file to project");
+
+            };
+            
         });
 
     }
@@ -190,7 +289,7 @@ export default async function Render(projectId = "", sse = null) {
         sse(`Rendering: Error while rendering project`);
 
         // Log and reject
-        console.log("Service/Project.Render():", error);
+        console.log("Service/Project/Render():", error);
         _delay.reject(error);
         
     }

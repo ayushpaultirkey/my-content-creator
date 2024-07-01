@@ -8,6 +8,7 @@ import Prompt from "./editor/prompt";
 import Viewport from "./editor/viewport";
 import Project from "./editor/project";
 import Drive from "@component/drive";
+import Export from "./editor/export";
 
 @Component
 export default class Editor extends H12 {
@@ -56,29 +57,11 @@ export default class Editor extends H12 {
                     <div class="w-full h-full bg-zinc-800 border-r border-zinc-700 absolute -left-full md:min-w-[340px] md:max-w-[340px] md:static md:left-auto" id="PropertyTab">
                 
                         <div id="EditorTab" class="w-full h-full">
+
                             <Prompt args id="Prompt" project={ this.args.project }></Prompt>
                             <Slide args id="Slide" project={ this.args.project }></Slide>
                             <Project args id="Project" project={ this.args.project }></Project>
-
-                            <div class="w-full h-full overflow-hidden hidden" id="projectTExport">
-                                <div class="w-full h-full p-4 px-5 flex flex-col space-y-3 overflow-auto">
-
-                                    <div class="border border-transparent border-b-zinc-700 pb-2">
-                                        <label class="font-semibold text-zinc-400">Export</label>
-                                    </div>
-
-                                    <div class="pt-3">
-                                        <label class="text-xs font-semibold text-zinc-400 block mb-1">Publish options:</label>
-                                        <button class="block mb-2 w-full p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors"><i class="fa-brands fa-youtube mr-2"></i>Publish To Youtube</button>
-                                        <button class="block mb-2 w-full p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors"><i class="fa-brands fa-google-drive mr-2"></i>Save to Google Drive</button>
-                                        <button class="block mb-2 w-full p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors"><i class="fa-solid fa-download mr-2"></i>Download</button>
-                                    </div>
-
-                                    <div class="pt-3">
-                                    </div>
-
-                                </div>
-                            </div>
+                            <Export args id="Export" project={ this.args.project }></Export>
 
                             <div class="w-full h-full overflow-hidden hidden" id="projectTSetting">
                                 <div class="w-full h-full p-4 px-5 flex flex-col space-y-3 overflow-auto">
@@ -107,7 +90,7 @@ export default class Editor extends H12 {
                     
                     </div>
 
-                    <div class="w-full h-full absolute left-0 md:static md:left-auto" id="ViewportTab">
+                    <div class="w-full h-full absolute left-0 md:static md:left-auto overflow-hidden" id="ViewportTab">
                         <Viewport args id="Viewport" project={ this.args.project }></Viewport>
                         <div class="absolute left-10 top-10 flex space-x-6 md:hidden">
                             <button class="fa-solid fa-bars text-blue-500 text-xl" onclick={ () => { this.Scroll(0); } }></button>
@@ -245,7 +228,7 @@ export default class Editor extends H12 {
 
         // Filter the files to be uploaded
         const _filesToUpload = [..._file].filter(x => {
-            if(x.type.startsWith("image/") || x.type.startsWith("video/")) {
+            if(x.type.startsWith("image/") || x.type.startsWith("video/") || x.type.startsWith("audio/")) {
                 return true;
             }
             else {

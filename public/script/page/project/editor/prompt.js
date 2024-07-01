@@ -26,7 +26,7 @@ export default class Prompt extends H12 {
             this.Load();
 
             // Register on dispatcher event
-            Dispatcher.On("OnProjectUpdate", this.OnProjectUpdate.bind(this));
+            Dispatcher.On("OnProjectUpdated", this.OnProjectUpdated.bind(this));
 
         };
 
@@ -125,7 +125,7 @@ export default class Prompt extends H12 {
                     <div class={ `flex ${(_history[i].role == "user") ? "justify-end" : ""}` }>
                         <div class={ `w-2/3 bg-zinc-500 text-xs font-semibold p-2 rounded-md shadow-md` }>
                             <i class={ `fa ${_icon} ${_visible} mr-1` }></i>
-                            <label>{ _text }</label>
+                            <label class="break-words">{ _text }</label>
                         </div>
                     </div>
                 </>;
@@ -176,18 +176,8 @@ export default class Prompt extends H12 {
                 throw new Error(_response.message);
             };
 
-            // // Perform the update request
-            // const _request = await fetch(`/api/prompt/run?pid=${_projectId}&prompt=${_prompt}`);
-            // const _response = await _request.json();
-
-            // // Check if the data is updated successfully
-            // if(!_response.success) {
-            //     alert(_response.message);
-            //     throw new Error(_response.message);
-            // };
-
-            // // Update project data
-            // Dispatcher.Call("OnProjectUpdate", _response.data);
+            // Update project data
+            Dispatcher.Call("OnProjectUpdated", _response.data);
 
         }
         catch(error) {
@@ -199,7 +189,7 @@ export default class Prompt extends H12 {
 
     }
 
-    OnProjectUpdate(event, project) {
+    OnProjectUpdated(event, project) {
 
         // Check if the project is valid and load it
         if(MyCreator.Project.IsValid(project)) {

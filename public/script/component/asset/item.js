@@ -20,7 +20,18 @@ export default class Item extends H12 {
                 </div>
             </>;
         }
-        else {
+        else if(this.args.type.includes("audio")) {
+            return <>
+                <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md bg-cover bg-center relative flex justify-center" title={ this.args.name } onclick={ this.OnSelect }>
+                    <audio class="hidden" id="AssetAudio">
+                        <source type="audio/mpeg" src={ this.args.url } />
+                    </audio>
+                    <button class="text-zinc-400 text-md fa fa-play" onclick={ this.#AudioToggle }></button>
+                    <label class="bg-blue-500 text-xs px-2 font-semibold border-2 border-zinc-800 text-zinc-100 absolute bottom-0 left-0 rounded-md {i.visible}">{a.index}</label>
+                </div>
+            </>;
+        }
+        else if(this.args.type.includes("video")) {
             return <>
                 <div class="bg-zinc-600 w-14 h-14 rounded-md shadow-md bg-cover bg-center relative" title={ this.args.name } onclick={ this.OnSelect }>
                     <video class="w-full h-full pointer-events-none" oncanplay="this.muted=true;" loop autoplay muted>
@@ -32,6 +43,26 @@ export default class Item extends H12 {
         };
 
     }
+
+    #AudioToggle(event, button) {
+
+        event.stopPropagation();
+
+        const _audio = this.element.AssetAudio;
+
+        if(_audio.paused) {
+            _audio.play();
+            button.classList.remove("fa-play");
+            button.classList.add("fa-stop");
+        }
+        else {
+            _audio.pause();
+            button.classList.add("fa-play");
+            button.classList.remove("fa-stop");
+        };
+
+    }
+
     OnSelect() {
         this.parent.OnSelectItem(this.args.name);
     }

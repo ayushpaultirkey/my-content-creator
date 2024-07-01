@@ -7,6 +7,8 @@ import PCreate from "./controller/project/create.js";
 import PUpdate from "./controller/project/update.js";
 import PValidate from "./controller/project/validate.js";
 
+import EValidate from "./controller/project/export/validate.js";
+
 import AFetch from "./controller/asset/fetch.js";
 import AUpload from "./controller/asset/upload.js";
 
@@ -30,6 +32,8 @@ router.get("/api/project/render", PRender);
 router.get("/api/project/export/drive", PRender);
 router.get("/api/project/export/youtube", PRender);
 router.get("/api/project/export/dowload", PRender);
+
+router.get("/api/project/export/validate", EValidate);
 
 // Slide
 router.get("/api/slide/update", SUpdate);

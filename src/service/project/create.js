@@ -44,7 +44,7 @@ export default async function Create(prompt, file, width = 128, height = 128) {
         };
 
         // Create new project folder and json file
-        const _projectPath = Error.Path(_projectId);
+        const _projectPath = Project.Path(_projectId);
         await fs.mkdir(_projectPath, { recursive: true });
         await fs.mkdir(path.join(_projectPath, "/asset"), { recursive: true });
         await fs.mkdir(path.join(_projectPath, "/cache"), { recursive: true });

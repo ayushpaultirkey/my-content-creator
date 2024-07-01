@@ -15,7 +15,7 @@ import Project from "./../project.js";
 async function ByLocalTTS(projectId = "", slide = []) {
 
     // Validate projectId and slide input
-    if(!projectId || !slide || slide.length === 0) {
+    if(!projectId || !slide) {
         throw new Error("Invalid projectId or slide data");
     };
     
@@ -60,7 +60,7 @@ async function ByLocalTTS(projectId = "", slide = []) {
 async function ByExternalTTS(projectId = "", slide = []) {
 
     // Validate projectId and slide input
-    if(!projectId || !slide || slide.length === 0) {
+    if(!projectId || !slide) {
         throw new Error("Invalid projectId or slide data");
     };
 

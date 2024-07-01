@@ -273,7 +273,7 @@ export default class H12 {
     #event(event = null) {
         let _id = crypto.randomUUID();
         $fx[_id] = event.bind(this);
-        return `$fx['${_id}'](this);`;
+        return `$fx['${_id}'](event, this);`;
     }
     
     /**

@@ -2,6 +2,41 @@ import Slide from "./../slide.js";
 import Asset from "./../asset.js";
 import Project from "../project.js";
 import Gemini from "./../google/gemini.js";
+import fs from "fs/promises";
+import path from "path";
+
+
+async function ValidateNewSlide(projectId, firstSlide, newSlide = []) {
+
+    try {
+
+        const _projectPath = Project.Path(projectId);
+
+        if(!firstSlide || !firstSlide.image || !firstSlide.image[0].name) {
+            throw new Error("Invalid first slide");
+        };
+
+        for(var i = 0, len = newSlide.length; i < len; i++) {
+                
+            if(!newSlide[i].image || !newSlide[i].image[0] || !newSlide[i].image[0].name) {
+                continue;
+            };
+
+            const _oPath = path.join(_projectPath, "/asset/", firstSlide.image[0].name);
+            const _nPath = path.join(_projectPath, "/asset/", newSlide[i].image[0].name);
+
+            await fs.copyFile(_oPath, _nPath);
+
+            //
+            console.log(`Service/Project/Update.ValidateNewSlide(): New asset created for slide ${newSlide[i].id}`);
+            
+        };
+    }
+    catch(error) {
+        console.log("Service/Project/Update.ValidateNewSlide():", error);
+    };
+
+};
 
 
 export default async function Update(projectId = "", prompt = "", file = null) {
@@ -28,17 +63,30 @@ export default async function Update(projectId = "", prompt = "", file = null) {
         };
 
         // Generative run
-        const _answer = await Gemini.Prompt(prompt, _project.history);
+        const _answer = await Gemini.Prompt(prompt, _history);
         
         // Get modified slides to render only those
         const _slide = Slide.CompareModified(_project.property.slides, _answer.response.slides);
+
+        // Check if any slide is added and update the image
+        if(_slide.added.length > 0) {
+
+            try {
+                await ValidateNewSlide(projectId, _project.property.slides[0], _slide.added);
+            }
+            catch(error) {
+                console.log("Service/Project/Update():", error);
+            };
+
+        };
+
         const _slideUpdated = _slide.updated.concat(_slide.added);
 
         // Create updated project
         const _projectUpdated = {
             config: { ... _project.config },
             property: { ... _answer.response },
-            history: _answer.history
+            history: _history
         };
 
         // Update active project

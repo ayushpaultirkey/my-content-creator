@@ -56,13 +56,13 @@ export default class Slide extends H12 {
                         <Asset args id="VideoAsset" projectid={ this.args.project.id }></Asset>
                     </div>
 
-                    <div>
-                        <label class="text-xs font-semibold text-zinc-400 block mb-1">External Asset: <i class="fa-regular fa-circle-question" title="Request to login into google account"></i></label>
-                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ () => { this.parent.OpenDrive() } }><i class="fa-brands fa-google-drive mr-2 pointer-events-none"></i>Google Drive</button>
-                    </div>
-
                     <div class="border border-transparent border-t-zinc-700 pt-3">
                         <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Update }><i class="fa-solid fa-splotch mr-2 pointer-events-none"></i>Update</button>
+                    </div>
+                    
+                    <div class="border border-transparent border-t-zinc-700 pt-3">
+                        <label class="text-xs font-semibold text-zinc-400 block mb-1">External Asset: <i class="fa-regular fa-circle-question" title="Require to login into google account"></i></label>
+                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ () => { this.parent.OpenDrive() } }><i class="fa-brands fa-google-drive mr-2 pointer-events-none"></i>Google Drive</button>
                     </div>
 
                     <div>
@@ -86,30 +86,22 @@ export default class Slide extends H12 {
         </>;
     }
 
-    async Load(fetchAsset = true) {
+    async Load() {
 
         // Check if the project is valid
         if(!MyCreator.Project.IsValid(this.Project)) {
             return false;
         };
 
-        // Try and load the slide's content
-        try {
+        // Get working slide
+        let _slide = this.Project.property.slides[this.Index];
 
-            // Get working slide
-            const _slide = this.Project.property.slides[this.Index];
+        // Set slid'es content
+        this.element.SlideContent.value = _slide.content;
 
-            // Set slid'es content
-            this.element.SlideContent.value = _slide.content;
-
-            // Assign selected assets
-            this.child["ImageAsset"].SetSelected(_slide.image);
-            this.child["VideoAsset"].SetSelected(_slide.video);
-
-        }
-        catch(error) {
-            console.error(error);
-        };
+        // Assign selected assets
+        this.child["ImageAsset"].SetSelected(_slide.image);
+        this.child["VideoAsset"].SetSelected(_slide.video);
 
     }
 
@@ -204,7 +196,7 @@ export default class Slide extends H12 {
     OnViewportSlideSelected(event, { id, index }) {
 
         this.Index = index;
-        this.Load(false);
+        this.Load();
 
     }
 

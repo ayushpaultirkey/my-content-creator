@@ -107,7 +107,7 @@ async function AddImage({ projectId, scene, image, totalTime, showAt, hideAt, wi
     * 
     * @param {} config
 */
-async function AddAudio({ projectId, scene, audio, volume, showAt }) {
+async function AddAudio({ projectId, scene, audio, volume, showAt, hideAt }) {
 
     // Add audio if available
     try {

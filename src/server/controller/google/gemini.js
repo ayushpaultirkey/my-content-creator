@@ -1,5 +1,5 @@
+import Project from "../../../service/project.js";
 import Asset from "../../../service/asset.js";
-import Slide from "../../../service/slide.js";
 
 
 /**
@@ -39,8 +39,8 @@ export default async function Gemini(request, response) {
                     throw new Error("Please enter either prompt or attach file");
                 };
 
-                // Create project
-                const _project = await Slide.Update(_projectId, _prompt, _file);
+                // Update project by prompt
+                const _project = await Project.Update(_projectId, _prompt, _file);
 
                 // Set the response data
                 _response.message = "Project updated";

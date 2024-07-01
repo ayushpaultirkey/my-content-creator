@@ -2,9 +2,9 @@ import url from "url";
 import path from "path";
 
 /**
- * 
- * @param {string} dir 
- * @returns {{ __dirname: string, __filename: string }}
+    * 
+    * @param {*} dir 
+    * @returns 
 */
 export default function directory(dir = import.meta.url) {
 
@@ -14,7 +14,8 @@ export default function directory(dir = import.meta.url) {
 
     return {
         __filename: __filename,
-        __dirname: __dirname
+        __dirname: __dirname,
+        __root: path.join(__dirname, "../../")
     };
 
 };

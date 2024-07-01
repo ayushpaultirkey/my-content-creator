@@ -11,7 +11,6 @@ export default class Project extends H12 {
     constructor() {
         super();
         this.Project = null;
-        this.ImageOrder = [];
     }
 
     async init(args = { project }) {
@@ -41,23 +40,13 @@ export default class Project extends H12 {
                     </div>
 
                     <div>
-                        <label class="text-xs font-semibold text-zinc-400">Title:</label>
+                        <label class="text-xs font-semibold text-zinc-400">Title: <i class="fa-regular fa-circle-question" title="Title for video if exported to youtube"></i></label>
                         <input type="text" class="block w-full text-xs font-semibold bg-zinc-600 p-2 rounded-md shadow-md resize-none placeholder:text-zinc-600 text-zinc-300" placeholder="Project's description" id="ProjectTitle" />
                     </div>
 
                     <div>
-                        <label class="text-xs font-semibold text-zinc-400">Description:</label>
+                        <label class="text-xs font-semibold text-zinc-400">Description: <i class="fa-regular fa-circle-question" title="Description for video if exported to youtube"></i></label>
                         <textarea class="block w-full h-28 text-xs font-semibold bg-zinc-600 p-2 rounded-md shadow-md resize-none placeholder:text-zinc-600 text-zinc-300" placeholder="Project's description" id="ProjectDescription"></textarea>
-                    </div>
-
-                    <div>
-                        <label class="text-xs font-semibold text-zinc-400">Backgound Images:</label>
-                        <Asset args id="ImageAsset" type="image"></Asset>
-                    </div>
-
-                    <div>
-                        <label class="text-xs font-semibold text-zinc-400">Backgound Video:</label>
-                        <Asset args id="VideoAsset" type="video"></Asset>
                     </div>
 
                     <div>
@@ -65,16 +54,16 @@ export default class Project extends H12 {
                         <Asset args id="AudioAsset" type="audio"></Asset>
                     </div>
 
-                    <div>
-                        <label class="text-xs font-semibold text-zinc-400 block mb-1">External Asset:</label>
-                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors"><i class="fa-brands fa-google-drive mr-2 pointer-events-none"></i>Google Drive</button>
-                    </div>
-
                     <div class="border border-transparent border-t-zinc-700 pt-3">
                         <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Update }>Update</button>
                     </div>
 
                     <div class="border border-transparent border-t-zinc-700 pt-3">
+                        <label class="text-xs font-semibold text-zinc-400 block mb-1">External Asset: <i class="fa-regular fa-circle-question" title="Require to login into google account"></i></label>
+                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors"><i class="fa-brands fa-google-drive mr-2 pointer-events-none"></i>Google Drive</button>
+                    </div>
+
+                    <div>
                         <label class="text-xs font-semibold text-zinc-400 block mb-1">Render Project:</label>
                         <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Render } id="ProjectRender">Render</button>
                     </div>
@@ -104,10 +93,8 @@ export default class Project extends H12 {
         this.element.ProjectDescription.value = _property.description;
 
         // Assign selected assets
-        this.child["ImageAsset"].SetSelected(_property.backgroundImage);
-        this.child["VideoAsset"].SetSelected(_property.backgroundVideo);
         this.child["AudioAsset"].SetSelected(_property.backgroundAudio);
-
+        
     }
 
     async Update() {
@@ -132,13 +119,11 @@ export default class Project extends H12 {
                 throw new Error("Please enter project's title and description");
             };
 
-            // Get selected images, videos and audio
-            const _image = this.child["ImageAsset"].GenerateQueryString("pimage");
-            const _video = this.child["VideoAsset"].GenerateQueryString("pvideo");
+            // Get selected audio
             const _audio = this.child["AudioAsset"].GenerateQueryString("paudio");
 
             // Perform the update request
-            const _request = await fetch(`/api/project/update?pid=${_projectId}&${_image}&${_video}&${_audio}&ptitle=${_projectTitle}&pdetail=${_projectDetail}`);
+            const _request = await fetch(`/api/project/update?pid=${_projectId}&${_audio}&ptitle=${_projectTitle}&pdetail=${_projectDetail}`);
             const _response = await _request.json();
 
             // Check if the data is updated successfully
@@ -197,6 +182,12 @@ export default class Project extends H12 {
                         throw new Error(_data.message);
                     };
 
+                    // Check if the rendered is finished
+                    if(_data.finished) {
+                        Dispatcher.Call("OnRenderUpdated");
+                        alert("Render Completed !");
+                    };
+
                     // Call dispather show loader
                     Dispatcher.Call("OnLoaderUpdate", _data.message);
 
@@ -245,10 +236,14 @@ export default class Project extends H12 {
             return false;
         };
 
+        // Get project's property
+        const _property = this.Project.property;
+
         // Load asset data
-        await this.child["ImageAsset"].Load(asset);
-        await this.child["VideoAsset"].Load(asset, "video");
         await this.child["AudioAsset"].Load(asset, "audio");
+
+        // Assign selected assets
+        this.child["AudioAsset"].SetSelected(_property.backgroundAudio);
 
     }
 

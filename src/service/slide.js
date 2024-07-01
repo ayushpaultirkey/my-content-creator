@@ -39,7 +39,7 @@ function CompareModified(originalSlides = [], newSlides = []) {
 
         }
         else {
-            _originalMap.added.push(newSlide);
+            _update.added.push(newSlide);
         };
 
     });
@@ -102,7 +102,7 @@ async function Update(projectId = "", prompt = "", file = null) {
 };
 
 
-async function Render(projectId = "", slide = [], sse = null) {
+async function Render(projectId = "", slide = null, sse = null) {
 
     // Create new promise
     const _delay = new delay();
@@ -117,7 +117,7 @@ async function Render(projectId = "", slide = [], sse = null) {
         // Get project data, path and slides
         const _project = await Project.GetActive(projectId);
         const _projectPath = Project.Path(projectId);
-        const _slides = (slide.length == 0 || !slide) ? _project.property.slides : slide;
+        const _slides = (!slide) ? _project.property.slides : slide;
 
         // Set video dimension
         const W = _project.config.width * 1;
@@ -161,7 +161,7 @@ async function Render(projectId = "", slide = [], sse = null) {
                 scene: _scene,
                 audio: `${_slide.id}.wav`,
                 volume: 1,
-                showAt: _slide.showAt
+                showAt: 0
             });
             
             // Add image to scene
@@ -172,8 +172,8 @@ async function Render(projectId = "", slide = [], sse = null) {
                 totalTime: _slide.totalTime,
                 width: W,
                 height: H,
-                showAt: _slide.showAt,
-                hideAt: _slide.hideAt
+                showAt: 0,
+                hideAt: (_slide.hideAt - _slide.showAt)
             });
 
             // Add video to scene
@@ -184,7 +184,7 @@ async function Render(projectId = "", slide = [], sse = null) {
                 totalTime: _slide.totalTime,
                 width: W,
                 height: H,
-                showAt: _slide.showAt
+                showAt: 0
             });
 
             // Add main content to scene
@@ -194,8 +194,8 @@ async function Render(projectId = "", slide = [], sse = null) {
                 content: _slide.content,
                 width: W,
                 height: H,
-                showAt: _slide.showAt,
-                hideAt: _slide.hideAt
+                showAt: 0,
+                hideAt: (_slide.hideAt - _slide.showAt)
             });
 
             // Start the rendering
