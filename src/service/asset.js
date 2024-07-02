@@ -133,23 +133,29 @@ async function CropImage(images = [], projectId, project = {}) {
         const _crop = async(image, index) => {
             return new Promise(async(resolve, reject) => {
 
-                if(typeof(_slide[index]) !== "undefined" && _slide[index].image.length !== 0) {
+                try {
 
-                    const inputPath = path.join(Cache.Path(), image.name);
-                    const outputPath = path.join(Project.Path(projectId), `/asset/${_slide[index].image[0].name}`);
-        
-                    await sharp(inputPath)
+                    if(!_slide[index] || _slide[index].image.length == 0) {
+                        throw new Error("Invalid image asset to crop");
+                    };
+
+                    const _inputPath = path.join(Cache.Path(), image.name);
+                    const _outputPath = path.join(Project.Path(projectId), `/asset/${_slide[index].image[0].name}`);
+
+                    await sharp(_inputPath)
                     .resize({
                         width: (project.config.width * 1),
                         height: (project.config.height * 1),
                         fit: "cover"
                     })
-                    .toFile(outputPath)
-                    .then(resolve)
-                    .catch(reject);
+                    .toFile(_outputPath);
 
-                    console.log(`Asset/CropImage(): Image cropped ${outputPath}`);
+                    console.log(`Service/Asset/CropImage(): Image cropped ${_outputPath}`);
+                    resolve();
 
+                }
+                catch(error) {
+                    reject(error);
                 };
 
             });
@@ -212,9 +218,7 @@ async function DownloadImage(image = [{ url, name }]) {
         // Get slides and download image
         for(var i = 0, l = image.length; i < l; i++) {
     
-            const _imagePath = path.join(_cachePath, `/${image[i].name}`);
-
-            _promise.push(_download(image[i].url, _imagePath));
+            _promise.push(_download(image[i].url, path.join(_cachePath, `/${image[i].name}`)));
     
         };
     
@@ -253,7 +257,7 @@ async function FetchExternalImage(projectId, project = {}) {
     // Check if the cache exists
     if(_cache == null) {
 
-        //
+        // Log
         console.log("Service/Asset/FetchExternalImage(): NO CACHE FOUND");
 
         //
@@ -270,12 +274,12 @@ async function FetchExternalImage(projectId, project = {}) {
         console.log(`Service/Asset/FetchExternalImage(): Rate Limit Remaining: ${_response.headers["x-ratelimit-reset"]}`);
         console.log(`Service/Asset/FetchExternalImage(): Rate Limit Resets in: ${_response.headers["x-ratelimit-remaining"]} seconds`);
 
-        //
+        // Log for result
         if(_response.data.hits.length < _slide.length) {
             console.log("Service/Asset/FetchExternalImage(): Mismatch slides and default images");
         };
 
-        //
+        // Check for images and add it to array
         const _image = [];
         for(var i = 0, len = _slide.length; i < len; i++) {
 
@@ -294,8 +298,6 @@ async function FetchExternalImage(projectId, project = {}) {
             });
 
         };
-
-        console.log(_query, _image)
 
         // 
         Cache.Update(_query, "image", _image);

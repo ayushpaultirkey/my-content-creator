@@ -6,9 +6,10 @@ import directory from "../library/directory.js";
 import Render from "./project/render.js";
 import Create from "./project/create.js";
 import Update from "./project/update.js";
+import Export from "./project/export.js";
 
 // Get directory path
-const { __dirname } = directory();
+const { __dirname, __root } = directory();
 
 // Store current project data
 let PROJECT_ACTIVE_DATA = null;
@@ -166,7 +167,7 @@ const Project = {
         };
 
         // Get project path
-        return path.join(__dirname, `../../project/${projectId}/`);
+        return path.join(__root, `/project/${projectId}/`);
     
     },
 
@@ -205,4 +206,4 @@ const Project = {
 
 };
 
-export default { ... Project, Render, Create, Update };
+export default { ... Project, Render, Create, Update, Export };

@@ -1,16 +1,17 @@
 import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import { FFScene, FFCreator, FFAlbum, FFAudio, FFVideoAlbum } from "ffcreator";
+import { FFScene, FFCreator } from "ffcreator";
 
-import directory from "../../library/directory.js";
 import delay from "../../library/wait.js";
+import directory from "../../library/directory.js";
 
 import Scene from "../scene.js";
 import Project from "../project.js";
+import Duration from "./../slide/duration.js";
 
 // Get directory path
-const { __dirname, __root } = directory();
+const { __root } = directory();
 
 export default async function Render(projectId = "", sse = null) {
 
@@ -20,21 +21,17 @@ export default async function Render(projectId = "", sse = null) {
     //
     try {
 
-        // Export name for file
-        const _exportName = `${crypto.randomUUID()}.mp4`;
-        const _exportPath = path.join(__root, `/project/.cache/${_exportName}`);
-
-        // Get project
-        const _project = await Project.GetActive(projectId);
-
         // Set ffmpeg path
         FFCreator.setFFmpegPath(path.join(__root, "/library/ffmpeg.exe"));
         FFCreator.setFFprobePath(path.join(__root, "/library/ffprobe.exe"));
 
-        // Get project path
-        const _projectPath = Project.Path(projectId);
+        // Export name for file
+        const _exportName = `${crypto.randomUUID()}.mp4`;
+        const _exportPath = path.join(__root, `/project/.cache/${_exportName}`);
 
-        // Get property and slides
+        // Get project data, path, property and sldies
+        const _project = await Project.GetActive(projectId);
+        const _projectPath = Project.Path(projectId);
         const _property = _project.property;
         const _slides = _property.slides;
 
@@ -48,125 +45,25 @@ export default async function Render(projectId = "", sse = null) {
             height: H
         });
 
-        // // Create new global scene
-        // const _scene = new FFScene();
-        // _scene.setBgColor("transparent");
-        // _scene.setDuration(_property.totalTime);
-        // _creator.addChild(_scene);
-        
-        // // Add audio to background
-        // if(_project.backgroundAudio) {
-        //     await Scene.AddAudio({
-        //         projectId: projectId,
-        //         scene: _scene,
-        //         audio: _project.backgroundAudio,
-        //         volume: 0.5,
-        //         showAt: 0,
-        //         creator: _creator
-        //     });
-        //     _scene.addChild()
-        // };
-
-        // // Add image to background
-        // await Scene.AddImage({
-        //     projectId: projectId,
-        //     scene: _scene,
-        //     image: _property.backgroundImage,
-        //     totalTime: _property.totalTime,
-        //     width: W,
-        //     height: H,
-        //     showAt: 0,
-        //     hideAt: _property.totalTime
-        // });
-
-        // // Add video to background
-        // await Scene.AddVideo({
-        //     projectId: projectId,
-        //     scene: _scene,
-        //     video: _property.backgroundVideo,
-        //     totalTime: _property.totalTime,
-        //     width: W,
-        //     height: H,
-        //     showAt: 0
-        // });
-
-        // // Add each slides into the scene
-        // for(const slide of _slides) {
-
-        //     //
-        //     const _wait = new delay();
-
-        //     // Add narration to scene
-        //     await Scene.AddAudio({
-        //         projectId: projectId,
-        //         scene: _scene,
-        //         audio: `${slide.id}.wav`,
-        //         volume: 1,
-        //         showAt: slide.showAt,
-        //         hideAt: slide.hideAt
-        //     });
-            
-        //     // Add image to scene
-        //     await Scene.AddImage({
-        //         projectId: projectId,
-        //         scene: _scene,
-        //         image: slide.image,
-        //         totalTime: slide.totalTime,
-        //         width: W,
-        //         height: H,
-        //         showAt: slide.showAt,
-        //         hideAt: slide.hideAt
-        //     });
-
-        //     // Add video to scene
-        //     await Scene.AddVideo({
-        //         projectId: projectId,
-        //         scene: _scene,
-        //         video: slide.video,
-        //         totalTime: slide.totalTime,
-        //         width: W,
-        //         height: H,
-        //         showAt: slide.showAt
-        //     });
-
-        //     // Add main content to scene
-        //     await Scene.AddText({
-        //         projectId: projectId,
-        //         scene: _scene,
-        //         content: slide.content,
-        //         width: W,
-        //         height: H,
-        //         showAt: slide.showAt,
-        //         hideAt: slide.hideAt
-        //     });
-            
-        //     // Log
-        //     console.log(`Service/Project/Render(): scene ${slide.id} builded`);
-
-        //     // Send SSE
-        //     sse(`Rendering: Scene ${slide.id} builded`);
-
-        //     //
-        //     setTimeout(() => { _wait.resolve() }, 2000);
-        //     await _wait.promise;
-
-        // };
-        
-
-        function _volumeRange(value, inputStart, inputEnd, outputStart, outputEnd) {
-            return outputStart + (value - inputStart) * (outputEnd - outputStart) / (inputEnd - inputStart);
+        // Create volume index
+        let _vindex = 0;
+        function _volumeMapping(v, inStart, inEnd, outStart, outEnd) {
+            return outStart + (v - inStart) * (outEnd - outStart) / (inEnd - inStart);
         };
-
-
-        let _index = 0;
 
         // Add each slides into the scene
         for(const slide of _slides) {
 
+            // Get narration audio length
+            const _duration = await Duration({
+                dir: path.join(_projectPath, `/asset/${slide.id}.wav`),
+                content: slide.content
+            });
+
             // Create new global scene
             const _scene = new FFScene();
-            _scene.setBgColor("transparent");
-            _scene.setDuration(slide.totalTime);
+            _scene.setBgColor("#000000");
+            _scene.setDuration(_duration);
             _creator.addChild(_scene);
 
             // Add narration to scene
@@ -174,23 +71,21 @@ export default async function Render(projectId = "", sse = null) {
                 projectId: projectId,
                 scene: _scene,
                 audio: `${slide.id}.wav`,
-                volume: 1 + (_volumeRange(_index, 0, _slides.length, 1, 0) * 15),
+                volume: 1 + (_volumeMapping(_vindex, 0, _slides.length, 1, 0) * 10),
                 showAt: 0,
-                hideAt: slide.totalTime
             });
-            console.log(1 + (_volumeRange(_index, 0, _slides.length, 1, 0) * 15));
-            _index++;
+            _vindex++;
             
             // Add image to scene
             await Scene.AddImage({
                 projectId: projectId,
                 scene: _scene,
                 image: slide.image,
-                totalTime: slide.totalTime,
+                totalTime: _duration,
                 width: W,
                 height: H,
                 showAt: 0,
-                hideAt: slide.totalTime
+                hideAt: _duration
             });
 
             // Add video to scene
@@ -198,7 +93,7 @@ export default async function Render(projectId = "", sse = null) {
                 projectId: projectId,
                 scene: _scene,
                 video: slide.video,
-                totalTime: slide.totalTime,
+                totalTime: _duration,
                 width: W,
                 height: H,
                 showAt: 0
@@ -212,7 +107,7 @@ export default async function Render(projectId = "", sse = null) {
                 width: W,
                 height: H,
                 showAt: 0,
-                hideAt: slide.totalTime
+                hideAt: _duration
             });
             
             // Log

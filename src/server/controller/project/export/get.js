@@ -8,7 +8,7 @@ import Project from "#service/project.js";
     * @param {import("express").Request} request 
     * @param {import("express").Response} response 
 */
-export default async function Download(request, response) {
+export default async function Get(request, response) {
     
     //Create project
     try {
@@ -19,11 +19,11 @@ export default async function Download(request, response) {
             throw new Error("Invalid project id");
         };
 
-        // Get rendered file path
-        const _renderPath = path(Project.Path(_projectId), "/render.mp4");
+        // Get the export file path of the project
+        const _exportPath = await Project.Export.GetFile(_projectId);
 
         // Download file
-        response.download(_renderPath);
+        response.download(_exportPath.path);
 
     }
     catch(error) {

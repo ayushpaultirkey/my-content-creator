@@ -43,12 +43,14 @@ export default async function Create(prompt, file, width = 128, height = 128) {
             history: _history
         };
 
+        // Log
+        console.log("Service/Project/Create(): Prompt ended");
+
         // Create new project folder and json file
         const _projectPath = Project.Path(_projectId);
         await fs.mkdir(_projectPath, { recursive: true });
         await fs.mkdir(path.join(_projectPath, "/asset"), { recursive: true });
         await fs.mkdir(path.join(_projectPath, "/cache"), { recursive: true });
-        await fs.mkdir(path.join(_projectPath, "/export"), { recursive: true });
         await fs.writeFile(path.join(_projectPath, "/project.json"), JSON.stringify(_project));
 
         // Create voide and render out the slides

@@ -2,7 +2,7 @@ import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
 import MyCreator from "@library/mycreator";
-import Attachment from "@component/attachment";
+import ServerEvent from "@library/serverevent";
 
 @Component
 export default class Export extends H12 {
@@ -44,13 +44,13 @@ export default class Export extends H12 {
                     <div class="space-y-1">
                         <label class="text-xs font-semibold text-zinc-400">Publish options:</label>
                         <button class="block w-full p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors"><i class="fa-brands fa-youtube mr-2"></i>Publish To Youtube</button>
-                        <button class="block w-full p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors"><i class="fa-brands fa-google-drive mr-2"></i>Save to Google Drive</button>
-                        <button class="block w-full p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors"><i class="fa-solid fa-download mr-2"></i>Download</button>
-                        <label class="text-xs font-semibold text-red-500 {em.visible}">No file found to export, render the project from Project tab.</label>
+                        <button class="block w-full p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" id="ExportDrive" onclick={ this.Upload.Drive }><i class="fa-brands fa-google-drive mr-2"></i>Save to Google Drive</button>
+                        <button class="block w-full p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Download }><i class="fa-solid fa-download mr-2"></i>Download</button>
                     </div>
 
-                    <div class="space-y-1">
+                    <div class="space-y-1 flex flex-col">
                         <label class="text-xs font-semibold text-zinc-400 block mb-1">Preview:</label>
+                        <label class="text-xs font-semibold text-red-500 {em.visible}">No file found to export, render the project from Project tab.</label>
                         <video class="w-full {ev.visible} rounded-lg overflow-hidden" id="EVideo" controls>
                             <source type="video/mp4" id="EVideoSource" />
                         </video>
@@ -71,7 +71,7 @@ export default class Export extends H12 {
         // Try to check for files to export
         try {
 
-            // Check for file
+            // Check for files to export
             const _request = await fetch(`/api/project/export/validate?pid=${this.Project.id}`);
             const _response = await _request.json();
     
@@ -94,11 +94,88 @@ export default class Export extends H12 {
             // Log and show message
             this.Set("{em.visible}", "");
             this.Set("{ev.visible}", "hidden");
-            console.error("Editor/LoadAsset():", error);
+            console.error("Editor/Export/LoadAsset():", error);
 
         };
         
+    }
 
+    Download() {
+
+        // Check if the project is valid
+        if(!MyCreator.Project.IsValid(this.Project)) {
+            return false;
+        };
+
+        window.open(`/api/project/export/get?pid=${this.Project.id}`, "_blank"); 
+
+    }
+    Upload = {
+        Drive: async() => {
+
+            // Check if the project is valid
+            if(!MyCreator.Project.IsValid(this.Project)) {
+                return false;
+            };
+
+            try {
+
+                // Disable button
+                this.element.ExportDrive.disabled = true;
+
+                // Register new server send event
+                const _source = new EventSource(`/api/project/export/drive?pid=${this.Project.id}`);                
+                _source.onopen = () => { Dispatcher.Call("OnLoaderShow"); }
+                _source.onmessage = (event) => {
+
+                    // Try and get response
+                    try {
+
+                        // Get response data and check if success and finished
+                        const _data = JSON.parse(event.data.split("data:"));
+                        if(!_data.success) {
+                            throw new Error(_data.message);
+                        };
+
+                        // Check if the file is uploaded
+                        if(_data.finished) {
+                            alert("File uploaded to google drive !");
+                        };
+
+                        // Call dispather show loader
+                        Dispatcher.Call("OnLoaderUpdate", _data.message);
+
+                    }
+                    catch(error) {
+
+                        // Alert, hide loader and enable button
+                        alert(error);
+                        Dispatcher.Call("OnLoaderHide");
+                        this.element.ExportDrive.disabled = false;
+                        _source.close();
+
+                    };
+                };
+                _source.onerror = () => {
+
+                    // Hide loader and enable button on error
+                    Dispatcher.Call("OnLoaderHide");
+                    this.element.ExportDrive.disabled = false;
+                    _source.close();
+
+                };
+
+            }
+            catch(error) {
+
+                // Alert and log
+                alert("Unable to render project, try again later");
+                console.error("Editor/Project.Drive():", error);
+                this.element.ExportDrive.disabled = false;
+                
+            };
+
+        }
     }
 
     OnRenderUpdated() {

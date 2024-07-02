@@ -1,35 +1,15 @@
 import fs from "fs/promises";
 import path from "path";
-import { FFText, FFAlbum, FFVideo, FFAudio } from "ffcreator";
+import { FFText, FFAlbum, FFVideo } from "ffcreator";
 
 import directory from "../library/directory.js";
-
+import Validate from "./scene/validate.js";
 import Project from "./project.js";
 
+
 // Get directory path
-const { __dirname } = directory();
+const { __root } = directory();
 
-async function ValidateAsset(projectId, asset) {
-    
-    //
-    const _asset = [];
-    for(const x of asset) {
-        try {
-            const _assetPath = path.join(Project.Path(projectId), "/asset/", x.name);
-            await fs.access(_assetPath);
-            _asset.push({
-                name: _assetPath,
-                effect: (typeof(x.effect) === "undefined" || x.effect.length < 2) ? "fadeIn" : x.effect
-            });
-        }
-        catch(error) {
-            console.log(`Service/Scene.ValidateAsset(): Cannot find ${x} asset file for ${projectId}`, error);
-        };
-    };
-
-    return _asset;
-
-};
 
 async function AddVideo({ projectId, scene, video, totalTime, showAt, width, height }) {
 
@@ -40,7 +20,7 @@ async function AddVideo({ projectId, scene, video, totalTime, showAt, width, hei
         try {
 
             // Check if the video are valid
-            const _asset = await ValidateAsset(projectId, video);
+            const _asset = await Validate(projectId, video);
 
             // Add duration for each videos
             const _duration = totalTime / _asset.length; 
@@ -51,6 +31,7 @@ async function AddVideo({ projectId, scene, video, totalTime, showAt, width, hei
                 const _hideAt = _showAt + _duration;
 
                 // Create new video and add it scene
+                /** @type {import("ffcreator").FFVideo} */
                 const _video = new FFVideo({
                     path: _asset[i].name,
                     width: width,
@@ -74,15 +55,17 @@ async function AddVideo({ projectId, scene, video, totalTime, showAt, width, hei
 
 };
 
+
 async function AddImage({ projectId, scene, image, totalTime, showAt, hideAt, width, height }) {
 
     // Add image if avaiable
     if(typeof(image) !== "undefined" && image.length > 0) {
 
         // Check if the images are valid
-        const _asset = await ValidateAsset(projectId, image);
+        const _asset = await Validate(projectId, image);
 
         // Create new album using images
+        /** @type {import("ffcreator").FFAlbum} */
         const _album = new FFAlbum({
             list: _asset.map(x => x.name),
             x: width / 2,
@@ -103,11 +86,7 @@ async function AddImage({ projectId, scene, image, totalTime, showAt, hideAt, wi
 };
 
 
-/**
-    * 
-    * @param {} config
-*/
-async function AddAudio({ projectId, scene, audio, volume, showAt, hideAt }) {
+async function AddAudio({ projectId, scene, audio, volume, showAt }) {
 
     // Add audio if available
     try {
@@ -132,16 +111,17 @@ async function AddText({ projectId, scene, content, showAt, hideAt, width, heigh
     // Add text content
     try {
 
+        /** @type {import("ffcreator").FFText} */
         const _text = new FFText({
             text: content,
             x: width / 2,
             y: height / 2,
         });
-        _text.setColor("#ffffff");
+        _text.setColor("white");
         _text.addEffect("zoomIn", 1, showAt);
         _text.addEffect("fadeOut", 1, hideAt);
         _text.alignCenter();
-        _text.setFont(path.join(__dirname, "../../project/.font/static/NotoSans-SemiBold.ttf"));
+        _text.setFont(path.join(__root, "/project/.font/static/NotoSans-SemiBold.ttf"));
         _text.setWrap(width / 1.5);
         scene.addChild(_text);
 
@@ -153,4 +133,5 @@ async function AddText({ projectId, scene, content, showAt, hideAt, width, heigh
 };
 
 
+// Export
 export default { AddAudio, AddImage, AddVideo, AddText };

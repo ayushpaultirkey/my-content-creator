@@ -4,6 +4,7 @@ import crypto from "crypto";
 import sharp from "sharp";
 import fs from "fs";
 import fsp from "fs/promises";
+import mime from "mime";
 import { google } from "googleapis";
 
 import directory from "#library/directory.js";
@@ -12,6 +13,7 @@ import Google from "../google.js";
 import Project from "../project.js";
 
 const { __dirname } = directory();
+
 
 async function GetFile() {
 
@@ -45,24 +47,6 @@ async function GetFile() {
         console.log("Service/Google/Drive.GetFiles():", error)
         throw error;
     };
-
-};
-
-
-function MimeTypeExtension(mimeType = "") {
-
-    const mimeTypes = {
-        "image/jpeg": "jpg",
-        "image/png": "png",
-        "image/gif": "gif",
-        "image/bmp": "bmp",
-        "video/mp4": "mp4",
-        "video/quicktime": "mov",
-        "video/x-msvideo": "avi",
-        "video/x-matroska": "mkv"
-    };
-    const extenstion = "file";
-    return mimeTypes[mimeType] || extenstion;
 
 };
 
@@ -107,7 +91,7 @@ async function ImportFile(projectId = "", id = []) {
                 const _projectPath = path.join(Project.Path(projectId), `/asset/${_name}`);
 
                 // Once downlaoded finally process if its image or copy the file to project
-                if(_mime.startsWith('image/')) {
+                if(_mime.startsWith("image/")) {
 
                     // Process image and move it to project asset folder
                     await sharp(_tempPath)
@@ -149,4 +133,80 @@ async function ImportFile(projectId = "", id = []) {
 };
 
 
-export default { GetFile, ImportFile };
+async function UploadFile(filePath = "", sse) {
+
+    try {
+
+        // Log
+        console.log("Service/Google/Drive.UploadFile(): Upload started");
+        sse("Drive: Upload started");
+
+        // Get auth cient and define google drive
+        const _auth = Google.OAuth2Client();
+        const _drive = google.drive({ version: "v3", auth: _auth });
+
+        // Create meta data for file
+        const _metadata = {
+            "name": path.basename(filePath)
+        };
+        const _mimeType = mime.getType(filePath);
+
+        // Get file size and set byte uploaded
+        let _fileSize = fs.statSync(filePath).size;
+        let _bytesUploaded = 0;
+
+        // Create media object for upload along with
+        // Upload progress function
+        const _media = {
+            mimeType: _mimeType || "application/octet-stream",
+            body: fs.createReadStream(filePath).on("data", (chunk) => {
+
+                _bytesUploaded += chunk.length;
+
+                const _progress = Math.round((_bytesUploaded / _fileSize) * 100);
+                console.log(`Service/Google/Drive.UploadFile(): Uploaded ${_progress}%`);
+                sse(`Drive: Upload progress: ${_progress}%`);
+
+            })
+        };
+
+        // Create new google drive file
+        await _drive.files.create({
+            resource: _metadata,
+            media: _media,
+            fields: "id"
+        });
+        
+        // Log
+        console.log("Service/Google/Drive.UploadFile(): Upload finished");
+        sse("Drive: Upload finished");
+
+    }
+    catch(error) {
+        console.log("Service/Google/Drive.UploadFile():", error);
+        throw error;
+    };
+
+};
+
+
+function MimeTypeExtension(mimeType = "") {
+
+    const mimeTypes = {
+        "image/jpeg": "jpg",
+        "image/png": "png",
+        "image/gif": "gif",
+        "image/bmp": "bmp",
+        "video/mp4": "mp4",
+        "video/quicktime": "mov",
+        "video/x-msvideo": "avi",
+        "video/x-matroska": "mkv"
+    };
+    const extenstion = "file";
+    return mimeTypes[mimeType] || extenstion;
+
+};
+
+
+
+export default { GetFile, ImportFile, UploadFile };

@@ -11,14 +11,14 @@ export default async function Render(request, response) {
     //Create response object
     const _response = { message: "", success: false, finished: false };
     
+    //Make a SSE
+    response.setHeader("Content-Type", "text/event-stream");
+    response.setHeader("Cache-Control", "no-cache");
+    response.setHeader("Connection", "keep-alive");
+    response.setHeader("Content-Encoding", "none");
+
     //Create project
     try {
-
-        //Make a SSE
-        response.setHeader("Content-Type", "text/event-stream");
-        response.setHeader("Cache-Control", "no-cache");
-        response.setHeader("Connection", "keep-alive");
-        response.setHeader("Content-Encoding", "none");
 
         // Check if the query parameter are valid
         const _projectId = request.query.pid;

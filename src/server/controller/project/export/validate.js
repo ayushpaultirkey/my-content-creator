@@ -1,7 +1,8 @@
 import fs from "fs/promises";
 import path from "path";
 
-import Project from "../../../../service/project.js";
+import Project from "#service/project.js";
+import Export from "#service/project/export.js";
 
 /**
     *
@@ -22,19 +23,19 @@ export default async function Validate(request, response) {
             throw new Error("Invalid project id");
         };
 
-        // Try to access render.mp4 file
-        await fs.access(path.join(Project.Path(_projectId), "/render.mp4"));
+        // Get the export file path of the project
+        const _exportPath = await Export.GetFile(_projectId);
 
         // Set response
         _response.success = true;
-        _response.url = `/project/${_projectId}/render.mp4`;
+        _response.url = _exportPath.url;
 
     }
     catch(error) {
 
         // Log and set response
         console.log("/project/export/validate:", error);
-        _response.message = error.message || "An error occurred";
+        _response.message = "Export file not found, or error occured.";
 
     }
     finally {

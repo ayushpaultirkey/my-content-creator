@@ -8,6 +8,8 @@ import PUpdate from "./controller/project/update.js";
 import PValidate from "./controller/project/validate.js";
 
 import EValidate from "./controller/project/export/validate.js";
+import EGet from "./controller/project/export/get.js";
+import EDrive from "./controller/project/export/drive.js";
 
 import AFetch from "./controller/asset/fetch.js";
 import AUpload from "./controller/asset/upload.js";
@@ -29,10 +31,10 @@ router.post("/api/project/create", PCreate);
 router.get("/api/project/validate", PValidate);
 router.get("/api/project/update", PUpdate);
 router.get("/api/project/render", PRender);
-router.get("/api/project/export/drive", PRender);
-router.get("/api/project/export/youtube", PRender);
-router.get("/api/project/export/dowload", PRender);
 
+// Export
+router.get("/api/project/export/drive", EDrive);
+router.get("/api/project/export/get", EGet);
 router.get("/api/project/export/validate", EValidate);
 
 // Slide

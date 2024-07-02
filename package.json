@@ -41,6 +41,7 @@
         "googleapis": "^140.0.0",
         "mime-types": "^2.1.35",
         "multer": "^1.4.5-lts.1",
+        "music-metadata": "^8.3.0",
         "say": "^0.16.0",
         "sharp": "^0.33.4",
         "vite-express": "^0.11.1"

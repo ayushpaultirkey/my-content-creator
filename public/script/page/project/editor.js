@@ -100,7 +100,7 @@ export default class Editor extends H12 {
 
                 </div>
 
-                <div class="absolute w-full h-full bg-zinc-900 backdrop-blur-sm bg-opacity-50 top-0 left-0 pointer-events-none flex justify-center items-center hidden" id="EditorUploader">
+                <div class="absolute w-full h-full bg-zinc-900 backdrop-blur-sm bg-opacity-50 top-0 left-0 pointer-events-none flex justify-center items-center collapse" id="EditorUploader">
                     <div class="flex flex-col text-center">
                         <i class="fa fa-upload text-zinc-100 text-2xl font-semibold space-y-2"></i>
                         <label class="text-zinc-100 text-xs font-semibold">Upload</label>
@@ -117,19 +117,28 @@ export default class Editor extends H12 {
 
         switch(index) {
             case 0:
+                this.element.NavigationTab.classList.add("left-0");
                 this.element.NavigationTab.classList.remove("-left-full");
                 this.element.ViewportTab.classList.add("-left-full");
+                this.element.ViewportTab.classList.remove("left-0");
                 this.element.PropertyTab.classList.add("-left-full");
+                this.element.PropertyTab.classList.remove("left-0");
                 break;
             case 1:
                 this.element.NavigationTab.classList.add("-left-full");
+                this.element.NavigationTab.classList.remove("left-0");
                 this.element.ViewportTab.classList.add("-left-full");
+                this.element.ViewportTab.classList.remove("left-0");
+                this.element.PropertyTab.classList.add("left-0");
                 this.element.PropertyTab.classList.remove("-left-full");
                 break;
             case 2:
                 this.element.NavigationTab.classList.add("-left-full");
-                this.element.ViewportTab.classList.remove("-left-full");
+                this.element.NavigationTab.classList.remove("left-0");
                 this.element.PropertyTab.classList.add("-left-full");
+                this.element.PropertyTab.classList.remove("left-0");
+                this.element.ViewportTab.classList.add("left-0");
+                this.element.ViewportTab.classList.remove("-left-full");
                 break;
 
         }
@@ -206,10 +215,10 @@ export default class Editor extends H12 {
             this.root.addEventListener(name, this.PreventDefault, false);
         });
         ["dragenter", "dragover"].forEach(name => {
-            this.root.addEventListener(name, () => this.element.EditorUploader.classList.remove("hidden"), false);
+            this.root.addEventListener(name, () => this.element.EditorUploader.classList.remove("collapse"), false);
         });
         ["dragleave", "drop"].forEach(name => {
-            this.root.addEventListener(name, () => this.element.EditorUploader.classList.add("hidden"), false);
+            this.root.addEventListener(name, () => this.element.EditorUploader.classList.add("collapse"), false);
         });
         this.root.addEventListener("drop", this.HandleDrop.bind(this), false);
 

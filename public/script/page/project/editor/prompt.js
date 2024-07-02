@@ -49,7 +49,7 @@ export default class Prompt extends H12 {
                             <Attachment args id="Uploader"></Attachment>
                             <div class="bg-zinc-400 flex rounded-lg overflow-hidden">
                                 <button class="text-xs font-semibold bg-transparent p-3 hover:bg-zinc-500 active:bg-zinc-600 fa fa-paperclip" onclick={ () => { this.child["Uploader"].Open(); } }></button>
-                                <input id="PromptBox" type="text" class="text-xs font-semibold bg-transparent placeholder:text-zinc-600 w-full p-3 resize-none" placeholder="Ask anything..." />
+                                <input id="PromptBox" type="text" class="text-xs font-semibold bg-transparent placeholder:text-zinc-600 w-full py-3 resize-none" placeholder="Ask anything..." />
                                 <button class="text-xs font-semibold bg-transparent p-3 hover:bg-zinc-500 active:bg-zinc-600" onclick={ this.Update }>Ask</button>
                             </div>
                         </div>
@@ -112,7 +112,7 @@ export default class Prompt extends H12 {
                     }
                     else {
                         let _json = JSON.parse(_part.text);
-                        _text = _json.response
+                        _text = _json.response;
                     };
                 }
                 catch(error) {
@@ -121,15 +121,14 @@ export default class Prompt extends H12 {
                 };
 
                 // Add chat bubble
-                const _chat = <>
+                this.Set("{e.message}++", <>
                     <div class={ `flex ${(_history[i].role == "user") ? "justify-end" : ""}` }>
                         <div class={ `w-2/3 bg-zinc-500 text-xs font-semibold p-2 rounded-md shadow-md` }>
                             <i class={ `fa ${_icon} ${_visible} mr-1` }></i>
                             <label class="break-words">{ _text }</label>
                         </div>
                     </div>
-                </>;
-                this.Set("{e.message}++", _chat);
+                </>);
     
             };
         }

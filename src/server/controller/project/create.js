@@ -53,7 +53,7 @@ export default async function Create(request, response) {
                 _response.message = error.message || "Unable to upload asset";
 
                 // Log error message
-                console.log("/asset/upload: Upload error", error);
+                console.log("/project/create: Upload error", error);
 
             }
             finally {

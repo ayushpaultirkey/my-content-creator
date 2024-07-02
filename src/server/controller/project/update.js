@@ -28,21 +28,33 @@ export default async function Update(request, response) {
         const _projectTitle = (typeof(request.query.ptitle) !== "string" || request.query.ptitle == _property.title || request.query.ptitle.length < 5) ? "" : `title to "${request.query.ptitle}",`;
         const _projectDetail = (typeof(request.query.pdetail) !== "string" || request.query.pdetail == _property.description || request.query.pdetail.length < 5) ? "" : `description to "${request.query.pdetail}",`;
         
-        // Check if the image, video and audio is valid and generate prompt for it
-        const _projectImage = (request.query.pimage == null || !Array.isArray(request.query.pimage)) ? [] : request.query.pimage;
-        const _projectVideo = (request.query.pvideo == null || !Array.isArray(request.query.pvideo)) ? [] : request.query.pvideo;
+        // Check if request contain audio asset id
         const _projectAudio = (request.query.paudio == null || !Array.isArray(request.query.paudio)) ? [] : request.query.paudio;
 
-        const _imagePrompt = JSON.stringify(_projectImage);
-        const _videoPrompt = JSON.stringify(_projectVideo);
-        const _audioPrompt = JSON.stringify(_projectAudio);
+        // Check if the any asset is valid
+        if(_projectTitle.length == 0 && _projectDetail.length == 0 && !_projectAudio && _projectAudio.length == 0) {
 
-        // Update project data by using the prompt
-        const _projectUpdated = await Project.Update(_projectId, `Change the project's ${_projectTitle} ${_projectDetail} background image to ${_imagePrompt}, background video to ${_videoPrompt} and background audio to ${_audioPrompt}`);
+            // Nothing to update since any datat
+            _response.message = "Nothing to update";
+            _response.data = { id: _projectId, ... _project };
 
-        // Update response body
+        }
+        else {
+
+            // Convert the audio id array to string
+            const _audioPrompt = JSON.stringify(_projectAudio);
+    
+            // Update project data by using the prompt
+            const _projectUpdated = await Project.Update(_projectId, `Change the project's ${_projectTitle} ${_projectDetail}`);
+    
+            // Update response body
+            _response.message = "Project update";
+            _response.data = { id: _projectId, ... _projectUpdated };
+            
+        };
+
+        // Set success response
         _response.success = true;
-        _response.data = { id: _projectId, ... _projectUpdated };
 
     }
     catch(error) {

@@ -1,4 +1,4 @@
-export default function GetUpdatedSlide(originalSlides = [], newSlides = []) {
+export default function Modified(originalSlides = [], newSlides = []) {
 
     // Create object to store updated slides
     const _update = { updated: [], removed: [], added: [] };
@@ -22,7 +22,7 @@ export default function GetUpdatedSlide(originalSlides = [], newSlides = []) {
 
         }
         else {
-            _originalMap.added.push(newSlide);
+            _update.added.push(newSlide);
         };
 
     });
