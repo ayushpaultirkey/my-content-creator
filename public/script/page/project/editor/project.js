@@ -250,7 +250,7 @@ export default class Project extends H12 {
     OnProjectUpdated(event, project) {
 
         // Check if the project is valid and reload it
-        if(MyCreator.Project.IsValid(project)) {
+        if(project) {
             this.Project = project;
             this.Load();
         };

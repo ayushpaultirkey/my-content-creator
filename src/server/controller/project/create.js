@@ -1,18 +1,55 @@
 import Asset from "../../../service/asset.js";
 import Project from "../../../service/project.js";
 
+
+let LISTNER = [];
+
+
+function Send(data = {}) {
+    LISTNER.forEach(x => {
+        x.write(`data: ${JSON.stringify(data)}\n\n`);
+    });
+};
+
+
 /**
     * 
     * @param {import("express").Request} request 
     * @param {import("express").Response} response 
 */
-export default async function Create(request, response) {
+function GCreate(request, response) {
+
+    //Make a server send event
+    response.setHeader("Content-Type", "text/event-stream");
+    response.setHeader("Cache-Control", "no-cache");
+    response.setHeader("Connection", "keep-alive");
+    response.setHeader("Content-Encoding", "none");
+
+    LISTNER.push(response);
+
+    request.on("close", () => {
+        LISTNER = LISTNER.filter(x => x !== response);
+    });
+
+};
+
+
+/**
+    * 
+    * @param {import("express").Request} request 
+    * @param {import("express").Response} response 
+*/
+async function PCreate(request, response) {
 
     //Create response object
-    const _response = { message: "", success: false, data: {} };
+    const _response = { message: "", success: false, finished: false, data: {} };
     
+
     //Create project
     try {
+
+        // Send response
+        response.sendStatus(200);
 
         // Use multer to handle file uploads
         Asset.Uploader(request, response, async(error) => {
@@ -38,28 +75,29 @@ export default async function Create(request, response) {
                     throw new Error("Please enter either prompt or attach file");
                 };
 
-                // Create project
-                const _project = await Project.Create(_prompt, _file, _width, _height);
+                // Create project and update response
+                const _project = await Project.Create({ prompt: _prompt, file: _file, width: _width, height: _height }, (text) => {
+                    Send({ message: text, success: true });
+                });
 
                 // Set the response data
                 _response.message = "Project created";
+                _response.finished = true;
                 _response.success = true;
                 _response.data = _project;
 
             }
-            catch (error) {
+            catch(error) {
                         
-                // Set error message
+                // Log and set message
                 _response.message = error.message || "Unable to upload asset";
-
-                // Log error message
                 console.log("/project/create: Upload error", error);
 
             }
             finally {
 
-                // Send response
-                response.send(_response);
+                // End response
+                Send(_response);
 
             };
         });
@@ -67,15 +105,12 @@ export default async function Create(request, response) {
     }
     catch(error) {
 
-        // Set error message
-        _response.message = error.message || "An error occurred";
-
-        // Log error message
+        // Set error and log error
         console.log("/project/create:", error);
-
-        // Send response
-        response.send(_response);
+        response.sendStatus(500);
 
     };
 
 };
+
+export default { PCreate, GCreate }

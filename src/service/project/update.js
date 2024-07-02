@@ -53,8 +53,8 @@ export default async function Update(projectId = "", prompt = "", file = null) {
         };
     
         // Get project data and history for prompting
-        const _project = await Project.GetActive(projectId);
-        const _history = _project.history;
+        let _project = await Project.GetActive(projectId);
+        let _history = _project.history;
         
         // Check if file is valid then use multi model prompt
         if(file) {
@@ -66,7 +66,8 @@ export default async function Update(projectId = "", prompt = "", file = null) {
         const _answer = await Gemini.Prompt(prompt, _history);
         
         // Get modified slides to render only those
-        const _slide = Slide.CompareModified(_project.property.slides, _answer.response.slides);
+        const _slide = Slide.Modified(_project.property.slides, _answer.response.slides);
+
 
         // Check if any slide is added and update the image
         if(_slide.added.length > 0) {

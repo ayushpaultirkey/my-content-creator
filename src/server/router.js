@@ -10,6 +10,7 @@ import PValidate from "./controller/project/validate.js";
 import EValidate from "./controller/project/export/validate.js";
 import EGet from "./controller/project/export/get.js";
 import EDrive from "./controller/project/export/drive.js";
+import EYoutube from "./controller/project/export/youtube.js";
 
 import AFetch from "./controller/asset/fetch.js";
 import AUpload from "./controller/asset/upload.js";
@@ -27,14 +28,16 @@ import DImport from "./controller/google/drive/import.js";
 const router = express.Router();
 
 // Project
-router.post("/api/project/create", PCreate);
+router.post("/api/project/create", PCreate.PCreate);
+router.get("/api/project/create", PCreate.GCreate);
 router.get("/api/project/validate", PValidate);
 router.get("/api/project/update", PUpdate);
 router.get("/api/project/render", PRender);
 
 // Export
-router.get("/api/project/export/drive", EDrive);
 router.get("/api/project/export/get", EGet);
+router.get("/api/project/export/drive", EDrive);
+router.get("/api/project/export/youtube", EYoutube);
 router.get("/api/project/export/validate", EValidate);
 
 // Slide

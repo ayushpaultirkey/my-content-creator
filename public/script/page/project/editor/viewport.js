@@ -23,6 +23,9 @@ export default class Viewport extends H12 {
             this.Load();
             this.Auth();
 
+            // Register on dispatcher event
+            Dispatcher.On("OnProjectUpdated", this.OnProjectUpdated.bind(this));
+
         };
 
     }
@@ -152,4 +155,14 @@ export default class Viewport extends H12 {
 
     }
 
+    OnProjectUpdated(event, project) {
+
+        // Check if the project is valid and reload it
+        if(project) {
+            this.Project = project;
+            this.Load();
+        };
+
+    }
+    
 };

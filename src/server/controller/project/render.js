@@ -26,12 +26,9 @@ export default async function Render(request, response) {
             throw new Error("Invalid project id");
         };
 
-        // Render project and send live data
-        let _fileName = await Project.Render(_projectId, (text) => {
-
-            // Write response
+        // Render project and update response
+        const _fileName = await Project.Render(_projectId, (text) => {
             response.write(`data: ${JSON.stringify({ message: text, success: true })}\n\n`);
-
         });
 
         // Set success response

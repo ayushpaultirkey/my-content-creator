@@ -3,11 +3,13 @@ import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
 import MyCreator from "@library/mycreator";
 
+import Drive from "@component/drive";
+import Youtube from "@component/youtube";
+
 import Slide from "./editor/slide";
 import Prompt from "./editor/prompt";
 import Viewport from "./editor/viewport";
 import Project from "./editor/project";
-import Drive from "@component/drive";
 import Export from "./editor/export";
 
 @Component
@@ -108,6 +110,7 @@ export default class Editor extends H12 {
                 </div>
 
                 <Drive args id="GDrive" project={ this.args.project }></Drive>
+                <Youtube args id="GYoutube" project={ this.args.project }></Youtube>
                 
             </div>
         </>;
@@ -195,9 +198,10 @@ export default class Editor extends H12 {
     }
 
     OpenDrive() {
-
         this.child["GDrive"].Show(this.Project);
-
+    }
+    OpenYoutube() {
+        this.child["GYoutube"].Show();
     }
 
     //#region File Drag n Drop

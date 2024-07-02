@@ -87,6 +87,9 @@ export default class Prompt extends H12 {
                 try {
                     if(_history[i].role === "user") {
                         if(typeof(_part.fileData) === "undefined") {
+                            if(_part.text.length == 0) {
+                                continue;
+                            };
                             _text = _part.text;
                         }
                         else {

@@ -43,7 +43,7 @@ export default class Export extends H12 {
 
                     <div class="space-y-1">
                         <label class="text-xs font-semibold text-zinc-400">Publish options:</label>
-                        <button class="block w-full p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors"><i class="fa-brands fa-youtube mr-2"></i>Publish To Youtube</button>
+                        <button class="block w-full p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" id="ExportYoutube" onclick={ this.Upload.Youtube }><i class="fa-brands fa-youtube mr-2"></i>Publish To Youtube</button>
                         <button class="block w-full p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" id="ExportDrive" onclick={ this.Upload.Drive }><i class="fa-brands fa-google-drive mr-2"></i>Save to Google Drive</button>
                         <button class="block w-full p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Download }><i class="fa-solid fa-download mr-2"></i>Download</button>
                     </div>
@@ -128,33 +128,35 @@ export default class Export extends H12 {
                 _source.onopen = () => { Dispatcher.Call("OnLoaderShow"); }
                 _source.onmessage = (event) => {
 
-                    // Try and get response
-                    try {
+                    console.log(event.data)
+                    // // Try and get response
+                    // try {
 
-                        // Get response data and check if success and finished
-                        const _data = JSON.parse(event.data.split("data:"));
-                        if(!_data.success) {
-                            throw new Error(_data.message);
-                        };
+                    //     // Get response data and check if success and finished
+                    //     const _data = JSON.parse(event.data.split("data:"));
+                    //     if(!_data.success) {
+                    //         throw new Error(_data.message);
+                    //     };
 
-                        // Check if the file is uploaded
-                        if(_data.finished) {
-                            alert("File uploaded to google drive !");
-                        };
+                    //     // Check if the file is uploaded
+                    //     if(_data.finished) {
+                    //         alert("File uploaded to google drive !");
+                    //     };
 
-                        // Call dispather show loader
-                        Dispatcher.Call("OnLoaderUpdate", _data.message);
+                    //     // Call dispather show loader
+                    //     Dispatcher.Call("OnLoaderUpdate", _data.message);
 
-                    }
-                    catch(error) {
+                    // }
+                    // catch(error) {
 
-                        // Alert, hide loader and enable button
-                        alert(error);
-                        Dispatcher.Call("OnLoaderHide");
-                        this.element.ExportDrive.disabled = false;
-                        _source.close();
+                    //     // Alert, hide loader and enable button
+                    //     alert(error);
+                    //     Dispatcher.Call("OnLoaderHide");
+                    //     this.element.ExportDrive.disabled = false;
+                    //     _source.close();
 
-                    };
+                    // };
+
                 };
                 _source.onerror = () => {
 
@@ -173,6 +175,13 @@ export default class Export extends H12 {
                 console.error("Editor/Project.Drive():", error);
                 this.element.ExportDrive.disabled = false;
                 
+            };
+
+        },
+        Youtube: async() => {
+
+            if(this.parent && this.parent.child["GYoutube"]) {
+                this.parent.OpenYoutube();
             };
 
         }

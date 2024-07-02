@@ -363,7 +363,10 @@ async function FetchExternalImage(projectId, project = {}) {
     * @param {string} projectId 
     * @param {*} project 
 */
-async function GetExternalAsset(projectId, project = {}) {
+async function GetExternalAsset(projectId, project = {}, callback) {
+
+    // Log
+    callback("Asset: Fetching external assets");
 
     // Try and fetch assets
     try {
@@ -384,7 +387,10 @@ async function GetExternalAsset(projectId, project = {}) {
     * @param {string} projectId The project id to locate the project directory
     * @param {boolean} useLocalTTS Use local TTS, by default its set to `true`
 */
-async function CreateVoiceAsset(projectId = "", slide = [], useLocalTTS = true) {
+async function CreateVoiceAsset(projectId = "", slide = [], useLocalTTS = true, callback) {
+
+    // Log
+    callback("Asset: Creating voice files");
 
     // Try and create narration for video
     try {

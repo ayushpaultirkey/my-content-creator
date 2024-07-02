@@ -135,7 +135,10 @@ function OAuth2GenerateURL(oauth2 = null) {
 
         return oauth2.generateAuthUrl({
             access_type: "offline",
-            scope: [ "https://www.googleapis.com/auth/drive" ],
+            scope: [
+                "https://www.googleapis.com/auth/drive",
+                "https://www.googleapis.com/auth/youtube.upload"
+            ]
         });
 
     }

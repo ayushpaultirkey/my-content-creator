@@ -94,7 +94,7 @@ export default class Dashboard extends H12 {
                             </div>
 
                             <div class="space-x-2">
-                                <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.CreateProject }><i class="fa fa-plus mr-2"></i>Create</button>
+                                <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" id="DCreate" onclick={ this.CreateProject }><i class="fa fa-plus mr-2"></i>Create</button>
                                 <button class="p-2 px-6 text-xs text-zinc-300 font-semibold rounded-md bg-zinc-600 hover:bg-zinc-700 active:bg-zinc-800 transition-colors" onclick={ () => { this.CreatorToggle(false); } }><i class="fa fa-xmark mr-2"></i>Cancel</button>
                             </div>
 
@@ -117,6 +117,8 @@ export default class Dashboard extends H12 {
         // Try and load projects
         try {
 
+            this.Set("{p.list}", "");
+
             // Get validated projects and add it to list
             const _project = await MyCreator.Project.GetValidated();
             for(var i = 0; i < _project.length; i++) {
@@ -133,11 +135,13 @@ export default class Dashboard extends H12 {
 
     async CreateProject() {
 
-        // Call dispatcher event
-        Dispatcher.Call("ShowLoader", "AI is creating project...");
-
         // Try and create project using prompt
         try {
+
+            Dispatcher.Call("OnLoaderShow");
+            Dispatcher.Call("OnLoaderUpdate", "Creating Project");
+
+            this.element.DCreate.disabled = true;
 
             // Get prompt, width, height
             const _width = this.element.CreatorWidth.value;
@@ -163,49 +167,67 @@ export default class Dashboard extends H12 {
 
             // Send request
             const _request = await fetch(_url, { method: "POST", body: _form });
-            const _response = await _request.json();
+            if(!_request.ok) {
+                throw new Error("Error while creating project");
+            }
 
-            // Check for the error
-            if(!_response.success) {
-                throw new Error(_response.message);
+            const _source = new EventSource(`/api/project/create`);
+            _source.onmessage = (event) => {
+
+                // Try and get response
+                try {
+
+                    // Get response data and check if success and finished
+                    const _data = JSON.parse(event.data.split("data:"));
+                    if(!_data.success) {
+                        throw new Error(_data.message);
+                    };
+
+                    // Check if the file is uploaded
+                    if(_data.finished && _data.data && _data.data.id) {
+
+                        // Store the project data
+                        MyCreator.Project.SetLocal(_data.data.id);
+
+                        Dispatcher.Call("OnLoaderHide");
+                        alert("Project created");
+                        this.Load();
+                        this.CreatorToggle(false);
+                        _source.close();
+
+                    };
+                    
+
+                    // Call dispather show loader
+                    Dispatcher.Call("OnLoaderUpdate", _data.message);
+
+                }
+                catch(error) {
+
+                    // Alert, hide loader and enable button
+                    alert(error);
+                    Dispatcher.Call("OnLoaderHide");
+                    this.element.DCreate.disabled = false;
+                    this.CreatorToggle(false);
+                    _source.close();
+
+                };
+                
             };
+            _source.onerror = () => {
+                
+                Dispatcher.Call("OnLoaderHide");
+                this.element.DCreate.disabled = false;
+                _source.close();
+                this.CreatorToggle(false);
 
-            // Store the project data
-            MyCreator.Project.SetLocal(_response.data.id);
-
-
-            // // Check the values
-            // if(_prompt.length < 5) {
-            //     alert("Please enter the project description");
-            //     throw new Error("Project description required");
-            // };
-            // if(_width < 128 || _height < 128) {
-            //     alert("Please check the dimension is greather than 128");
-            //     throw new Error("Dimension should be greater than 128");
-            // };
-            
-            // // Send request and validate the response
-            // const _request = await fetch(`/api/project/create?prompt=${_prompt}&width=${_width}&height=${_height}`);
-            // const _response = await _request.json();
-
-            // if(!_response.success) {
-            //     throw new Error(_response.message);
-            // };
-
-            // // Store the project id and refresh the dashboard
-            // await SetLocalProject({ id: _response.data.id });
-            // await this.Load();
-
-            // // Hide the create project panel
-            // this.CreatorToggle(false);
+            };
 
         }
         catch(error) {
             console.error("Dashboard/CreateProject():", error);
+            this.CreatorToggle(false);
         };
-
-        // Call dispatcher event
-        Dispatcher.Call("HideLoader", "AI is creating project...");
 
     }
 

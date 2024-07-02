@@ -7,7 +7,7 @@ import Project from "../project.js";
 import Duration from "./duration.js";
 
 
-export default async function Render(projectId = "", slide = null, sse = null) {
+export default async function Render(projectId = "", slide = null, callback = null) {
 
     // Create new promise
     const _delay = new delay();
@@ -35,6 +35,7 @@ export default async function Render(projectId = "", slide = null, sse = null) {
             if(_index > _length - 1) {
 
                 // Log resolve and close
+                callback("Rendering: Project pre-render completed");
                 console.log("Service/Slide/Render(): Project pre-render completed");
                 _delay.resolve("Service/Slide/Render(): Project pre-render completed");
                 return;
@@ -112,16 +113,22 @@ export default async function Render(projectId = "", slide = null, sse = null) {
 
             // Register events
             _creator.on("start", () => {
+                callback(`Rendering: Project pre-render ${_slide.id} started`);
                 console.log(`Service/Slide/Render(): Project pre-render ${_slide.id} started`);
             });
             _creator.on("error", () => {
+                callback(`Rendering: Unable to pre-render project: ${_slide.id}`);
                 console.log(`Service/Slide/Render(): Unable to pre-render project: ${_slide.id}`);
                 _delay.reject("Service/Slide/Render(): Unable to pre-render project: ${_slide.id}");
             });
             _creator.on("progress", (e) => {
-                console.log(`Service/Slide/Render(): Project pre-render: ${(e.percent * 100) >> 0}%`);
+                callback(`Rendering: Project ${_slide.id} pre-render: ${(e.percent * 100) >> 0}%`);
+                console.log(`Service/Slide/Render(): Project ${_slide.id} pre-render: ${(e.percent * 100) >> 0}%`);
             });
             _creator.on("complete", async() => {
+
+                // Log
+                callback(`Rendering: Project pre-render ${_slide.id} completed`);
 
                 // Create thumbnail
                 try {

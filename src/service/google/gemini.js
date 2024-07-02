@@ -39,16 +39,16 @@ The explanation for the json data format:
 "description": the detailed description for the video, use seo to make the description stand out by using emojis, hashtag or other things and easy to understand.
 "keyword": a single word in lower case to describe the video and it can be used to search related contents.
 "slides": this is a array that contain multiple slides of the video.
-"slides"."id": the slide id should be unique and cannot be changed once created, like "slide1", "slide2"
+"slides"."id": the slide id should be unique and cannot be changed once created, it should be like this: "slide1", "slide2".
 "slides"."content": the content for the slide, don't use any text formatting and keep it precise if the video duration is not long.
-"slides"."image": the array of slide's image that will be displayed, you cannot set the value for this.
-"slides"."image"."name": this will be the name for the image file, you cannot set the value for this. The default value will be [{ name: <RandomID>.jpg, effect: "" }] where "RandomID" is any random alpha digits and make it unique.
+"slides"."image": the array of slide's image that will be displayed, you cannot set the value for this, until and unless user tell you.
+"slides"."image"."name": this will be the name for the image file, you cannot set the value for this. The default value will be [{ name: slide.id.jpg, effect: "" }] where "slide.id" is the current slide's id.
 "slides"."image"."effect": this will contain the transition effect for the image. If its not provided then leave it blank.
-"slides"."video": the array of slide's video that will be displayed, you cannot set the value for this. If its not provided then do not add the entry to array, remember dont add video on your own.
+"slides"."video": the array of slide's video that will be displayed, you cannot set the value for this. If its not provided then do not add the entry to array, remember don't add video on your own.
 "slides"."video"."name": this will be the name for the video file, you cannot set the value for this.
 "slides"."video"."effect": this will contain the transition effect for the video. If its not provided then leave it blank.
 
-Make sure to always create a video content on first try, so user can modify things later on, remember to not create an empty content. And dont add video in slides on you own.`;
+Make sure to always create a video content on first try, so user can modify things later on, remember to not create an empty content. And don't add video in slides on you own.`;
 
     GENERATIVE = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API);
     FILEMANAGER = new GoogleAIFileManager(process.env.GOOGLE_GEMINI_API);
