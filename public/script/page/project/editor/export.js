@@ -3,6 +3,7 @@ import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
 import MyCreator from "@library/mycreator";
 import ServerEvent from "@library/serverevent";
+import Google from "@library/google";
 
 @Component
 export default class Export extends H12 {
@@ -122,50 +123,27 @@ export default class Export extends H12 {
 
                 // Disable button
                 this.element.ExportDrive.disabled = true;
-
-                // Register new server send event
-                const _source = new EventSource(`/api/project/export/drive?pid=${this.Project.id}`);                
-                _source.onopen = () => { Dispatcher.Call("OnLoaderShow"); }
-                _source.onmessage = (event) => {
-
-                    console.log(event.data)
-                    // // Try and get response
-                    // try {
-
-                    //     // Get response data and check if success and finished
-                    //     const _data = JSON.parse(event.data.split("data:"));
-                    //     if(!_data.success) {
-                    //         throw new Error(_data.message);
-                    //     };
-
-                    //     // Check if the file is uploaded
-                    //     if(_data.finished) {
-                    //         alert("File uploaded to google drive !");
-                    //     };
-
-                    //     // Call dispather show loader
-                    //     Dispatcher.Call("OnLoaderUpdate", _data.message);
-
-                    // }
-                    // catch(error) {
-
-                    //     // Alert, hide loader and enable button
-                    //     alert(error);
-                    //     Dispatcher.Call("OnLoaderHide");
-                    //     this.element.ExportDrive.disabled = false;
-                    //     _source.close();
-
-                    // };
-
-                };
-                _source.onerror = () => {
-
-                    // Hide loader and enable button on error
-                    Dispatcher.Call("OnLoaderHide");
-                    this.element.ExportDrive.disabled = false;
-                    _source.close();
-
-                };
+                
+                // Upload file to google drive by the id
+                Google.Drive.UploadFile(this.Project.id, {
+                    onOpen: () => {
+                        Dispatcher.Call("OnLoaderShow");
+                    },
+                    onMessage: (data) => {
+                        Dispatcher.Call("OnLoaderUpdate", data.message);
+                    },
+                    onFinish: () => {
+                        alert("File uploaded to google drive !");
+                        Dispatcher.Call("OnLoaderHide");
+                    },
+                    onError: (status, message) => {
+                        if(status !== EventSource.CLOSED && message) {
+                            alert(message);
+                        };
+                        Dispatcher.Call("OnLoaderHide");
+                        this.element.ExportDrive.disabled = false;
+                    }
+                });
 
             }
             catch(error) {
@@ -180,8 +158,8 @@ export default class Export extends H12 {
         },
         Youtube: async() => {
 
-            if(this.parent && this.parent.child["GYoutube"]) {
-                this.parent.OpenYoutube();
+            if(this.parent) {
+                this.parent.OpenYTUploader();
             };
 
         }

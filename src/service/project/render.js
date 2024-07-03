@@ -6,7 +6,7 @@ import { FFScene, FFCreator } from "ffcreator";
 import delay from "../../library/wait.js";
 import directory from "../../library/directory.js";
 
-import Scene from "../scene.js";
+import Scene from "../slide/scene.js";
 import Project from "../project.js";
 import Duration from "./../slide/duration.js";
 

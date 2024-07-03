@@ -1,10 +1,9 @@
 import "@style/main.css";
 import H12 from "@library/h12";
-import Dispatcher from "@library/h12.dispatcher";
 import MyCreator from "@library/mycreator";
 
 @Component
-export default class Drive extends H12 {
+export default class Viewer extends H12 {
 
     constructor() {
         super();
@@ -14,6 +13,8 @@ export default class Drive extends H12 {
     async init(args = { project }) {
 
         if(MyCreator.Project.IsValid(args.project)) {
+
+            this.Project = args.project;
 
             this.Set("{d.list}", "");
             this.Set("{d.spin}", "");
@@ -71,7 +72,7 @@ export default class Drive extends H12 {
 
     async Import() {
 
-        if(!MyCreator.Project.IsValid(this.args.project)) {
+        if(!this.Project) {
             return false;
         };
 
@@ -106,18 +107,17 @@ export default class Drive extends H12 {
             for(var i = 0, len = _file.length; i < len; i++) {
 
                 // Get id, mime
-                let _id = _file[i].id;
-                let _mime = _file[i].mimeType;
+                let { id, mimeType } = _file[i];
                 let _icon = "";
 
                 // Create icon for file
-                if(_mime.includes("image")) {
+                if(mimeType.includes("image")) {
                     _icon = "fa-image";
                 }
-                else if(_mime.includes("video")) {
+                else if(mimeType.includes("video")) {
                     _icon = "fa-video";
                 }
-                else if(_mime.includes("audio")) {
+                else if(mimeType.includes("audio")) {
                     _icon = "fa-volume-high";
                 }
                 else {
@@ -127,7 +127,7 @@ export default class Drive extends H12 {
                 // Create item template
                 const _item = <>
                     <div class="flex items-center space-x-3">
-                        <input type="checkbox" onclick={ () => { this.Select(_id); } } />
+                        <input type="checkbox" onclick={ () => { this.Select(id); } } />
                         <i class={ `fa ${_icon}` }></i>
                         <label class="text-xs font-semibold">{ _file[i].name }</label>
                         <a href={ _file[i].webViewLink } target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-blue-700 underline">View</a>

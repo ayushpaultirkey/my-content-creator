@@ -2,8 +2,8 @@ import fs from "fs/promises";
 import path from "path";
 import mime from "mime";
 
-import directory from "../../library/directory.js";
-import Project from "../project.js";
+import directory from "../../../library/directory.js";
+import Project from "../../project.js";
 
 // Get directory path
 const { __root } = directory();

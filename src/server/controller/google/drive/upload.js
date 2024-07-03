@@ -1,13 +1,12 @@
-import Project from "#service/project.js";
 import Google from "#service/google.js";
-import Drive from "#service/google/drive.js";
+
 
 /**
     *
     * @param {import("express").Request} request 
     * @param {import("express").Response} response 
 */
-export default async function EDrive(request, response) {
+export default async function Upload(request, response) {
     
     // Create response object
     const _response = { message: "", success: false, finished: false };
@@ -18,11 +17,10 @@ export default async function EDrive(request, response) {
     response.setHeader("Connection", "keep-alive");
     response.setHeader("Content-Encoding", "none");
 
-    //Check if render.mp4 exists
     try {
 
         // Check if there is user
-        if(!Google.HasAuthToken(request)) {
+        if(!Google.Auth.HasAuthToken(request)) {
             throw new Error("Google account not authenticated");
         };
 
@@ -31,11 +29,10 @@ export default async function EDrive(request, response) {
             throw new Error("Invalid project id");
         };
 
-        // Get the export file path of the project and upload file to drive
-        const _exportPath = await Project.Export.GetFile(request.query.pid);
-        await Drive.UploadFile(_exportPath.path, (text) => {
+        // Using project id, try to upload the render.mp4 file to drive
+        // Create callback for the server side event
+        await Google.Drive.UploadFile(request.query.pid, (text) => {
 
-            // Write response
             response.write(`data: ${JSON.stringify({ message: text, success: true })}\n\n`);
 
         });

@@ -62,7 +62,7 @@ export default class Slide extends H12 {
                     
                     <div class="border border-transparent border-t-zinc-700 pt-3">
                         <label class="text-xs font-semibold text-zinc-400 block mb-1">External Asset: <i class="fa-regular fa-circle-question" title="Require to login into google account"></i></label>
-                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ () => { this.parent.OpenDrive() } }><i class="fa-brands fa-google-drive mr-2 pointer-events-none"></i>Google Drive</button>
+                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ () => { this.parent.OpenDriveViewer() } }><i class="fa-brands fa-google-drive mr-2 pointer-events-none"></i>Google Drive</button>
                     </div>
 
                     <div>

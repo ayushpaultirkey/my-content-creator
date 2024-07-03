@@ -9,7 +9,7 @@ import compression from "compression";
 import viteExpress from "vite-express";
 
 import router from "./router.js";
-import Cache from "./../service/cache.js";
+import Cache from "../service/asset/cache.js";
 import Gemini from "./../service/google/gemini.js";
 import directory from "./../library/directory.js";
 

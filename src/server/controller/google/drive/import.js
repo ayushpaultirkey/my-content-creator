@@ -1,5 +1,4 @@
-import Google from "../../../../service/google.js";
-import Drive from "../../../../service/google/drive.js";
+import Google from "#service/google.js";
 
 
 /**
@@ -16,7 +15,7 @@ export default async function Import(request, response) {
     try {
 
         // Check if there is user
-        if(!Google.HasAuthToken(request)) {
+        if(!Google.Auth.HasAuthToken(request)) {
             throw new Error("Google account not authenticated");
         };
 
@@ -32,7 +31,7 @@ export default async function Import(request, response) {
         };
 
         // Download files into the project directory
-        await Drive.ImportFile(_projectId, _fileId);
+        await Google.Drive.ImportFiles(_projectId, _fileId);
 
         // Set response data
         _response.success = true;

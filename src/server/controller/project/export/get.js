@@ -1,7 +1,5 @@
-import fs from "fs/promises";
-import path from "path";
-
 import Project from "#service/project.js";
+
 
 /**
     *
@@ -14,16 +12,14 @@ export default async function Get(request, response) {
     try {
 
         // Check if the query parameter are valid
-        const _projectId = request.query.pid;
-        if(!_projectId) {
+        const { pid } = request.query;
+        if(!pid) {
             throw new Error("Invalid project id");
         };
 
         // Get the export file path of the project
-        const _exportPath = await Project.Export.GetFile(_projectId);
-
-        // Download file
-        response.download(_exportPath.path);
+        const _file = await Project.Export.GetFile(pid);
+        response.download(_file.path);
 
     }
     catch(error) {

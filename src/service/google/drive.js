@@ -1,26 +1,26 @@
 import "dotenv/config";
-import path from "path";
-import crypto from "crypto";
-import sharp from "sharp";
 import fs from "fs";
 import fsp from "fs/promises";
 import mime from "mime";
+import path from "path";
+import sharp from "sharp";
+import crypto from "crypto";
 import { google } from "googleapis";
 
 import directory from "#library/directory.js";
-
-import Google from "../google.js";
+import GAuth from "./auth.js";
 import Project from "../project.js";
 
-const { __dirname } = directory();
+
+const {  __root } = directory();
 
 
-async function GetFile() {
+async function GetFiles() {
 
     try {
 
         // Get auth cient
-        const _auth = Google.OAuth2Client();
+        const _auth = GAuth.OAuth2Client();
 
         // Define google drive
         const _drive = google.drive({ version: "v3", auth: _auth });
@@ -51,13 +51,13 @@ async function GetFile() {
 };
 
 
-async function ImportFile(projectId = "", id = []) {
+async function ImportFiles(projectId = "", id = []) {
 
     try {
 
         const _project = await Project.GetActive(projectId);
 
-        const _auth = Google.OAuth2Client();
+        const _auth = GAuth.OAuth2Client();
         const _drive = google.drive({ version: "v3", auth: _auth });
 
         const _download = async(fileId) => {
@@ -74,7 +74,7 @@ async function ImportFile(projectId = "", id = []) {
                 const _name = `${crypto.randomUUID()}.${_extension}`;
     
                 // Create temp download path
-                const _tempPath = path.join(__dirname, `../../project/.temp/${_name}`);
+                const _tempPath = path.join(__root, `/project/.temp/${_name}`);
     
                 // Download file in the .download folder
                 await new Promise((resolve, reject) => {
@@ -133,33 +133,36 @@ async function ImportFile(projectId = "", id = []) {
 };
 
 
-async function UploadFile(filePath = "", sse) {
+async function UploadFile(projectId = "", sse) {
 
     try {
+
+        // Create project path for the assets when downloaded
+        const _filePath = await Project.Export.GetFile(projectId);
 
         // Log
         console.log("Service/Google/Drive.UploadFile(): Upload started");
         sse("Drive: Upload started");
 
         // Get auth cient and define google drive
-        const _auth = Google.OAuth2Client();
+        const _auth = GAuth.OAuth2Client();
         const _drive = google.drive({ version: "v3", auth: _auth });
 
         // Create meta data for file
         const _metadata = {
-            "name": path.basename(filePath)
+            "name": path.basename(_filePath.path)
         };
-        const _mimeType = mime.getType(filePath);
+        const _mimeType = mime.getType(_filePath.path);
 
         // Get file size and set byte uploaded
-        let _fileSize = fs.statSync(filePath).size;
+        let _fileSize = fs.statSync(_filePath.path).size;
         let _bytesUploaded = 0;
 
         // Create media object for upload along with
         // Upload progress function
         const _media = {
             mimeType: _mimeType || "application/octet-stream",
-            body: fs.createReadStream(filePath).on("data", (chunk) => {
+            body: fs.createReadStream(_filePath.path).on("data", (chunk) => {
 
                 _bytesUploaded += chunk.length;
 
@@ -209,4 +212,4 @@ function MimeTypeExtension(mimeType = "") {
 
 
 
-export default { GetFile, ImportFile, UploadFile };
+export default { GetFiles, ImportFiles, UploadFile };

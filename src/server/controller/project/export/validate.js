@@ -18,13 +18,13 @@ export default async function Validate(request, response) {
     try {
 
         // Check if the query parameter are valid
-        const _projectId = request.query.pid;
-        if(!_projectId) {
+        const { pid } = request.query;
+        if(!pid) {
             throw new Error("Invalid project id");
         };
 
         // Get the export file path of the project
-        const _exportPath = await Export.GetFile(_projectId);
+        const _exportPath = await Export.GetFile(pid);
 
         // Set response
         _response.success = true;

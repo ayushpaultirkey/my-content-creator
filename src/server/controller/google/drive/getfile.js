@@ -1,5 +1,4 @@
-import Google from "../../../../service/google.js";
-import Drive from "../../../../service/google/drive.js";
+import Google from "#service/google.js";
 
 
 /**
@@ -16,12 +15,12 @@ export default async function GetFile(request, response) {
     try {
 
         // Check if there is user
-        if(!Google.HasAuthToken(request)) {
+        if(!Google.Auth.HasAuthToken(request)) {
             throw new Error("Google account not authenticated");
         };
 
         // Get files from drive
-        const _data = await Drive.GetFile();
+        const _data = await Google.Drive.GetFiles();
 
         // Set response data
         _response.data = _data;

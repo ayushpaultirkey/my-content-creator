@@ -11,7 +11,7 @@ import directory from "./../library/directory.js";
 
 import Voice from "./asset/voice.js";
 import Project from "./project.js";
-import Cache from "./cache.js";
+import Cache from "./asset/cache.js";
 
 
 /**
@@ -408,4 +408,4 @@ async function CreateVoiceAsset(projectId = "", slide = [], useLocalTTS = true, 
 };
 
 
-export default { Uploader, GetLocalAsset, CreateVoiceAsset, GetExternalAsset };
+export default { Uploader, GetLocalAsset, CreateVoiceAsset, GetExternalAsset, Cache };

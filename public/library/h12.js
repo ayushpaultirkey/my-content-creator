@@ -280,8 +280,17 @@ export default class H12 {
         * 
         * @param {string} key 
         * @param {string | Element | Function} value 
+        * @param {H12} component
     */
-    Set(key = "", value = "") {
+    Set(key = "", value = "", component) {
+
+        if(component) {
+            for(const id in this.child) {
+                if(this.child[id] instanceof component) {
+                    delete this.child[id];
+                };
+            };
+        };
 
         // Get position index and remove from key
         let _index = key.indexOf("++");

@@ -1,13 +1,12 @@
-import Project from "#service/project.js";
 import Google from "#service/google.js";
-import Youtube from "#service/google/youtube.js";
+
 
 /**
     *
     * @param {import("express").Request} request 
     * @param {import("express").Response} response 
 */
-export default async function EYoutube(request, response) {
+export default async function Upload(request, response) {
     
     // Create response object
     const _response = { message: "", success: false, finished: false };
@@ -18,30 +17,33 @@ export default async function EYoutube(request, response) {
     response.setHeader("Connection", "keep-alive");
     response.setHeader("Content-Encoding", "none");
 
-    //Check if render.mp4 exists
+
     try {
 
         // Check if there is user
-        if(!Google.HasAuthToken(request)) {
+        if(!Google.Auth.HasAuthToken(request)) {
             throw new Error("Google account not authenticated");
         };
 
         // Check if the query parameter are valid
+        // pid => project id
+        // t => title
+        // d => description
+        // c => category
         const { pid, t, d, c } = request.query;
         if(!pid || !t || !d || !c) {
             throw new Error("Invalid parameters");
         };
 
-        // Using project id, try to upload the file to youtube
+        // Using project id, try to upload the render.mp4 file to youtube
         // Create callback for the server side event
-        await Youtube.UploadFile({ projectId: pid, title: t, description: d, category: c }, (text) => {
+        await Google.Youtube.UploadFile({ projectId: pid, title: t, description: d, category: c }, (text) => {
 
-            // Write response
             response.write(`data: ${JSON.stringify({ message: text, success: true })}\n\n`);
 
         });
 
-        // Set response
+        // Set response for success
         _response.message = "File uploaded to youtube";
         _response.finished = true;
         _response.success = true;
@@ -49,13 +51,14 @@ export default async function EYoutube(request, response) {
     }
     catch(error) {
 
-        // Log and set response
+        // Log and set response for error
         console.log("/project/export/youtube:", error);
         _response.message = error.message || "An error occurred";
 
     }
     finally {
 
+        // End response
         response.write(`data: ${JSON.stringify(_response)}\n\n`);
         response.end();
 

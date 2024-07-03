@@ -3,8 +3,9 @@ import fs from "fs";
 import mime from "mime";
 import { google } from "googleapis";
 
-import Google from "../google.js";
+import GAuth from "./auth.js";
 import Project from "../project.js";
+
 
 async function UploadFile({ projectId = "", title, description, category = 24 }, callback) {
 
@@ -25,7 +26,7 @@ async function UploadFile({ projectId = "", title, description, category = 24 },
         };
 
         // Get auth cient and define google drive
-        const _auth = Google.OAuth2Client();
+        const _auth = GAuth.OAuth2Client();
         const _youtube = google.youtube({ version: "v3", auth: _auth });
 
         // Define video metadata

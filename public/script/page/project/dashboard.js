@@ -2,8 +2,9 @@ import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
 import ServerEvent from "@library/serverevent";
+import SSE from "@library/sse";
 import MyCreator from "@library/mycreator";
-import Drive from "@component/drive";
+import Drive from "@component/drive/viewer";
 
 import Card from "./dashboard/card";
 
@@ -23,9 +24,9 @@ export default class Dashboard extends H12 {
             this.Set("{c.fvisible}", "hidden");
     
             this.Set("{d.create.toggle}", "hidden");
+            this.Set("{d.auth}", "Connect to Google");
     
             await this.Load();
-    
             this.Auth();
     
             this.element.CreatorFile.addEventListener("change", this.CreatorAttachFile.bind(this));
@@ -33,7 +34,7 @@ export default class Dashboard extends H12 {
         }
         catch(error) {
             alert("Unable to load dashbaord");
-            console.error("Dashboard/init():", error);
+            console.error("D.init():", error);
         }
 
     }
@@ -114,10 +115,11 @@ export default class Dashboard extends H12 {
 
     async Load() {
 
-        // Try and load projects
         try {
 
-            this.Set("{p.list}", "");
+            // Clear the key's value and remove all
+            // component reference from the child
+            this.Set("{p.list}", "", Card);
 
             // Get validated projects and add it to list
             const _project = await MyCreator.Project.GetValidated();
@@ -127,7 +129,7 @@ export default class Dashboard extends H12 {
 
         }
         catch(error) {
-            console.error("Dashboard/Load():", error);
+            console.error("D.Load():", error);
             alert("Unable to load projects, try again later");
         };
 
@@ -138,15 +140,18 @@ export default class Dashboard extends H12 {
         // Try and create project using prompt
         try {
 
+            // Set the loader and disable button
+            DCreate.disabled = true;
             Dispatcher.Call("OnLoaderShow");
             Dispatcher.Call("OnLoaderUpdate", "Creating Project");
 
-            this.element.DCreate.disabled = true;
+            // Get elements
+            const { CreatorWidth, CreatorHeight, CreatorInput, DCreate } = this.element;
 
             // Get prompt, width, height
-            const _width = this.element.CreatorWidth.value;
-            const _height = this.element.CreatorHeight.value;
-            const _prompt = this.element.CreatorInput.value;
+            const _width = CreatorWidth.value;
+            const _height = CreatorHeight.value;
+            const _prompt = CreatorInput.value;
 
             // Check for project description
             if(_prompt.length < 5 && this.CreatorFile == null) {
@@ -160,71 +165,45 @@ export default class Dashboard extends H12 {
                 throw new Error("Dimension should be greater than 128");
             };
 
-            // Prepare data
-            const _url = `/api/project/create?prompt=${_prompt}&width=${_width}&height=${_height}`;
+            // Prepare data to create project
+            // And check for response
             const _form = new FormData();
             _form.append("files", this.CreatorFile);
 
-            // Send request
-            const _request = await fetch(_url, { method: "POST", body: _form });
+            const _request = await fetch(`/api/project/create?prompt=${_prompt}&width=${_width}&height=${_height}`, { method: "POST", body: _form });
             if(!_request.ok) {
                 throw new Error("Error while creating project");
-            }
+            };
 
-            const _source = new EventSource(`/api/project/create`);
-            _source.onmessage = (event) => {
+            // Register a server side event to view
+            // The project creation process
+            SSE(`/api/project/create`, {
+                onMessage: (data) => {
 
-                // Try and get response
-                try {
+                    Dispatcher.Call("OnLoaderUpdate", data.message);
 
-                    // Get response data and check if success and finished
-                    const _data = JSON.parse(event.data.split("data:"));
-                    if(!_data.success) {
-                        throw new Error(_data.message);
+                },
+                onFinish: (data) => {
+
+                    MyCreator.Project.SetLocal(data.id);
+                    Dispatcher.Call("OnLoaderHide");
+                    DCreate.disabled = false;
+
+                },
+                onError: (status, message) => {
+
+                    if(status !== EventSource.CLOSED && message) {
+                        alert(message);
                     };
-
-                    // Check if the file is uploaded
-                    if(_data.finished && _data.data && _data.data.id) {
-
-                        // Store the project data
-                        MyCreator.Project.SetLocal(_data.data.id);
-
-                        Dispatcher.Call("OnLoaderHide");
-                        alert("Project created");
-                        this.Load();
-                        this.CreatorToggle(false);
-                        _source.close();
-
-                    };
-
-                    // Call dispather show loader
-                    Dispatcher.Call("OnLoaderUpdate", _data.message);
+                    Dispatcher.Call("OnLoaderHide");
+                    DCreate.disabled = false;
 
                 }
-                catch(error) {
-
-                    // Alert, hide loader and enable button
-                    alert(error);
-                    Dispatcher.Call("OnLoaderHide");
-                    this.element.DCreate.disabled = false;
-                    this.CreatorToggle(false);
-                    _source.close();
-
-                };
-                
-            };
-            _source.onerror = () => {
-                
-                Dispatcher.Call("OnLoaderHide");
-                this.element.DCreate.disabled = false;
-                _source.close();
-                this.CreatorToggle(false);
-
-            };
+            });
 
         }
         catch(error) {
-            console.error("Dashboard/CreateProject():", error);
+            console.error("D.CreateProject():", error);
             this.CreatorToggle(false);
         };
 
@@ -250,13 +229,13 @@ export default class Dashboard extends H12 {
                 this.Set("{c.fname}", _file.name);
                 this.Set("{c.fvisible}", "");
     
-                console.log(`Dashboard/CreateFileAttach():Selected file: ${_file.name}`);
+                console.log(`D.CreateFileAttach(): Selected: ${_file.name}`);
     
             };
 
         }
         else {
-            console.warn(`Editor/HandleDrop(): File ${_file.name} is not supported and was not uploaded.`);
+            console.warn(`D.HandleDrop(): File ${_file.name} not supported`);
             alert("File format not supported");
         };
 
@@ -283,7 +262,7 @@ export default class Dashboard extends H12 {
     Auth() {
 
         ServerEvent.Bind("AuthStatus", "open", () => {
-            console.warn("Dashboars/AuthStatus connection created");
+            console.warn("D.Auth(): connection created");
             this.Set("{d.auth.visible}", "");
         });
 
@@ -293,16 +272,16 @@ export default class Dashboard extends H12 {
                 this.Set("{d.auth}", ((_data.success) ? "Connected to Google" : "Connect to Google"));
             }
             catch(error) {
-                console.error("Dashboard/BindAuthStatus():", error);
-                ServerEvent.Destroy("AuthStatus");
                 this.Set("{d.auth.visible}", "hidden");
+                console.error("D.Auth():", error);
+                ServerEvent.Destroy("AuthStatus");
             };
         });
 
         ServerEvent.Bind("AuthStatus", "error", () => {
-            console.error("Dashboard/BindAuthStatus(): AuthStatus error");
-            ServerEvent.Destroy("AuthStatus");
             this.Set("{d.auth.visible}", "hidden");
+            console.error("D.Auth(): AuthStatus error");
+            ServerEvent.Destroy("AuthStatus");
         });
 
     }

@@ -3,8 +3,8 @@ import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
 import MyCreator from "@library/mycreator";
 
-import Drive from "@component/drive";
-import Youtube from "@component/youtube";
+import DViewer from "@component/drive/viewer";
+import YTUploader from "@component/youtube/uploader";
 
 import Slide from "./editor/slide";
 import Prompt from "./editor/prompt";
@@ -24,8 +24,11 @@ export default class Editor extends H12 {
 
     async init(args = { project }) {
 
+        this.Set("{e.gdrive}", "G");
+        this.Set("{e.ytupload}", "Y")
+
         // Check if the project is valid
-        if(MyCreator.Project.IsValid(args.project)) {
+        if(args.project) {
 
             // Set project for editor and load
             this.Project = args.project;
@@ -44,7 +47,8 @@ export default class Editor extends H12 {
 
     async render() {
         return <>
-            <div class="w-full h-full relative">
+            <div class="w-full h-full relative GGH">
+                
                 <div class="w-full h-full flex flex-row relative">
 
                     <div class="w-full h-full bg-zinc-900 flex-col flex p-4 absolute -left-full md:w-auto md:h-auto md:static md:left-auto" id="NavigationTab">
@@ -83,6 +87,7 @@ export default class Editor extends H12 {
 
                                 </div>
                             </div>
+
                         </div>
 
                         <div class="absolute right-10 top-3 flex space-x-6 md:hidden">
@@ -109,39 +114,41 @@ export default class Editor extends H12 {
                     </div>
                 </div>
 
-                <Drive args id="GDrive" project={ this.args.project }></Drive>
-                <Youtube args id="GYoutube" project={ this.args.project }></Youtube>
-                
+                {e.gdrive}
+                {e.ytupload}
+
             </div>
         </>;
     }
 
     Scroll(index = 0) {
 
+        const { NavigationTab, ViewportTab, PropertyTab } = this.element;
+
         switch(index) {
             case 0:
-                this.element.NavigationTab.classList.add("left-0");
-                this.element.NavigationTab.classList.remove("-left-full");
-                this.element.ViewportTab.classList.add("-left-full");
-                this.element.ViewportTab.classList.remove("left-0");
-                this.element.PropertyTab.classList.add("-left-full");
-                this.element.PropertyTab.classList.remove("left-0");
+                NavigationTab.classList.add("left-0");
+                NavigationTab.classList.remove("-left-full");
+                ViewportTab.classList.add("-left-full");
+                ViewportTab.classList.remove("left-0");
+                PropertyTab.classList.add("-left-full");
+                PropertyTab.classList.remove("left-0");
                 break;
             case 1:
-                this.element.NavigationTab.classList.add("-left-full");
-                this.element.NavigationTab.classList.remove("left-0");
-                this.element.ViewportTab.classList.add("-left-full");
-                this.element.ViewportTab.classList.remove("left-0");
-                this.element.PropertyTab.classList.add("left-0");
-                this.element.PropertyTab.classList.remove("-left-full");
+                NavigationTab.classList.add("-left-full");
+                NavigationTab.classList.remove("left-0");
+                ViewportTab.classList.add("-left-full");
+                ViewportTab.classList.remove("left-0");
+                PropertyTab.classList.add("left-0");
+                PropertyTab.classList.remove("-left-full");
                 break;
             case 2:
-                this.element.NavigationTab.classList.add("-left-full");
-                this.element.NavigationTab.classList.remove("left-0");
-                this.element.PropertyTab.classList.add("-left-full");
-                this.element.PropertyTab.classList.remove("left-0");
-                this.element.ViewportTab.classList.add("left-0");
-                this.element.ViewportTab.classList.remove("-left-full");
+                NavigationTab.classList.add("-left-full");
+                NavigationTab.classList.remove("left-0");
+                PropertyTab.classList.add("-left-full");
+                PropertyTab.classList.remove("left-0");
+                ViewportTab.classList.add("left-0");
+                ViewportTab.classList.remove("-left-full");
                 break;
 
         }
@@ -197,10 +204,21 @@ export default class Editor extends H12 {
 
     }
 
-    OpenDrive() {
+    async OpenDriveViewer() {
+        
+        if(!this.child["GDrive"]) {
+            this.Set("{e.gdrive}", <><DViewer args ref="DViewer" id="GDrive" project={ this.args.project }></DViewer></>);
+            console.warn("E.OpenDriveViewer(): DViewer imported");
+        };
         this.child["GDrive"].Show(this.Project);
+        
     }
-    OpenYoutube() {
+    async OpenYTUploader() {
+
+        if(!this.child["GYoutube"]) {
+            this.Set("{e.ytupload}", <><YTUploader args ref="YTUploader" id="GYoutube" project={ this.args.project }></YTUploader></>);
+            console.warn("E.OpenYTUploader(): YTUploader imported");
+        };
         this.child["GYoutube"].Show();
     }
 
@@ -231,8 +249,8 @@ export default class Editor extends H12 {
     async HandleDrop(event) {
 
         // Check if the project is valid
-        if(!MyCreator.Project.IsValid(this.Project)) {
-            console.error("Editor/HandleDrop(): Invalid project");
+        if(!this.Project) {
+            console.error("E.HandleDrop(): Invalid project");
             return false;
         };
 
@@ -245,18 +263,21 @@ export default class Editor extends H12 {
                 return true;
             }
             else {
-                console.warn(`Editor/HandleDrop(): File ${x.name} is not supported and was not uploaded.`);
+                console.warn(`E.HandleDrop(): ${x.name} not supported.`);
                 return false;
             };
         });
 
         // Upload all files and wait for the uploads to complete
         try {
+
             await Promise.all(_filesToUpload.map(file => this.UploadFile(file)));
-            //this.Load();
+
+            Dispatcher.Call("OnAssetUpdated");
+
         }
         catch(error) {
-            console.error("Editor/HandleDrop(): An error occurred during file upload:", error);
+            console.error("E.HandleDrop(): Error file upload:", error);
         };
 
     }
@@ -279,8 +300,6 @@ export default class Editor extends H12 {
                 throw new Error(_response.message);
             };
 
-            // Call dispatcher event
-            Dispatcher.Call("OnAssetUpdated");
 
         }
         catch(error) {

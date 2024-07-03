@@ -1,10 +1,10 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
-import MyCreator from "@library/mycreator";
+import Google from "@library/google";
 
 @Component
-export default class Youtube extends H12 {
+export default class Uploader extends H12 {
 
     constructor() {
         super();
@@ -67,7 +67,7 @@ export default class Youtube extends H12 {
         return <>
             <div class="absolute top-0 left-0 w-full h-full bg-zinc-900 text-zinc-800 bg-opacity-90 flex justify-center items-center collapse">
                     
-                <div class="w-full bg-zinc-200 p-6 space-y-5">
+                <div class="w-full h-full md:h-auto bg-zinc-200 p-6 space-y-5">
                     <div class="flex items-center space-x-3 text-zinc-800">
                         <i class="fa-brands fa-youtube text-2xl text-red-500"></i>
                         <label class="font-semibold w-full">Youtube Upload</label>
@@ -78,7 +78,7 @@ export default class Youtube extends H12 {
                     </div>
                     <div class="flex flex-col space-y-1">
                         <label class="text-xs font-semibold text-zinc-900">Title:</label>
-                        <textarea class="block md:w-96 w-full h-20 text-xs font-semibold bg-zinc-300 border border-zinc-400 p-2 rounded-md placeholder:text-zinc-600 text-zinc-800 resize-none" placeholder="Project's description" id="YTDescription"></textarea>
+                        <textarea class="block md:w-96 w-full h-32 text-xs font-semibold bg-zinc-300 border border-zinc-400 p-2 rounded-md placeholder:text-zinc-600 text-zinc-800 resize-none" placeholder="Project's description" id="YTDescription"></textarea>
                     </div>
                     <div class="flex flex-col space-y-1">
                         <label class="text-xs font-semibold text-zinc-900">Categories:</label>
@@ -105,20 +105,20 @@ export default class Youtube extends H12 {
 
     Load() {
 
-        if(!this.Project) {
+        if(!this.Project || !this.Project.project) {
             return false;
         };
 
-        const _property = this.Project.property;
+        const { property: { title, description } } = this.Project;
+        const { YTTitle, YTDescription } = this.element;
 
-        this.element.YTTitle.value = _property.title;
-        this.element.YTDescription.value = _property.description;
+        YTTitle.value = title;
+        YTDescription.value = description;
 
     }
 
     async #Upload() {
 
-        // Check if the project is valid
         if(!this.Project) {
             return false;
         };
@@ -126,65 +126,49 @@ export default class Youtube extends H12 {
         try {
 
             // Get values and check it
-            const _category = this.element.YTCategory.value;
-            const _title = encodeURIComponent(this.element.YTTitle.value);
-            const _description = encodeURIComponent(this.element.YTDescription.value);
+            const { YTTitle, YTDescription, YTCategory, YTUpload } = this.element;
+
+            //
+            const _category = YTCategory.value;
+            const _title = encodeURIComponent(YTTitle.value);
+            const _description = encodeURIComponent(YTDescription.value);
+
             if(_title.length < 2 || _description.length < 2) {
                 throw new Error("Please enter title and description")
             };
 
-            // Disable button
-            this.element.YTUpload.disabled = true;
+            //
+            YTUpload.disabled = true;
 
-            // Register new server send event
-            const _source = new EventSource(`/api/project/export/youtube?pid=${this.Project.id}&t=${_title}&d=${_description}&c=${_category}`);         
-            _source.onopen = () => { Dispatcher.Call("OnLoaderShow"); }
-            _source.onmessage = (event) => {
-
-                // Try and get response
-                try {
-
-                    // Get response data and check if success and finished
-                    const _data = JSON.parse(event.data.split("data:"));
-                    if(!_data.success) {
-                        throw new Error(_data.message);
-                    };
-
-                    // Check if the file is uploaded
-                    if(_data.finished) {
-                        alert("File uploaded to youtube !");
-                    };
-
-                    // Call dispather show loader
-                    Dispatcher.Call("OnLoaderUpdate", _data.message);
-
-                }
-                catch(error) {
-
-                    // Alert, hide loader and enable button
-                    alert(error);
+            //
+            Google.Youtube.UploadFile(this.Project.id, _title, _description, _category, {
+                onOpen: () => {
+                    Dispatcher.Call("OnLoaderShow");
+                },
+                onMessage: (data) => {
+                    Dispatcher.Call("OnLoaderUpdate", data.message);
+                },
+                onFinish: () => {
+                    alert("File uploaded to google drive !");
                     Dispatcher.Call("OnLoaderHide");
-                    this.element.YTUpload.disabled = false;
-                    _source.close();
-
-                };
-            };
-            _source.onerror = () => {
-
-                // Hide loader and enable button on error
-                Dispatcher.Call("OnLoaderHide");
-                this.element.YTUpload.disabled = false;
-                _source.close();
-
-            };
+                    YTUpload.disabled = false;
+                },
+                onError: (status, message) => {
+                    if(status !== EventSource.CLOSED && message) {
+                        alert(message);
+                    };
+                    Dispatcher.Call("OnLoaderHide");
+                    YTUpload.disabled = false;
+                }
+            });
 
         }
         catch(error) {
 
             // Alert and log
             alert("Unable to render project, try again later");
-            console.error("Editor/Project.Youtube():", error);
-            this.element.YTUpload.disabled = false;
+            console.error("C/Y/Uploader():", error);
+            YTUpload.disabled = false;
             
         };
 
