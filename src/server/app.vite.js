@@ -43,14 +43,14 @@ export default function init() {
     app.use(compression());
 
     // Add project path
-    const { __dirname } = directory();
-    app.use("/project", express.static(path.join(__dirname, "../../project/")));
+    const { __root } = directory();
+    app.use("/project", express.static(path.join(__root, "/project/")));
     
     // Serve files
     app.use("/", router);
     
     //Create server
-    viteExpress.config({ mode: "development" });
+    viteExpress.config({ mode: process.env.NODE_ENV || "development" });
     viteExpress.listen(app, 3000, () => {
 
         // Log the server starting

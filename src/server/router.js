@@ -28,8 +28,8 @@ import DImport from "./controller/google/drive/import.js";
 const router = express.Router();
 
 // Project
-router.post("/api/project/create", PCreate.PCreate);
-router.get("/api/project/create", PCreate.GCreate);
+router.post("/api/project/create", PCreate.POSTCreate);
+router.get("/api/project/create", PCreate.GETCreate);
 router.get("/api/project/validate", PValidate);
 router.get("/api/project/update", PUpdate);
 router.get("/api/project/render", PRender);

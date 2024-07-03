@@ -24,7 +24,7 @@ export default class Drive extends H12 {
 
     async render() {
         return <>
-            <div class="absolute top-0 left-0 w-full h-full bg-zinc-900 text-zinc-800 bg-opacity-90 flex justify-center items-center hidden">
+            <div class="absolute top-0 left-0 w-full h-full bg-zinc-900 text-zinc-800 bg-opacity-90 flex justify-center items-center collapse">
                     
                 <div class="w-full bg-zinc-200 p-6 space-y-5">
                     <div class="flex items-center space-x-3 text-zinc-800">
@@ -47,14 +47,14 @@ export default class Drive extends H12 {
 
     Show() {
 
-        this.root.classList.remove("hidden");
+        this.root.classList.remove("collapse");
         this.Load();
 
     }
 
     Hide() {
 
-        this.root.classList.add("hidden");
+        this.root.classList.add("collapse");
         
     }
 

@@ -15,6 +15,9 @@ project/*
 !project/.cache
 project/.cache/*
 !project/.cache/.gitkeep
+!project/.cache/fallback-a.wav
+!project/.cache/fallback-i.png
+!project/.cache/fallback-v.mp4
 
 !project/.temp
 project/.temp/*

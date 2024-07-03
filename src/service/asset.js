@@ -335,13 +335,9 @@ async function FetchExternalImage(projectId, project = {}) {
             // If cache is invalid then generate random image
             if(typeof(_cache[i]) === "undefined") {
 
-                const _min = Math.ceil(0);
-                const _max = Math.floor(_cache.length);
-                const _ind = Math.floor(Math.random() * (_max - _min + 1)) + _min;
-
-                _image.push(_cache[_ind]);
-
-                console.log("Service/Asset/GetLocalAsset(): Invalid cache hit at index", i, " using random index", _ind);
+                _image.push(_cache[0]);
+                console.log("Service/Asset/GetLocalAsset(): Invalid cache hit at index", i, " using random index", 0);
+                
                 continue;
 
             };

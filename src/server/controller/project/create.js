@@ -1,23 +1,13 @@
+import ServerEvent from "#library/event.js";
 import Asset from "../../../service/asset.js";
 import Project from "../../../service/project.js";
-
-
-let LISTNER = [];
-
-
-function Send(data = {}) {
-    LISTNER.forEach(x => {
-        x.write(`data: ${JSON.stringify(data)}\n\n`);
-    });
-};
-
 
 /**
     * 
     * @param {import("express").Request} request 
     * @param {import("express").Response} response 
 */
-function GCreate(request, response) {
+function GETCreate(request, response) {
 
     //Make a server send event
     response.setHeader("Content-Type", "text/event-stream");
@@ -25,10 +15,10 @@ function GCreate(request, response) {
     response.setHeader("Connection", "keep-alive");
     response.setHeader("Content-Encoding", "none");
 
-    LISTNER.push(response);
+    ServerEvent.Register("PCreate", response);
 
     request.on("close", () => {
-        LISTNER = LISTNER.filter(x => x !== response);
+        ServerEvent.Filter("PCreate", response);
     });
 
 };
@@ -39,17 +29,13 @@ function GCreate(request, response) {
     * @param {import("express").Request} request 
     * @param {import("express").Response} response 
 */
-async function PCreate(request, response) {
+async function POSTCreate(request, response) {
 
     //Create response object
     const _response = { message: "", success: false, finished: false, data: {} };
     
-
-    //Create project
+    
     try {
-
-        // Send response
-        response.sendStatus(200);
 
         // Use multer to handle file uploads
         Asset.Uploader(request, response, async(error) => {
@@ -60,24 +46,27 @@ async function PCreate(request, response) {
                     throw new Error(error.message);
                 };
 
-                // Get query parameter
-                let _width = request.query.width;
-                let _height = request.query.height;
-                let _prompt = request.query.prompt;
-                let _file = (request.files && request.files.length > 0) ? request.files[0] : null;
+                // Send initial response
+                response.sendStatus(200);
 
-                // Check video dimension
-                _width = (!_width || _width < 128) ? 720 : _width;
-                _height = (!_height || _height < 128) ? 720 : _height;
+                // Get query parameter
+                const { width, height, prompt, files } = request.query;
+                const _file = (files && files.length > 0) ? files[0] : null;
 
                 // Check for prompt and file
-                if(_file == null && _prompt.length < 5) {
+                if(!_file && (!prompt || prompt.trim().length < 5)) {
                     throw new Error("Please enter either prompt or attach file");
                 };
 
                 // Create project and update response
-                const _project = await Project.Create({ prompt: _prompt, file: _file, width: _width, height: _height }, (text) => {
-                    Send({ message: text, success: true });
+                const _project = await Project.Create({
+                    prompt: prompt,
+                    file: _file,
+                    width: (!width || width < 128) ? 720 : width,
+                    height: (!height || height < 128) ? 720 : height
+                },
+                (text) => {
+                    ServerEvent.Write("PCreate", { message: text, success: true });
                 });
 
                 // Set the response data
@@ -97,7 +86,7 @@ async function PCreate(request, response) {
             finally {
 
                 // End response
-                Send(_response);
+                ServerEvent.Write("PCreate", _response);
 
             };
         });
@@ -113,4 +102,4 @@ async function PCreate(request, response) {
 
 };
 
-export default { PCreate, GCreate }
+export default { POSTCreate, GETCreate }

@@ -196,7 +196,6 @@ export default class Dashboard extends H12 {
                         _source.close();
 
                     };
-                    
 
                     // Call dispather show loader
                     Dispatcher.Call("OnLoaderUpdate", _data.message);
