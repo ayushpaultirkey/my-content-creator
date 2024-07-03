@@ -4,8 +4,8 @@ import Dispatcher from "@library/h12.dispatcher";
 import ServerEvent from "@library/serverevent";
 
 import Home from "./page/home";
-import Editor from "./page/project/editor";
-import Dashboard from "./page/project/dashboard";
+import Editor from "./page/editor";
+import Dashboard from "./page/dashboard";
 
 @Component
 class App extends H12 {

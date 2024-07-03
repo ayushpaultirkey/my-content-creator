@@ -1,18 +1,18 @@
-
 const Project = {
     GetLocal: function() {
 
         try {
 
-            // Get local project
             const _project = localStorage.getItem("PROJECT");
+            if(!_project) {
+                throw new Error("L/MC/P.GetLocal(): no project")
+            };
             
-            // Return the project
             return JSON.parse(_project);
 
         }
         catch(error) {
-            console.log("Library/Project/GetLocal(): ", error);
+            console.warn("L/MC/P.GetLocal():", error);
             return [];
         }
 
@@ -69,9 +69,9 @@ const Project = {
 
         }
         catch(error) {
-            console.log("Library/Project/SetLocal(): ", error);
+            console.error("L/MC/P.SetLocal():", error);
             throw error;
-        }
+        };
 
     },
     IsValid: function(project = {}) {

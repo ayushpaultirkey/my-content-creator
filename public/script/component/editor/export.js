@@ -1,8 +1,6 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
-import MyCreator from "@library/mycreator";
-import ServerEvent from "@library/serverevent";
 import Google from "@library/google";
 
 @Component
@@ -20,7 +18,7 @@ export default class Export extends H12 {
         this.Set("{ev.visible}", "hidden");
 
         // Check if the project is valid and load it
-        if(MyCreator.Project.IsValid(args.project)) {
+        if(args.project) {
 
             // Set project and load
             this.Project = args.project;
@@ -65,25 +63,27 @@ export default class Export extends H12 {
     async Load() {
 
         // Check if the project is valid
-        if(!MyCreator.Project.IsValid(this.Project)) {
+        if(!this.Project) {
             return false;
         };
 
         // Try to check for files to export
         try {
 
+            const { EVideoSource, EVideo } = this.element;
+
             // Check for files to export
-            const _request = await fetch(`/api/project/export/validate?pid=${this.Project.id}`);
-            const _response = await _request.json();
+            const _response = await fetch(`/api/project/export/validate?pid=${this.Project.id}`);
+            const { success, message, url } = await _response.json();
     
             // Throw error on false success
-            if(!_response.success) {
-                throw new Error(_response.message);
+            if(!success || !_response.ok) {
+                throw new Error(message);
             };
 
             // Set video url
-            this.element.EVideoSource.src = _response.url;
-            this.element.EVideo.load();
+            EVideoSource.src = url;
+            EVideo.load();
 
             // If success then hide the message
             this.Set("{ev.visible}", "");
@@ -95,7 +95,7 @@ export default class Export extends H12 {
             // Log and show message
             this.Set("{em.visible}", "");
             this.Set("{ev.visible}", "hidden");
-            console.error("Editor/Export/LoadAsset():", error);
+            console.error("E/E.Load():", error);
 
         };
         
@@ -104,7 +104,7 @@ export default class Export extends H12 {
     Download() {
 
         // Check if the project is valid
-        if(!MyCreator.Project.IsValid(this.Project)) {
+        if(!this.Project) {
             return false;
         };
 
@@ -115,14 +115,16 @@ export default class Export extends H12 {
         Drive: async() => {
 
             // Check if the project is valid
-            if(!MyCreator.Project.IsValid(this.Project)) {
+            if(!this.Project) {
                 return false;
             };
+            
+            const { ExportDrive } = this.element;
 
             try {
 
                 // Disable button
-                this.element.ExportDrive.disabled = true;
+                ExportDrive.disabled = true;
                 
                 // Upload file to google drive by the id
                 Google.Drive.UploadFile(this.Project.id, {
@@ -135,13 +137,14 @@ export default class Export extends H12 {
                     onFinish: () => {
                         alert("File uploaded to google drive !");
                         Dispatcher.Call("OnLoaderHide");
+                        ExportDrive.disabled = false;
                     },
                     onError: (status, message) => {
                         if(status !== EventSource.CLOSED && message) {
                             alert(message);
                         };
                         Dispatcher.Call("OnLoaderHide");
-                        this.element.ExportDrive.disabled = false;
+                        ExportDrive.disabled = false;
                     }
                 });
 
@@ -151,7 +154,7 @@ export default class Export extends H12 {
                 // Alert and log
                 alert("Unable to render project, try again later");
                 console.error("Editor/Project.Drive():", error);
-                this.element.ExportDrive.disabled = false;
+                ExportDrive.disabled = false;
                 
             };
 

@@ -1,12 +1,11 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
-import ServerEvent from "@library/serverevent";
+
 import SSE from "@library/sse";
 import MyCreator from "@library/mycreator";
-import Drive from "@component/drive/viewer";
-
-import Card from "./dashboard/card";
+import Authenticate from "@component/google/authenticate";
+import Card from "@component/dashboard/card";
 
 @Component
 export default class Dashboard extends H12 {
@@ -27,7 +26,6 @@ export default class Dashboard extends H12 {
             this.Set("{d.auth}", "Connect to Google");
     
             await this.Load();
-            this.Auth();
     
             this.element.CreatorFile.addEventListener("change", this.CreatorAttachFile.bind(this));
 
@@ -47,10 +45,7 @@ export default class Dashboard extends H12 {
                     <div class="w-full flex">
                         <label class="text-2xl font-semibold text-zinc-300 w-full">Dashboard</label>
                         <div>
-                            <button class="text-xs text-blue-700 font-semibold py-2 w-44 border-2 border-blue-800 bg-blue-950 bg-opacity-40 hover:bg-opacity-70 active:bg-opacity-90 rounded-md {d.auth.visible}" onclick={ MyCreator.Auth }>
-                                <i class="fa-brands fa-google mr-2 pointer-events-none"></i>
-                                <label class="pointer-events-none">{d.auth}</label>
-                            </button>
+                            <Authenticate args></Authenticate>
                         </div>
                     </div>
                     <div class="grid sm:grid-cols-[repeat(auto-fill,250px)] grid-cols-[repeat(auto-fill,auto)] gap-4">
@@ -140,13 +135,13 @@ export default class Dashboard extends H12 {
         // Try and create project using prompt
         try {
 
-            // Set the loader and disable button
-            DCreate.disabled = true;
-            Dispatcher.Call("OnLoaderShow");
-            Dispatcher.Call("OnLoaderUpdate", "Creating Project");
-
             // Get elements
             const { CreatorWidth, CreatorHeight, CreatorInput, DCreate } = this.element;
+
+            // Set the loader and disable button
+            Dispatcher.Call("OnLoaderShow");
+            Dispatcher.Call("OnLoaderUpdate", "Creating Project");
+            DCreate.disabled = true;
 
             // Get prompt, width, height
             const _width = CreatorWidth.value;
@@ -170,8 +165,8 @@ export default class Dashboard extends H12 {
             const _form = new FormData();
             _form.append("files", this.CreatorFile);
 
-            const _request = await fetch(`/api/project/create?prompt=${_prompt}&width=${_width}&height=${_height}`, { method: "POST", body: _form });
-            if(!_request.ok) {
+            const _response = await fetch(`/api/project/create?prompt=${_prompt}&width=${_width}&height=${_height}`, { method: "POST", body: _form });
+            if(!_response.ok) {
                 throw new Error("Error while creating project");
             };
 
@@ -185,9 +180,11 @@ export default class Dashboard extends H12 {
                 },
                 onFinish: (data) => {
 
-                    MyCreator.Project.SetLocal(data.id);
+                    MyCreator.Project.SetLocal(data.data.id);
                     Dispatcher.Call("OnLoaderHide");
                     DCreate.disabled = false;
+                    this.CreatorToggle(false);
+                    this.Load();
 
                 },
                 onError: (status, message) => {
@@ -197,6 +194,7 @@ export default class Dashboard extends H12 {
                     };
                     Dispatcher.Call("OnLoaderHide");
                     DCreate.disabled = false;
+                    this.CreatorToggle(false);
 
                 }
             });
@@ -256,33 +254,6 @@ export default class Dashboard extends H12 {
             "Surprise me !"
         ];
         this.element.CreatorInput.value = _prompt[index];
-
-    }
-
-    Auth() {
-
-        ServerEvent.Bind("AuthStatus", "open", () => {
-            console.warn("D.Auth(): connection created");
-            this.Set("{d.auth.visible}", "");
-        });
-
-        ServerEvent.Bind("AuthStatus", "message", (event) => {
-            try {
-                const _data = JSON.parse(event.data.split("data:"));
-                this.Set("{d.auth}", ((_data.success) ? "Connected to Google" : "Connect to Google"));
-            }
-            catch(error) {
-                this.Set("{d.auth.visible}", "hidden");
-                console.error("D.Auth():", error);
-                ServerEvent.Destroy("AuthStatus");
-            };
-        });
-
-        ServerEvent.Bind("AuthStatus", "error", () => {
-            this.Set("{d.auth.visible}", "hidden");
-            console.error("D.Auth(): AuthStatus error");
-            ServerEvent.Destroy("AuthStatus");
-        });
 
     }
 

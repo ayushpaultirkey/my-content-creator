@@ -48,15 +48,15 @@ export default class Item extends H12 {
 
         event.stopPropagation();
 
-        const _audio = this.element.AssetAudio;
+        const { AssetAudio } = this.element;
 
-        if(_audio.paused) {
-            _audio.play();
+        if(AssetAudio.paused) {
+            AssetAudio.play();
             button.classList.remove("fa-play");
             button.classList.add("fa-stop");
         }
         else {
-            _audio.pause();
+            AssetAudio.pause();
             button.classList.add("fa-play");
             button.classList.remove("fa-stop");
         };

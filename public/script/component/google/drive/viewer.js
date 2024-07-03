@@ -1,6 +1,5 @@
 import "@style/main.css";
 import H12 from "@library/h12";
-import MyCreator from "@library/mycreator";
 
 @Component
 export default class Viewer extends H12 {
@@ -12,7 +11,7 @@ export default class Viewer extends H12 {
 
     async init(args = { project }) {
 
-        if(MyCreator.Project.IsValid(args.project)) {
+        if(args.project) {
 
             this.Project = args.project;
 
@@ -70,19 +69,6 @@ export default class Viewer extends H12 {
 
     }
 
-    async Import() {
-
-        if(!this.Project) {
-            return false;
-        };
-
-        const _fileId = this.Selected;
-
-        const _request = await fetch(`/api/google/drive/import?pid=${this.args.project.id}&fid=${JSON.stringify(_fileId)}`);
-        const _response = await _request.json();
-
-    }
-
     async Load() {
 
         // Try and get google drive files
@@ -94,16 +80,16 @@ export default class Viewer extends H12 {
             this.Set("{d.spin}", "fa-spin");
 
             // Fetch google drive files
-            const _request = await fetch("/api/google/drive/getfile");
-            const _response = await _request.json();
+            const _response = await fetch("/api/google/drive/getfile");
+            const { success, message, data } = await _response.json();
             
             // Check if the request was successfull
-            if(!_response.success) {
-                throw new Error(_response.message);
+            if(!success || !_response.ok) {
+                throw new Error(message);
             };
 
             // Iterate over files and render them
-            const _file = _response.data;
+            const _file = data;
             for(var i = 0, len = _file.length; i < len; i++) {
 
                 // Get id, mime
@@ -142,10 +128,38 @@ export default class Viewer extends H12 {
         }
         catch(error) {
             alert(error.message);
-            console.error("Component/Drive/Load():", error);
+            console.error("C/G/D/V.Load():", error);
         }
 
         this.Set("{d.spin}", "");
+
+    }
+
+    async Import() {
+
+        if(!this.Project) {
+            return false;
+        };
+
+        try {
+
+            const _fileId = this.Selected;
+    
+            const  _response = await fetch(`/api/google/drive/import?pid=${this.args.project.id}&fid=${JSON.stringify(_fileId)}`);
+            const { success, message } = await _response.json();
+
+            if(!success || !_response.ok) {
+                alert("Unable to import files");
+                throw new Error(message);
+            };
+
+            alert("Files imported");
+            Dispatcher.Call("OnAssetUpdated");
+
+        }
+        catch(error) {
+            console.error("C/G/D/V.Import():", error);
+        }
 
     }
 

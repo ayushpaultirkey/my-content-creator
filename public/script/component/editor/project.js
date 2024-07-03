@@ -1,9 +1,8 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
-import MyCreator from "@library/mycreator";
 import Asset from "@component/asset";
-import ServerEvent from "@library/serverevent";
+import ServerEvent from "@library/sse";
 
 @Component
 export default class Project extends H12 {
@@ -16,7 +15,7 @@ export default class Project extends H12 {
     async init(args = { project }) {
 
         // Check if the project is valid and load it
-        if(MyCreator.Project.IsValid(args.project)) {
+        if(args.project) {
 
             // Set project and load
             this.Project = args.project;
@@ -65,7 +64,7 @@ export default class Project extends H12 {
 
                     <div>
                         <label class="text-xs font-semibold text-zinc-400 block mb-1">Render Project:</label>
-                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Render } id="ProjectRender">Render</button>
+                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Render } id="PRender">Render</button>
                     </div>
 
                     <div class="flex flex-col">
@@ -81,26 +80,26 @@ export default class Project extends H12 {
     async Load() {
 
         // Check if the project is valid
-        if(!MyCreator.Project.IsValid(this.Project)) {
+        if(!this.Project || !this.Project.property) {
             return false;
         };
 
-        // Get project's property
-        const _property = this.Project.property;
+        const { title, description, backgroundAudio } = this.Project.property;
+        const { ProjectTitle, ProjectDescription } = this.element;
 
         // Set project's detail
-        this.element.ProjectTitle.value = _property.title;
-        this.element.ProjectDescription.value = _property.description;
+        ProjectTitle.value = title;
+        ProjectDescription.value = description;
 
         // Assign selected assets
-        this.child["AudioAsset"].SetSelected(_property.backgroundAudio);
+        this.child["AudioAsset"].SetSelected(backgroundAudio);
         
     }
 
     async Update() {
 
         // Check if the project is valid
-        if(!MyCreator.Project.IsValid(this.Project)) {
+        if(!this.Project) {
             return false;
         };
 
@@ -110,34 +109,36 @@ export default class Project extends H12 {
         try {
 
             // Get project detail
-            const _projectId = this.Project.id;
-            const _projectTitle = this.element.ProjectTitle.value;
-            const _projectDetail = this.element.ProjectDescription.value;
+            const { id } = this.Project.id;
+            const { ProjectTitle, ProjectDescription } = this.element;
+
+            const _title = ProjectTitle.value;
+            const _detail = ProjectDescription.value;
 
             // Check for data
-            if(!_projectTitle || !_projectDetail) {
-                throw new Error("Please enter project's title and description");
+            if(!_title || !_detail) {
+                throw new Error("Please enter title and description");
             };
 
             // Get selected audio
             const _audio = this.child["AudioAsset"].GenerateQueryString("paudio");
 
             // Perform the update request
-            const _request = await fetch(`/api/project/update?pid=${_projectId}&${_audio}&ptitle=${_projectTitle}&pdetail=${_projectDetail}`);
-            const _response = await _request.json();
+            const _response = await fetch(`/api/project/update?pid=${id}&${_audio}&ptitle=${_title}&pdetail=${_detail}`);
+            const { success, message, data } = await _response.json();
 
             // Check if the data is updated successfully
-            if(!_response.success) {
-                alert(_response.message);
-                throw new Error(_response.message);
+            if(!success || !_response.ok) {
+                alert(message);
+                throw new Error(message);
             };
 
             // Call dispatcher
-            Dispatcher.Call("OnProjectUpdated", _response.data);
+            Dispatcher.Call("OnProjectUpdated", data);
 
         }
         catch(error) {
-            console.error("/page/editor/project.Update();", error);
+            console.error("E/P.Update();", error);
         };
 
         // Call dispather hide loader
@@ -148,82 +149,52 @@ export default class Project extends H12 {
     async Render() {
 
         // Check if the project is valid
-        if(!MyCreator.Project.IsValid(this.Project)) {
+        if(!this.Project) {
             alert("Invalid project, try reloading");
             return false;
         };
 
-        // Try and render project
         try {
 
             // Disable button
-            this.element.ProjectRender.disabled = true;
+            const { PRender } = this.element;
+            PRender.disabled = true;
 
-            // Register new server side event and bind
-            ServerEvent.Register("Render", `/api/project/render?pid=${this.Project.id}`);
+            ServerEvent(`/api/project/render?pid=${this.Project.id}`, {
+                onOpen: () => {
+                    
+                    Dispatcher.Call("OnLoaderShow");
 
-            // Bind new on open event
-            ServerEvent.Bind("Render", "open", (event) => {
+                },
+                onMessage: (data) => {
 
-                // Call dispather show loader
-                Dispatcher.Call("OnLoaderShow");
+                    Dispatcher.Call("OnLoaderUpdate", data.message);
 
-            });
+                },
+                onFinish: () => {
 
-            // Bind new on message event
-            ServerEvent.Bind("Render", "message", (event) => {
+                    alert("Render finished");
+                    Dispatcher.Call("OnLoaderHide");
+                    PRender.disabled = false;
 
-                // Try and get response
-                try {
+                },
+                onError: (status, message) => {
 
-                    // Get check if its success
-                    const _data = JSON.parse(event.data.split("data:"));
-                    if(!_data.success) {
-                        throw new Error(_data.message);
+                    if(status !== EventSource.CLOSED && message) {
+                        alert(message);
                     };
-
-                    // Check if the rendered is finished
-                    if(_data.finished) {
-                        Dispatcher.Call("OnRenderUpdated");
-                        alert("Render Completed !");
-                    };
-
-                    // Call dispather show loader
-                    Dispatcher.Call("OnLoaderUpdate", _data.message);
+                    Dispatcher.Call("OnLoaderHide");
+                    PRender.disabled = false;
 
                 }
-                catch(error) {
-
-                    // Alert and destory server event
-                    alert(error);
-                    Dispatcher.Call("OnLoaderHide");
-                    ServerEvent.Destroy("Render");
-
-                    // Enable button
-                    this.element.ProjectRender.disabled = false;
-
-                };
-
-            });
-    
-            // Bind new on error event
-            ServerEvent.Bind("Render", "error", (event) => {
-
-                // Alert and destory server event
-                Dispatcher.Call("OnLoaderHide");
-                ServerEvent.Destroy("Render");
-
-                // Enable button
-                this.element.ProjectRender.disabled = false;
-
             });
 
         }
         catch(error) {
 
             // Alert and log
-            alert("Unable to render project, try again later");
-            console.error("Editor/Project.Render():", error);
+            alert("Unable to render project");
+            console.error("E/P.Render():", error);
             
         };
 
@@ -232,18 +203,17 @@ export default class Project extends H12 {
     async OnAssetLoaded(event, asset) {
         
         // Check if the project is valid
-        if(!MyCreator.Project.IsValid(this.Project)) {
+        if(!this.Project) {
             return false;
         };
 
         // Get project's property
-        const _property = this.Project.property;
+        const { backgroundAudio } = this.Project.property;
+        const { AudioAsset } = this.child;
 
         // Load asset data
-        await this.child["AudioAsset"].Load(asset, "audio");
-
-        // Assign selected assets
-        this.child["AudioAsset"].SetSelected(_property.backgroundAudio);
+        AudioAsset.Load(asset, "audio");
+        AudioAsset.SetSelected(backgroundAudio);
 
     }
 

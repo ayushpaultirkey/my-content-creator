@@ -167,7 +167,7 @@ export default class Uploader extends H12 {
 
             // Alert and log
             alert("Unable to render project, try again later");
-            console.error("C/Y/Uploader():", error);
+            console.error("C/G/Y/Uploader.Upload():", error);
             YTUpload.disabled = false;
             
         };

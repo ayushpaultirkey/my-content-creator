@@ -1,7 +1,6 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
-import MyCreator from "@library/mycreator";
 import Asset from "@component/asset";
 
 @Component
@@ -16,7 +15,7 @@ export default class Slide extends H12 {
     async init(args = { project }) {
 
         // Check if the project is valid and load it
-        if(MyCreator.Project.IsValid(args.project)) {
+        if(args.project) {
 
             // Set project and load
             this.Project = args.project;
@@ -89,19 +88,19 @@ export default class Slide extends H12 {
     async Load() {
 
         // Check if the project is valid
-        if(!MyCreator.Project.IsValid(this.Project)) {
+        if(!this.Project && !this.Project.property.slides[this.Index]) {
             return false;
         };
 
         // Get working slide
-        let _slide = this.Project.property.slides[this.Index];
+        let { content, image, video } = this.Project.property.slides[this.Index];
 
         // Set slid'es content
-        this.element.SlideContent.value = _slide.content;
+        this.element.SlideContent.value = content;
 
         // Assign selected assets
-        this.child["ImageAsset"].SetSelected(_slide.image);
-        this.child["VideoAsset"].SetSelected(_slide.video);
+        this.child["ImageAsset"].SetSelected(image);
+        this.child["VideoAsset"].SetSelected(video);
 
     }
 
@@ -113,7 +112,7 @@ export default class Slide extends H12 {
         try {
 
             // Check if the project is valid
-            if(!MyCreator.Project.IsValid(this.Project)) {
+            if(!this.Project) {
                 throw new Error("Invalid project");
             };
 
@@ -133,21 +132,21 @@ export default class Slide extends H12 {
             const _video = this.child["VideoAsset"].GenerateQueryString("pvideo");
 
             // Perform the update request
-            const _request = await fetch(`/api/slide/update?pid=${_projectId}&sid=${_slideId}&scontent=${_content}&${_image}&${_video}`);
-            const _response = await _request.json();
+            const _response = await fetch(`/api/slide/update?pid=${_projectId}&sid=${_slideId}&scontent=${_content}&${_image}&${_video}`);
+            const { success, message, data } = await _response.json();
 
             // Check if the data is updated successfully
-            if(!_response.success) {
-                alert(_response.message);
-                throw new Error(_response.message);
+            if(!success || !_response.ok) {
+                alert(message);
+                throw new Error(message);
             };
 
             // Update project data
-            Dispatcher.Call("OnProjectUpdated", _response.data);
+            Dispatcher.Call("OnProjectUpdated", data);
 
         }
         catch(error) {
-            console.error(error);
+            console.error("E/S.Update():", error);
         };
 
         // Call dispather hide loader
@@ -168,7 +167,7 @@ export default class Slide extends H12 {
             this.element.SlideContent.value = _example[index];
         }
         catch(error) {
-            console.error(error);
+            console.error("E/S.SetExample():", error);
         };
 
     }
@@ -176,20 +175,20 @@ export default class Slide extends H12 {
     async OnAssetLoaded(event, asset) {
         
         // Check if the project is valid
-        if(!MyCreator.Project.IsValid(this.Project)) {
+        if(!this.Project) {
             return false;
         };
 
         // Get working slide
-        let _slide = this.Project.property.slides[this.Index];
+        let { image, video } = this.Project.property.slides[this.Index];
 
         // Update the assets collection
         await this.child["ImageAsset"].Load(asset);
         await this.child["VideoAsset"].Load(asset, "video");
 
         // Assign selected assets
-        this.child["ImageAsset"].SetSelected(_slide.image);
-        this.child["VideoAsset"].SetSelected(_slide.video);
+        this.child["ImageAsset"].SetSelected(image);
+        this.child["VideoAsset"].SetSelected(video);
 
     }
 
@@ -202,7 +201,7 @@ export default class Slide extends H12 {
 
     OnProjectUpdated(event, project) {
 
-        if(MyCreator.Project.IsValid(project)) {
+        if(project) {
             this.Project = project;
             this.Load();
         };

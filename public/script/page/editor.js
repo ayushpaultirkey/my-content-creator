@@ -1,16 +1,15 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
-import MyCreator from "@library/mycreator";
 
-import DViewer from "@component/drive/viewer";
-import YTUploader from "@component/youtube/uploader";
+import DViewer from "@component/google/drive/viewer";
+import YTUploader from "@component/google/youtube/uploader";
 
-import Slide from "./editor/slide";
-import Prompt from "./editor/prompt";
-import Viewport from "./editor/viewport";
-import Project from "./editor/project";
-import Export from "./editor/export";
+import Slide from "@component/editor/slide";
+import Prompt from "@component/editor/prompt";
+import Viewport from "@component/editor/viewport";
+import Project from "@component/editor/project";
+import Export from "@component/editor/export";
 
 @Component
 export default class Editor extends H12 {
@@ -183,18 +182,18 @@ export default class Editor extends H12 {
         try {
 
             // Load project assets
-            const _request = await fetch(`/api/asset/fetch?pid=${this.Project.id}`);
-            const _response = await _request.json();
-    
-            if(!_response.success) {
-                throw new Error(_response.message);
+            const _response = await fetch(`/api/asset/fetch?pid=${this.Project.id}`);
+            const { message, success, data } = await _response.json();
+            
+            if(!success || !_response.ok) {
+                throw new Error(message);
             };
     
             // Store loaded asset
-            this.ProjectAsset = _response.data;
+            this.ProjectAsset = data;
 
             // Distribute loaded asset
-            Dispatcher.Call("OnAssetLoaded", _response.data);
+            Dispatcher.Call("OnAssetLoaded", data);
 
         }
         catch(error) {
@@ -292,12 +291,12 @@ export default class Editor extends H12 {
             _form.append("files", file);
 
             // Send request
-            const _request = await fetch(_url, { method: "POST", body: _form });
-            const _response = await _request.json();
+            const _response = await fetch(_url, { method: "POST", body: _form });
+            const { success, message } = await _response.json();
 
             // Check or request
-            if(!_response.success) {
-                throw new Error(_response.message);
+            if(!success || !_response.ok) {
+                throw new Error(message);
             };
 
 

@@ -1,7 +1,6 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
-import MyCreator from "@library/mycreator";
 import Attachment from "@component/attachment";
 
 @Component
@@ -19,7 +18,7 @@ export default class Prompt extends H12 {
         this.Set("{c.fvisible}", "hidden");
 
         // Check if the project is valid and load it
-        if(MyCreator.Project.IsValid(args.project)) {
+        if(args.project) {
 
             // Set project and load
             this.Project = args.project;
@@ -63,7 +62,7 @@ export default class Prompt extends H12 {
     async Load() {
 
         // Check if the project is valid
-        if(!MyCreator.Project.IsValid(this.Project)) {
+        if(!this.Project) {
             return false;
         };
 
@@ -80,20 +79,20 @@ export default class Prompt extends H12 {
             for(var i = 0, len = _history.length; i < len; i++) {
 
                 // Check type of message
-                let _part = _history[i].parts[0];
+                let { fileData, text } = _history[i].parts[0];
                 let _text = "";
                 let _icon = "";
                 let _visible = "hidden";
                 try {
                     if(_history[i].role === "user") {
-                        if(typeof(_part.fileData) === "undefined") {
-                            if(_part.text.length == 0) {
+                        if(!fileData) {
+                            if(text.length == 0) {
                                 continue;
                             };
-                            _text = _part.text;
+                            _text = text;
                         }
                         else {
-                            const _mime = _part.fileData.mimeType;
+                            const _mime = fileData.mimeType;
                             if(_mime.includes("image")) {
                                 _text = "Image File";
                                 _icon = "fa-image";
@@ -114,7 +113,7 @@ export default class Prompt extends H12 {
                         };
                     }
                     else {
-                        let _json = JSON.parse(_part.text);
+                        let _json = JSON.parse(text);
                         _text = _json.response;
                     };
                 }
@@ -136,7 +135,7 @@ export default class Prompt extends H12 {
             };
         }
         catch(error) {
-            console.error(error);
+            console.error("E/P.Load():", error);
         };
 
     }
@@ -144,7 +143,7 @@ export default class Prompt extends H12 {
     async Update() {
 
         // Check if the project is valid
-        if(!MyCreator.Project.IsValid(this.Project)) {
+        if(!this.Project) {
             return false;
         };
         
@@ -170,20 +169,20 @@ export default class Prompt extends H12 {
             _form.append("files", _file);
 
             // Send request
-            const _request = await fetch(_url, { method: "POST", body: _form });
-            const _response = await _request.json();
+            const _response = await fetch(_url, { method: "POST", body: _form });
+            const { success, message, data } = await _response.json();
 
             // Check for the error
-            if(!_response.success) {
-                throw new Error(_response.message);
+            if(!success || !_response.ok) {
+                throw new Error(message);
             };
 
             // Update project data
-            Dispatcher.Call("OnProjectUpdated", _response.data);
+            Dispatcher.Call("OnProjectUpdated", data);
 
         }
         catch(error) {
-            console.error(error);
+            console.error("E/P.Update():", error);
         };
 
         // Call dispather hide loader
@@ -194,7 +193,7 @@ export default class Prompt extends H12 {
     OnProjectUpdated(event, project) {
 
         // Check if the project is valid and load it
-        if(MyCreator.Project.IsValid(project)) {
+        if(project) {
 
             this.Project = project;
             this.Load();
