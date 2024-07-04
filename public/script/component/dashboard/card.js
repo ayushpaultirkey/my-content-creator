@@ -7,10 +7,10 @@ export default class Card extends H12 {
     constructor() {
         super();
     }
-    async init(args = { project }) {
+    async init({ title }) {
 
-        if(args.project) {
-            this.Set("{c.title}", args.project.property.title);
+        if(title) {
+            this.Set("{c.title}", title);
         };
 
     }
@@ -25,8 +25,8 @@ export default class Card extends H12 {
     }
     OnSelected() {
 
-        if(this.args.project) {
-            Dispatcher.Call("OnNavigate", { target: "EDITOR", project: this.args.project });
+        if(this.args.data) {
+            Dispatcher.Call("OnNavigate", { target: "EDITOR", project: this.args.data });
         };
 
     }

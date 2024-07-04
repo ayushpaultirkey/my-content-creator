@@ -76,7 +76,7 @@ class App extends H12 {
     }
 
     Navigate = {
-        To: (event, args = { target: "ANALYTICS" }) => {
+        To: (event, args = { target: "DASHBOARD" }) => {
 
             console.log(args.target)
             switch(args.target) {

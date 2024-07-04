@@ -1,6 +1,21 @@
+import path from "path";
+import { FFCreator } from "ffcreator";
+
+import directory from "#library/directory.js";
+
+
+//
+const { __root } = directory();
+
+//
+FFCreator.setFFmpegPath(path.join(__root, "/library/ffmpeg.exe"));
+FFCreator.setFFprobePath(path.join(__root, "/library/ffprobe.exe"));
+
+//
 export default {
-    E_GEMINI_ID: "FRAME_GEMINI",
-    S_INSTRUCTION: `You have to assist the user on creating a content for a video. You should only respond in json data and nothing else is accepted, the json format is explained below.
+    S_CREATE_SSE: "S_CREATE",
+    E_GEMINI: "FRAME_GEMINI",
+    S_GEMINI_INSTRUCTION: `You have to assist the user on creating a content for a video. You should only respond in json data and nothing else is accepted, the json format is explained below.
     {
     "response": string,
     "title": string,

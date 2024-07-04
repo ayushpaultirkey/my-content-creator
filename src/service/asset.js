@@ -3,7 +3,6 @@ import fs from "fs";
 import path from "path";
 import sharp from "sharp";
 import axios from "axios";
-import multer from "multer";
 import fsp from "fs/promises";
 import mime from "mime-types";
 import crypto from "crypto";
@@ -11,74 +10,48 @@ import crypto from "crypto";
 import directory from "./../library/directory.js";
 
 import Voice from "./asset/voice.js";
-import Project from "./project.js";
 import Cache from "./asset/cache.js";
+import Uploader from "./asset/uploader.js";
 
-
-/**
-    * 
-*/
-const Uploader = multer({
-    storage: multer.diskStorage({
-        destination: async(request, file, callback) => {
-
-            try {
-
-                // Get directory
-                const { __dirname } = directory();
-
-                // Set upload path
-                const _path = path.join(path.join(__dirname, `../../project/.temp/`));
-                await fsp.mkdir(_path, { recursive: true });
-                
-                callback(null, _path);
-
-            }
-            catch(error) {
-                callback(error);
-            };
-
-        },
-        filename: (request, file, callback) => {
-            
-            callback(null, crypto.randomUUID() + path.extname(file.originalname));
-
-        }
-    }),
-    fileFilter: (request, file, callback) => {
-
-        if(file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/") || file.mimetype.startsWith("audio/")) {
-            callback(null, true);
-        }
-        else {
-            callback(new Error("Only images, video, audio are allowed!"), false);
-        };
-
-    }
-}).array("files", 20);
-
+const { __root } = directory();
 
 /**
-    * Get the list of assets
-    * @param {string} projectId 
-    * @returns {Promise<[{file, type, url}] | undefined>}
+ * 
+ * @param {"IMAGE" | "AUDIO" | "VIDEO"} type 
+ * @returns 
 */
-async function GetLocalAsset(projectId = "") {
+function Fallback(type = "") {
+
+    let _path = `/project/.cache/`;
+    switch(type) {
+        case "IMAGE":
+            _path = path.join(__root, _path, "/fallback-i.png");
+            break;
+        case "VIDEO":
+            _path = path.join(__root, _path, "/fallback-v.mp4");
+            break;
+        case "AUDIO":
+            _path = path.join(__root, _path, "/fallback-a.wav");
+            break;
+    };
+
+    return _path;
+
+};
+
+async function GetAssets(dir = "") {
 
     try {
         
-        // Get project path and read the project json file
-        const _projectPath = path.join(Project.Path(projectId), "/asset/");
-
         // Get files
-        const _file = await fsp.readdir(_projectPath);
+        const _file = await fsp.readdir(dir);
         const _fileList = [];
 
         // Iterate for each file
         for(const file of _file) {
 
             // Get file stat and path
-            const _filePath = path.join(_projectPath, file);
+            const _filePath = path.join(dir, file);
             const _fileStat = await fsp.stat(_filePath);
       
             // Check if its file
@@ -97,7 +70,7 @@ async function GetLocalAsset(projectId = "") {
                     _fileList.push({
                         name: file,
                         type: _mime,
-                        url: `/project/${projectId}/asset/${file}`
+                        url: `/project//asset/${file}`
                     });
                 };
 
@@ -117,41 +90,33 @@ async function GetLocalAsset(projectId = "") {
 }
 
 
-/**
-    * 
-    * @param {*} images 
-    * @param {*} projectId 
-    * @param {*} project 
-*/
-async function CropImage(images = [], projectId, project = {}) {
+
+async function CropImage({ input = [], output = [], width = 512, height = 512 }) {
 
     try {
 
-        let _slide = project.property.slides;
-        let _promise = [];
+        //
+        const _promise = [];
 
-        // Crop image function
-        const _crop = async(image, index) => {
+        //
+        const _crop = async(source, destination) => {
             return new Promise(async(resolve, reject) => {
 
                 try {
 
-                    if(!_slide[index] || _slide[index].image.length == 0) {
+                    if(!source || !destination) {
                         throw new Error("Invalid image asset to crop");
                     };
 
-                    const _inputPath = path.join(Cache.Path(), image.name);
-                    const _outputPath = path.join(Project.Path(projectId), `/asset/${_slide[index].image[0].name}`);
-
-                    await sharp(_inputPath)
+                    await sharp(source)
                     .resize({
-                        width: (project.config.width * 1),
-                        height: (project.config.height * 1),
+                        width: (width * 1),
+                        height: (height * 1),
                         fit: "cover"
                     })
-                    .toFile(_outputPath);
+                    .toFile(destination);
 
-                    console.log(`Service/Asset/CropImage(): Image cropped ${_outputPath}`);
+                    console.log(`Service/Asset/CropImage(): Image cropped ${destination}`);
                     resolve();
 
                 }
@@ -163,8 +128,12 @@ async function CropImage(images = [], projectId, project = {}) {
         };
 
         // All images and crop it
-        for(var i = 0, l = images.length; i < l; i++) {
-            _promise.push(_crop(images[i], i));
+        for(var i = 0, l = input.length; i < l; i++) {
+            if(!input[i] || !output[i]) {
+                console.log("Asset/CropImages(): invalid input or output at index", i)
+                continue;
+            };
+            _promise.push(_crop(input[i], output[i]));
         };
 
         await Promise.all(_promise);
@@ -174,58 +143,57 @@ async function CropImage(images = [], projectId, project = {}) {
     }
     catch(error) {
         console.log("Asset/CropImages(): Error cropping images", error);
-        throw error;
+        throw new Error("Unable to crop images");
     };
 
 };
 
 
-/**
-    * 
-    * @param {*} image 
-*/
-async function DownloadImage(image = [{ url, name }]) {
 
-    // Try and download image
+async function DownloadImage(images = [{ url, name, destination }]) {
+
+    //
     try {
-
-        // Ensure cache directory exists
-        const _cachePath = Cache.Path();
-        if(!fs.existsSync(_cachePath)) {
-            fs.mkdirSync(_cachePath, { recursive: true });
-        };
-
-        // Promise array for downloading image
+        
+        //
+        const _validated = [];
         const _promise = [];
-    
-        // Download image function
         const _download = async(url, filePath) => {
 
+            //
             const _response = await axios({ url: url, responseType: "stream" });
-
             return new Promise((resolve, reject) => {
 
+                //
                 const _writer = fs.createWriteStream(filePath);
-            
                 _response.data.pipe(_writer);
             
-                _writer.on("finish", resolve);
+                //
+                _writer.on("finish", () => {
+
+                    _validated.push(filePath);
+                    resolve();
+
+                });
                 _writer.on("error", reject);
 
             });
             
         };
     
-        // Get slides and download image
-        for(var i = 0, l = image.length; i < l; i++) {
+        //
+        for(var i = 0, len = images.length; i < len; i++) {
     
-            _promise.push(_download(image[i].url, path.join(_cachePath, `/${image[i].name}`)));
+            _promise.push(_download(images[i].url, images[i].destination));
     
         };
     
         // Wait for all images to download
         await Promise.all(_promise);
         console.log("Asset/DownloadImage(): All images downloaded");
+
+        //
+        return _validated;
 
     }
     catch(error) {
@@ -238,138 +206,142 @@ async function DownloadImage(image = [{ url, name }]) {
 };
 
 
-/**
-    * 
-    * @param {*} projectId 
-    * @param {*} project 
-*/
-async function FetchExternalImage(projectId, project = {}) {
+async function FetchExternalImage(keyword, count = 5) {
 
     //
-    if(typeof(project.property) === "undefined" || typeof(project.property.keyword) === "undefined" || project.property.keyword.length == 0) {
-        throw new Error("Invalid project keyword");
-    };
-
-    // Get values and cache hit
-    const _slide = project.property.slides;
-    const _query = project.property.keyword;
+    const _query = keyword;
     const _cache = Cache.Hit(_query, "image");
+    const _cachePath = Cache.Path();
+    let _collection = [];
 
-    // Check if the cache exists
-    if(_cache == null) {
 
-        // Log
-        console.log("Service/Asset/FetchExternalImage(): NO CACHE FOUND");
-
-        //
-        const _response = await axios.get("https://pixabay.com/api/", {
-            params: {
-                key: process.env.PIXABAY_API,
-                q: _query,
-                per_page: _slide.length + 10,
-            },
-        });
+    try {
 
         //
-        console.log(`Service/Asset/FetchExternalImage(): Rate Limit: ${_response.headers["x-ratelimit-limit"]}`);
-        console.log(`Service/Asset/FetchExternalImage(): Rate Limit Remaining: ${_response.headers["x-ratelimit-reset"]}`);
-        console.log(`Service/Asset/FetchExternalImage(): Rate Limit Resets in: ${_response.headers["x-ratelimit-remaining"]} seconds`);
-
-        // Log for result
-        if(_response.data.hits.length < _slide.length) {
-            console.log("Service/Asset/FetchExternalImage(): Mismatch slides and default images");
+        if(!count || !keyword) {
+            throw new Error("Invalid count or keyword");
         };
 
-        // Check for images and add it to array
-        const _image = [];
-        for(var i = 0, len = _slide.length; i < len; i++) {
+        //
+        if(!_cache) {
 
-            if(typeof(_response.data.hits[i]) === "undefined") {
-                console.log("Service/Asset/FetchExternalImage(): Invalid response hit at index", i);
-                break;
-            };
+            //
+            console.log("S/Asset/FetchExternalImage(): NO CACHE FOUND");
 
-            if(typeof(_slide[i].image) === "undefined" || _slide[i].image.length == 0) {
-                continue;
-            };
-
-            _image.push({
-                url: _response.data.hits[i].largeImageURL,
-                name: `${crypto.randomUUID()}.jpg`
+            //
+            const { headers, data } = await axios.get("https://pixabay.com/api/", {
+                params: {
+                    key: process.env.PIXABAY_API,
+                    q: _query,
+                    per_page: count + 10,
+                },
             });
 
+            //
+            console.log(`S/Asset/FetchExternalImage(): Rate Limit: ${headers["x-ratelimit-limit"]}`);
+            console.log(`S/Asset/FetchExternalImage(): Rate Limit Remaining: ${headers["x-ratelimit-reset"]}`);
+            console.log(`S/Asset/FetchExternalImage(): Rate Limit Resets in: ${headers["x-ratelimit-remaining"]} seconds`);
+
+            //
+            if(data.hits.length < count) {
+                console.log("S/Asset/FetchExternalImage(): Mismatch slides and default images");
+            };
+
+            //
+            const _image = [];
+            for(var i = 0, len = count; i < len; i++) {
+
+                const _name = `/${crypto.randomUUID()}.jpg`;
+                const _path = path.join(_cachePath, _name);
+
+                if(!data.hits[i]) {
+                    _image.push({
+                        name: _name,
+                        url: "https://picsum.photos/512",
+                        destination: path.join(_cachePath, _name)
+                    })
+                    console.log("S/Asset/FetchExternalImage(): Invalid response hit at index", i);
+                    continue;
+                };
+
+                console.log(`S/Asset/FetchExternalImage(): ${_path} qued for download`);
+
+                _image.push({
+                    name: _name,
+                    url: data.hits[i].largeImageURL,
+                    destination: path.join(_cachePath, _name)
+                });
+
+            };
+
+            // 
+            Cache.Update(_query, "image", _image);
+            console.log("S/Asset/FetchExternalImage(): CACHE UPDATED");
+
+            //
+            await Cache.Save();
+            console.log("S/Asset/FetchExternalImage(): CACHE SAVED");
+
+            //
+            _collection = await DownloadImage(_image);
+
+        }
+        else {
+
+            //
+            console.log("S/Asset/GetLocalAsset(): CACHE FOUND");
+
+            //
+            if(_cache.length < count) {
+                console.log("S/Asset/GetLocalAsset(): Mismatch slides and default images");
+            };
+
+            for(var i = 0, len = count; i < len; i++) {
+
+                //
+                if(!_cache[i]) {
+
+
+                    _collection.push((_cache[0]) ? _cache[0].destination : path.join(Fallback("IMAGE")));
+
+                    console.log("S/Asset/GetLocalAsset(): Invalid cache hit at index", i, " using random index", 0);
+                    continue;
+
+                };
+
+                //
+                _collection.push(_cache[i].destination);
+
+            };
+
         };
 
-        // 
-        Cache.Update(_query, "image", _image);
-        console.log("Service/Asset/FetchExternalImage(): CACHE UPDATED");
-
-        //
-        await Cache.Save();
-        console.log("Service/Asset/FetchExternalImage(): CACHE SAVED");
-
-        //
-        await DownloadImage(_image);
-
-        //
-        await CropImage(_image, projectId, project);
 
     }
-    else {
-
-        console.log("Service/Asset/GetLocalAsset(): CACHE FOUND");
-
-        //
-        if(_cache.length < _slide.length) {
-            console.log("Service/Asset/GetLocalAsset(): Mismatch slides and default images");
-        };
-
-        //
-        const _image = [];
-        for(var i = 0, len = _slide.length; i < len; i++) {
-
-            // Check if the image is invalid
-            if(typeof(_slide[i].image) === "undefined" || _slide[i].image.length == 0) {
-                continue;
-            };
-
-            // If cache is invalid then generate random image
-            if(typeof(_cache[i]) === "undefined") {
-
-                _image.push(_cache[0]);
-                console.log("Service/Asset/GetLocalAsset(): Invalid cache hit at index", i, " using random index", 0);
-                
-                continue;
-
-            };
-
-            _image.push(_cache[i]);
-
-        };
-
-        //
-        await CropImage(_image, projectId, project);
-
-    };
+    catch(error) {
+        console.log("S/Asset/FetchExternalImage():", error);
+        throw error;
+    }
+    
+    return _collection;
 
 };
 
 
-/**
-    * Download the image for the slides
-    * @param {string} projectId 
-    * @param {*} project 
-*/
-async function GetExternalAsset(projectId, project = {}, callback) {
+async function GetExternalAsset(keyword, count, callback) {
 
-    // Log
+    //
     callback("Asset: Fetching external assets");
 
-    // Try and fetch assets
+    //
     try {
 
-        // Fetch images ad add it to project
-        await FetchExternalImage(projectId, project);
+        if(!keyword && !asset) {
+            throw new Error("Invalid keyword or asset");
+        };
+        
+        //
+        return await FetchExternalImage(keyword, count);
 
     }
     catch(error) {
@@ -379,25 +351,21 @@ async function GetExternalAsset(projectId, project = {}, callback) {
 };
 
 
-/**
-    * Create voice for the project
-    * @param {string} projectId The project id to locate the project directory
-    * @param {boolean} useLocalTTS Use local TTS, by default its set to `true`
-*/
-async function CreateVoiceAsset(projectId = "", slide = [], useLocalTTS = true, callback) {
 
-    // Log
+async function CreateVoiceAsset({ content, useLocalTTS, callback }) {
+
+    //
     callback("Asset: Creating voice files");
 
-    // Try and create narration for video
+    //
     try {
 
-        // Select service for the TTS
+        //
         if(useLocalTTS) {
-            await Voice.ByLocalTTS(projectId, slide);
+            await Voice.ByLocalTTS(content);
         }
         else {
-            await Voice.ByExternalTTS(projectId, slide);
+            await Voice.ByExternalTTS(content);
         };
 
     }
@@ -409,4 +377,4 @@ async function CreateVoiceAsset(projectId = "", slide = [], useLocalTTS = true, 
 };
 
 
-export default { Uploader, GetLocalAsset, CreateVoiceAsset, GetExternalAsset, Cache };
+export default { Uploader, GetAssets, CreateVoiceAsset, GetExternalAsset, Cache, CropImage };

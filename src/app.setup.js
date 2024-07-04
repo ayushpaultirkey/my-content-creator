@@ -4,6 +4,7 @@ import { unzipSync } from "cross-zip";
 import { Downloader } from "nodejs-file-downloader";
 import url from "url";
 import path from "path";
+import os from "os";
 
 /**
     * 
@@ -67,17 +68,27 @@ async function download(url, output, name) {
 
 (async () => {
 
-    const url = "https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1";
-    const output = "../library/";
+    const platform = os.platform();
 
-    try {
-        await download(url, output, "ffmpeg-6.1-win-64.zip");
-        await download(url, output, "ffprobe-6.1-win-64.zip");
-        console.log("All files downloaded");
-        console.log("use `npm start` command to start application");
+    if(platform === "win32") {
+
+        const url = "https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1";
+        const output = "../library/";
+    
+        try {
+            await download(url, output, "ffmpeg-6.1-win-64.zip");
+            await download(url, output, "ffprobe-6.1-win-64.zip");
+            console.log("All files downloaded");
+            console.log("use `npm start` command to start application");
+        }
+        catch(ex) {
+            console.log("Unable to download ffmpeg library, try downloading it manually and place it at /library/", ex);
+        };
+
     }
-    catch(ex) {
-        console.error("Unable to download ffmpeg library, try downloading it manually and place it at /library/", ex);
-    };
+    else if(platform === "linux") {
+        console.log("Use: sudo apt install ffmpeg")
+    }
+
 
 })();

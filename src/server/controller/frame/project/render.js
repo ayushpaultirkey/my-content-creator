@@ -1,4 +1,4 @@
-import Project from "#service/project.js";
+import Frame from "#service/frame.js";
 
 
 /**
@@ -8,31 +8,37 @@ import Project from "#service/project.js";
 */
 export default async function Render(request, response) {
 
-    //Create response object
-    const _response = { message: "", success: false, finished: false };
+    //
+    const _response = { message: "", success: false, finished: false, url: "" };
     
-    //Make a SSE
+    //
     response.setHeader("Content-Type", "text/event-stream");
     response.setHeader("Cache-Control", "no-cache");
     response.setHeader("Connection", "keep-alive");
     response.setHeader("Content-Encoding", "none");
 
-    //Create project
+    //
     try {
 
-        // Check if the query parameter are valid
-        const _projectId = request.query.pid;
-        if(typeof(_projectId) !== "string" || _projectId.length < 2) {
+        //
+        const { pid } = request.query;
+        if(!pid) {
             throw new Error("Invalid project id");
         };
 
-        // Render project and update response
-        const _fileName = await Project.Render(_projectId, (text) => {
-            response.write(`data: ${JSON.stringify({ message: text, success: true })}\n\n`);
+        //
+        const _fileName = await Frame.Project.Render({
+            projectId: pid,
+            callback: (text) => {
+
+                response.write(`data: ${JSON.stringify({ message: text, success: true })}\n\n`);
+                
+            }
         });
 
-        // Set success response
-        _response.message = `/project/${_projectId}/export/${_fileName}`;
+        //
+        _response.message = "Rendering finished";
+        _response.url = `/project/${_projectId}/export/${_fileName}`;
         _response.success = true;
         _response.finished = true;
 

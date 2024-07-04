@@ -95,7 +95,7 @@ function Read() {
     * 
     * @param {*} query 
     * @param {"image" | "video" | "audio"} type 
-    * @returns {[{url, name}]}
+    * @returns {[{url, name, destination}]}
 */
 function Hit(query = "", type = "") {
     if(typeof(CACHE[type][query]) !== "undefined") {

@@ -1,8 +1,8 @@
 import fs from "fs/promises";
 import path from "path";
 
-import Project from "#service/project.js";
-import Export from "#service/project/export.js";
+import Project from "#service/frame/project.js";
+import Export from "#service/frame/project/export.js";
 
 /**
     *

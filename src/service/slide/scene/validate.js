@@ -3,7 +3,7 @@ import path from "path";
 import mime from "mime";
 
 import directory from "../../../library/directory.js";
-import Project from "../../project.js";
+import Project from "../../frame/project.js";
 
 // Get directory path
 const { __root } = directory();
@@ -46,13 +46,13 @@ async function UseFallback(assetPath) {
 };
 
 
-export default async function Validate(projectId, asset) {
+export default async function Validate(projectPath, asset) {
     
     //
     const _asset = [];
     for(const x of asset) {
 
-        const _assetPath = path.join(Project.Path(projectId), "/asset/", x.name);
+        const _assetPath = path.join(projectPath, "/asset/", x.name);
 
         try {
 
@@ -66,7 +66,7 @@ export default async function Validate(projectId, asset) {
         }
         catch(error) {
 
-            console.log(`Service/Scene/Validate(): Cannot find ${x} asset file for ${projectId}`, error);
+            console.log(`Service/Scene/Validate(): Cannot find ${x} asset file`, error);
 
             // Try to use fallback asset
             if(await UseFallback(_assetPath)) {

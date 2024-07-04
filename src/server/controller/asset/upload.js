@@ -3,7 +3,7 @@ import sharp from "sharp";
 import fs from "fs/promises";
 
 import Asset from "../../../service/asset.js";
-import Project from "../../../service/project.js";
+import Project from "../../../service/frame/project.js";
 
 /**
     * Validates project IDs from request query

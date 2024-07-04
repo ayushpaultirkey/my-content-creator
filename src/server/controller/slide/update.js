@@ -1,5 +1,5 @@
-import Slide from "../../../service/slide.js";
-import Project from "../../../service/project.js";
+import Slide from "../../../service/frame/slide.js";
+import Project from "../../../service/frame/project.js";
 
 
 /**

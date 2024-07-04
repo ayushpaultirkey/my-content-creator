@@ -2,13 +2,13 @@ import express from "express";
 
 import SUpdate from "./controller/slide/update.js";
 
-import PRender from "./controller/project/render.js";
-import PCreate from "./controller/project/create.js";
-import PUpdate from "./controller/project/update.js";
-import PValidate from "./controller/project/validate.js";
+import PRender from "./controller/frame/project/render.js";
+import PCreate from "./controller/frame/project/create.js";
+import PUpdate from "./controller/frame/project/update.js";
+import PValidate from "./controller/frame/project/validate.js";
 
-import EValidate from "./controller/project/export/validate.js";
-import EGet from "./controller/project/export/get.js";
+import EValidate from "./controller/frame/project/export/validate.js";
+import EGet from "./controller/frame/project/export/get.js";
 
 import AFetch from "./controller/asset/fetch.js";
 import AUpload from "./controller/asset/upload.js";
@@ -34,8 +34,8 @@ import AHistory from "./controller/analytics/history.js";
 const router = express.Router();
 
 // Project
-router.post("/api/project/create", PCreate.POSTCreate);
-router.get("/api/project/create", PCreate.GETCreate);
+router.post("/api/frame/project/create", PCreate.POSTCreate);
+router.get("/api/frame/project/create", PCreate.GETCreate);
 router.get("/api/project/validate", PValidate);
 router.get("/api/project/update", PUpdate);
 router.get("/api/project/render", PRender);

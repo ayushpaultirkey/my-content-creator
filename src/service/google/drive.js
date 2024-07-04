@@ -9,7 +9,7 @@ import { google } from "googleapis";
 
 import directory from "#library/directory.js";
 import GAuth from "./auth.js";
-import Project from "../project.js";
+import Project from "../frame/project.js";
 
 
 const {  __root } = directory();

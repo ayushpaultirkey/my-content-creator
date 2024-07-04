@@ -12,8 +12,8 @@ export default class Attachment extends H12 {
     async init(args = { project }) {
 
         // Set default value
-        this.Set("{c.fname}", "");
-        this.Set("{c.fvisible}", "hidden");
+        this.Set("{u.name}", "");
+        this.Set("{u.visible}", "hidden");
 
         // Register on input file
         this.element.FileUpload.addEventListener("change", this.AttachFile.bind(this));
@@ -25,8 +25,8 @@ export default class Attachment extends H12 {
             <div>
                 <input type="file" class="hidden" id="FileUpload" />
                 <div class="mb-2">
-                    <span class="bg-zinc-700 px-4 pb-1 rounded-2xl relative {c.fvisible}">
-                        <label class="text-xs font-semibold text-zinc-400">{c.fname}</label>
+                    <span class="bg-zinc-700 px-4 pb-1 rounded-2xl relative {u.visible}">
+                        <label class="text-xs font-semibold text-zinc-400">{u.name}</label>
                         <button class="text-sm font-semibold text-zinc-400 pl-2" onclick={ this.AttachRemove }>&times;</button>
                     </span>
                 </div>
@@ -47,8 +47,8 @@ export default class Attachment extends H12 {
 
                 this.File = _file;
     
-                this.Set("{c.fname}", _file.name);
-                this.Set("{c.fvisible}", "");
+                this.Set("{u.name}", _file.name);
+                this.Set("{u.visible}", "");
     
             };
         }
@@ -61,8 +61,8 @@ export default class Attachment extends H12 {
 
     AttachRemove() {
         this.File = null;
-        this.Set("{c.fname}", "");
-        this.Set("{c.fvisible}", "hidden");
+        this.Set("{u.name}", "");
+        this.Set("{u.visible}", "hidden");
     }
 
 };

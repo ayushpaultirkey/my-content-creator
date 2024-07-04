@@ -1,4 +1,4 @@
-import Project from "#service/project.js";
+import Project from "#service/frame/project.js";
 import Asset from "#service/asset.js";
 
 

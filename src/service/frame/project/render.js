@@ -3,17 +3,19 @@ import path from "path";
 import crypto from "crypto";
 import { FFScene, FFCreator } from "ffcreator";
 
-import delay from "../../library/wait.js";
-import directory from "../../library/directory.js";
+import delay from "../../../library/wait.js";
+import directory from "../../../library/directory.js";
 
-import Scene from "../slide/scene.js";
-import Project from "../project.js";
-import Duration from "./../slide/duration.js";
+import Read from "./read.js";
+import Path from "./path.js";
+import Scene from "../../slide/scene.js";
+import Duration from "../../slide/duration.js";
+import Asset from "#service/asset.js";
 
 // Get directory path
 const { __root } = directory();
 
-export default async function Render(projectId = "", sse = null) {
+export default async function Render({ projectId = "", callback = null }) {
 
     // Create new promise
     const _delay = new delay();
@@ -21,17 +23,13 @@ export default async function Render(projectId = "", sse = null) {
     //
     try {
 
-        // Set ffmpeg path
-        FFCreator.setFFmpegPath(path.join(__root, "/library/ffmpeg.exe"));
-        FFCreator.setFFprobePath(path.join(__root, "/library/ffprobe.exe"));
-
         // Export name for file
         const _exportName = `${crypto.randomUUID()}.mp4`;
-        const _exportPath = path.join(__root, `/project/.cache/${_exportName}`);
+        const _exportPath = Asset.Cache.Path(_exportName);
 
         // Get project data, path, property and sldies
-        const _project = await Project.GetActive(projectId);
-        const _projectPath = Project.Path(projectId);
+        const _project = await Read(projectId);
+        const _projectPath = Path(projectId);
         const _property = _project.property;
         const _slides = _property.slides;
 
@@ -68,7 +66,7 @@ export default async function Render(projectId = "", sse = null) {
 
             // Add narration to scene
             await Scene.AddAudio({
-                projectId: projectId,
+                projectPath: _projectPath,
                 scene: _scene,
                 audio: `${slide.id}.wav`,
                 volume: 1 + (_volumeMapping(_vindex, 0, _slides.length, 1, 0) * 10),
@@ -78,7 +76,7 @@ export default async function Render(projectId = "", sse = null) {
             
             // Add image to scene
             await Scene.AddImage({
-                projectId: projectId,
+                projectPath: _projectPath,
                 scene: _scene,
                 image: slide.image,
                 totalTime: _duration,
@@ -90,7 +88,7 @@ export default async function Render(projectId = "", sse = null) {
 
             // Add video to scene
             await Scene.AddVideo({
-                projectId: projectId,
+                projectPath: _projectPath,
                 scene: _scene,
                 video: slide.video,
                 totalTime: _duration,
@@ -101,7 +99,7 @@ export default async function Render(projectId = "", sse = null) {
 
             // Add main content to scene
             await Scene.AddText({
-                projectId: projectId,
+                projectPath: _projectPath,
                 scene: _scene,
                 content: slide.content,
                 width: W,
@@ -114,7 +112,7 @@ export default async function Render(projectId = "", sse = null) {
             console.log(`Service/Project/Render(): scene ${slide.id} builded`);
 
             // Send SSE
-            sse(`Rendering: Scene ${slide.id} builded`);
+            callback(`Rendering: Scene ${slide.id} builded`);
 
         };
 
@@ -127,7 +125,7 @@ export default async function Render(projectId = "", sse = null) {
         _creator.on("start", () => {
 
             // Send SSE
-            sse(`Rendering: Project rendering started`);
+            callback(`Rendering: Project rendering started`);
 
             // Log
             console.log(`Service/Project/Render(): Project render ${projectId} started`);
@@ -136,7 +134,7 @@ export default async function Render(projectId = "", sse = null) {
         _creator.on("error", e => {
             
             // Send SSE
-            sse(`Rendering: Error while rendering project`);
+            callback(`Rendering: Error while rendering project`);
 
             // Log and reject
             console.log(`Service/Project/Render(): Unable to render project: ${projectId}`);
@@ -146,7 +144,7 @@ export default async function Render(projectId = "", sse = null) {
         _creator.on("progress", e => {
 
             // Send SSE
-            sse(`Rendering: Project render status: ${(e.percent * 100) >> 0}%`);
+            callback(`Rendering: Project render status: ${(e.percent * 100) >> 0}%`);
 
             // Log
             console.log(`Service/Project/Render(): Project render: ${(e.percent * 100) >> 0}%`);
@@ -160,7 +158,7 @@ export default async function Render(projectId = "", sse = null) {
                 await fs.copyFile(_exportPath, path.join(_projectPath, "/render.mp4"));
 
                 // Send SSE
-                sse(`Rendering: Project render completed`);
+                callback(`Rendering: Project render completed`);
     
                 // Log and resolve
                 console.log(`Service/Project/Render(): Project render ${projectId} completed`);
@@ -181,7 +179,7 @@ export default async function Render(projectId = "", sse = null) {
     catch(error) {
 
         // Send SSE
-        sse(`Rendering: Error while rendering project`);
+        callback(`Rendering: Error while rendering project`);
 
         // Log and reject
         console.log("Service/Project/Render():", error);

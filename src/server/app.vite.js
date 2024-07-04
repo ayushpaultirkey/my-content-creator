@@ -23,8 +23,8 @@ export default function init() {
     Cache.Initialize();
     
     // Start generative ai
-    Gemini.Initialize(Config.Project.E_GEMINI_ID, Config.Project.S_INSTRUCTION, "application/json");
-    Gemini.Initialize(Config.Analytics.E_GEMINI_ID, Config.Analytics.S_INSTRUCTION);
+    Gemini.Initialize(Config.Frame.E_GEMINI, Config.Frame.S_GEMINI_INSTRUCTION, "application/json");
+    Gemini.Initialize(Config.Analytics.E_GEMINI, Config.Analytics.S_GEMINI_INSTRUCTION);
 
     // Create express app
     const app = express();

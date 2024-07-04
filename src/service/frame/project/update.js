@@ -1,7 +1,11 @@
-import Slide from "./../slide.js";
-import Asset from "./../asset.js";
+import Slide from "../slide.js";
+import Asset from "../../asset.js";
 import Project from "../project.js";
-import Gemini from "./../google/gemini.js";
+import Read from "./read.js";
+import Path from "./path.js";
+import Save from "./save.js";
+import Config from "./../@config.js";
+import Gemini from "../../google/gemini.js";
 import fs from "fs/promises";
 import path from "path";
 
@@ -10,7 +14,7 @@ async function ValidateNewSlide(projectId, firstSlide, newSlide = []) {
 
     try {
 
-        const _projectPath = Project.Path(projectId);
+        const _projectPath = Path(projectId);
 
         if(!firstSlide || !firstSlide.image || !firstSlide.image[0].name) {
             throw new Error("Invalid first slide");
@@ -39,37 +43,37 @@ async function ValidateNewSlide(projectId, firstSlide, newSlide = []) {
 };
 
 
-export default async function Update(projectId = "", prompt = "", file = null) {
+export default async function Update({ projectId = "", prompt = "", file = null }) {
 
-    // Log
+    //
     console.log("Service/Project/Update(): Project update started");
 
-    // Try and update project
+    //
     try {
 
-        // Check if prompt or file is valid
+        //
         if(!prompt && !file) {
             throw new Error("Service/Project/Update(): Expecting either prompt or file.");
         };
     
-        // Get project data and history for prompting
-        let _project = await Project.GetActive(projectId);
+        //
+        let _project = await Read(projectId);
+        let _projectPath = Path(projectId);
         let _history = _project.history;
         
-        // Check if file is valid then use multi model prompt
+        //
         if(file) {
             console.log("Service/Project/Update(): File found, adding multimodel prompt");
-            await Gemini.PromptFile(Project.Config.E_GEMINI_ID, file, _history);
+            await Gemini.PromptFile(Config.E_GEMINI, file, _history);
         };
 
-        // Generative run
-        const _answer = await Gemini.Prompt(Project.Config.E_GEMINI_ID, prompt, _history);
+        //
+        const _answer = await Gemini.Prompt(Config.E_GEMINI, prompt, _history);
         
-        // Get modified slides to render only those
+        //
         const _slide = Slide.Modified(_project.property.slides, _answer.response.slides);
 
-
-        // Check if any slide is added and update the image
+        //
         if(_slide.added.length > 0) {
 
             try {
@@ -83,25 +87,38 @@ export default async function Update(projectId = "", prompt = "", file = null) {
 
         const _slideUpdated = _slide.updated.concat(_slide.added);
 
-        // Create updated project
+        //
         const _projectUpdated = {
             config: { ... _project.config },
             property: { ... _answer.response },
             history: _history
         };
 
-        // Update active project
-        Project.UpdateActive(_projectUpdated);
+        //
+        await Project.Save(projectId, _projectUpdated);
 
-        // Create audio and render the slides
-        await Asset.CreateVoiceAsset(projectId, _slideUpdated);
-        await Slide.Render(projectId, _slideUpdated);
+        //
+        await Asset.CreateVoiceAsset({
+            content: _slideUpdated.map(x => ({
+                text: x.content,
+                destination: path.join(_projectPath, `/asset/${x.id}.wav`)
+            })),
+            callback: callback,
+            useLocalTTS: true,
+        });
+
+        //
+        await Slide.Render({
+            slide: _slideUpdated,
+            root: _projectPath,
+            width: _project.config.width,
+            height: _project.config.height,
+            callback: callback
+        });
 
         // Log
         console.log("Service/Project/Update(): Project update ended");
 
-        // Update project file
-        await Project.Save(projectId, _projectUpdated);
 
         // Return new project
         return _projectUpdated;

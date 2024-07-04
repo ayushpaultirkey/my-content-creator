@@ -4,14 +4,14 @@ import { FFText, FFAlbum, FFVideo } from "ffcreator";
 
 import directory from "../../library/directory.js";
 import Validate from "./scene/validate.js";
-import Project from "../project.js";
+import Project from "../frame/project.js";
 
 
 // Get directory path
 const { __root } = directory();
 
 
-async function AddVideo({ projectId, scene, video, totalTime, showAt, width, height }) {
+async function AddVideo({ projectPath, scene, video, totalTime, showAt, width, height }) {
 
     // Add video if its valid
     if(typeof(video) !== "undefined" && video.length > 0) {
@@ -20,7 +20,7 @@ async function AddVideo({ projectId, scene, video, totalTime, showAt, width, hei
         try {
 
             // Check if the video are valid
-            const _asset = await Validate(projectId, video);
+            const _asset = await Validate(projectPath, video);
 
             // Add duration for each videos
             const _duration = totalTime / _asset.length; 
@@ -56,13 +56,13 @@ async function AddVideo({ projectId, scene, video, totalTime, showAt, width, hei
 };
 
 
-async function AddImage({ projectId, scene, image, totalTime, showAt, hideAt, width, height }) {
+async function AddImage({ projectPath, scene, image, totalTime, showAt, hideAt, width, height }) {
 
     // Add image if avaiable
     if(typeof(image) !== "undefined" && image.length > 0) {
 
         // Check if the images are valid
-        const _asset = await Validate(projectId, image);
+        const _asset = await Validate(projectPath, image);
 
         // Create new album using images
         /** @type {import("ffcreator").FFAlbum} */
@@ -86,13 +86,13 @@ async function AddImage({ projectId, scene, image, totalTime, showAt, hideAt, wi
 };
 
 
-async function AddAudio({ projectId, scene, audio, volume, showAt }) {
+async function AddAudio({ projectPath, scene, audio, volume, showAt }) {
 
     // Add audio if available
     try {
 
         // Check if audio exists
-        const _audioPath = path.join(Project.Path(projectId), `/asset/${audio}`);
+        const _audioPath = path.join(projectPath, `/asset/${audio}`);
         await fs.access(_audioPath);
 
         // Set audio file
@@ -100,13 +100,13 @@ async function AddAudio({ projectId, scene, audio, volume, showAt }) {
 
     }
     catch(error) {
-        console.log(`Service/Scene.AddAudio(): Cannot find audio for ${projectId}`, error);
+        console.log(`Service/Scene.AddAudio(): Cannot find audio`, error);
     };
 
 };
 
 
-async function AddText({ projectId, scene, content, showAt, hideAt, width, height }) {
+async function AddText({ projectPath, scene, content, showAt, hideAt, width, height }) {
 
     // Add text content
     try {
@@ -127,7 +127,7 @@ async function AddText({ projectId, scene, content, showAt, hideAt, width, heigh
 
     }
     catch(error) {
-        console.log(`Service/Scene.AddText(): Cannot add text for ${projectId}`, error);
+        console.log(`Service/Scene.AddText(): Cannot add text`, error);
     };
 
 };

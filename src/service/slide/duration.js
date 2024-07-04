@@ -41,12 +41,12 @@ function ByContent(content = "", wpm = 140) {
 
 
 
-export default async function Duration({ dir = "", content = "" }) {
+export default async function Duration({ dir = "", path, content = "" }) {
 
     let _duration = 10;
 
     try {
-        _duration = await ByAudio(dir);
+        _duration = await ByAudio(path);
     }
     catch(error) {
 

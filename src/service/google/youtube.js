@@ -4,7 +4,7 @@ import mime from "mime";
 import { google } from "googleapis";
 
 import GAuth from "./auth.js";
-import Project from "../project.js";
+import Project from "../frame/project.js";
 import Analytics from "./youtube/analytics.js";
 
 

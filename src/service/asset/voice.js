@@ -5,27 +5,20 @@ import path from "path";
 import util from "util";
 import googlecloud from "@google-cloud/text-to-speech";
 
-import Project from "./../project.js";
+import Project from "../frame/project.js";
 
 
-/**
-    * Create a TTS using local system
-    * @param {*} projectId 
-*/
-async function ByLocalTTS(projectId = "", slide = []) {
+async function ByLocalTTS(content = [{ text, destination }]) {
 
-    // Validate projectId and slide input
-    if(!projectId || !slide) {
-        throw new Error("Invalid projectId or slide data");
+    //
+    if(!content) {
+        throw new Error("Invalid content");
     };
     
-    // Get project path and update the project json file
-    const _path = Project.Path(projectId);
-
-    // Function to export spoken audio to a WAV file
-    function _export(content, filePath) {
+    //
+    function _export(text, destination) {
         return new Promise((resolve, reject) => {
-            say.export(content, undefined, 1, filePath, (error) => {
+            say.export(text, undefined, 1, destination, (error) => {
                 if(error) {
                     reject(error);
                 }
@@ -36,16 +29,16 @@ async function ByLocalTTS(projectId = "", slide = []) {
         });
     };
 
-    // Create audio files for the slides
-    for(var i = 0, l = slide.length; i < l; i++) {
+    //
+    for(var i = 0, l = content.length; i < l; i++) {
 
-        // Export spoken audio to a WAV file
+        //
         try {
-            await _export(slide[i].content, path.join(_path, `/asset/${slide[i].id}.wav`));
-            console.log(`Service/Asset/ByLocalTTS(): ${slide[i].id} voice created`);
+            await _export(content[i].text, content[i].destination);
+            console.log(`S/Asset/ByLocalTTS(): voice-${i} created`);
         }
         catch(error) {
-            console.log(`Service/Asset/ByLocalTTS(): Error creating voice for slide ${slide[i].id}:`, error);
+            console.log(`S/Asset/ByLocalTTS(): Error creating voice-${i}:`, error);
         };
         
     };
@@ -53,64 +46,56 @@ async function ByLocalTTS(projectId = "", slide = []) {
 };
 
 
-/**
-    * Create TTS using google cloud TTS service
-    * @param {*} projectId 
-*/
-async function ByExternalTTS(projectId = "", slide = []) {
+async function ByExternalTTS(content = [{ text, destination }]) {
 
-    // Validate projectId and slide input
-    if(!projectId || !slide) {
-        throw new Error("Invalid projectId or slide data");
+    //
+    if(!content) {
+        throw new Error("Invalid content");
     };
 
-    // Creates a google cloud client
+    //
     const _client = new googlecloud.TextToSpeechClient();
 
-    // Get project path and update the project json file
-    const _path = Project.Path(projectId);
-
-    // Function to export spoken audio to a WAV file
-    async function _export(content, filePath, id) {
+    //
+    async function _export(text, destination) {
         try {
 
-            // Log
-            console.log(`Service/Asset/ByExternalTTS(): Audio narration creation started for ${id}`);
+            //
+            console.log("S/Asset/Voice/ByExternalTTS(): Audio narration creation started");
 
-            // Create tts response
+            //
             const [ _response ] = await _client.synthesizeSpeech({
-                input: { text: content },
+                input: { text: text },
                 voice: { languageCode: "en-US", ssmlGender: "NEUTRAL" },
                 audioConfig: { audioEncoding: "LINEAR16" },
             });
 
-            // Write the binary audio content to a local file
+            //
             const _writer = util.promisify(fs.writeFile);
-            await _writer(filePath, _response.audioContent, "binary");
+            await _writer(destination, _response.audioContent, "binary");
 
-            // Log
-            console.log(`Service/Asset/ByExternalTTS(): Audio narration creation completed for ${id}`);
+            //
+            console.log("S/Asset/Voice/ByExternalTTS(): Audio narration creation completed");
 
         }
         catch(error) {
 
-            // Log
-            console.log(`Service/Asset/ByExternalTTS(): Failed to create audio for ${id}`, error);
+            console.log("S/Asset/Voice/ByExternalTTS(): Failed to create audio", error);
             
         };
     };
 
-    // Try and create TTS
+    //
     try {
 
-        // Create audio files for the slides
-        for(var i = 0, l = slide.length; i < l; i++) {
-            await _export(slide[i].content, path.join(_path, `/asset/${slide[i].id}.wav`), slide[i].id);
+        //
+        for(var i = 0, l = content; i < l; i++) {
+            await _export(content[i].text, content[i].destination);
         };
 
     }
     catch(error) {
-        console.log("Service/Asset/VoiceByExternalTTS(): Error while creating voice for slides", error);
+        console.log("S/Asset/Voice/ByExternalTTS(): Error while creating voice for slides", error);
     };
 
 };

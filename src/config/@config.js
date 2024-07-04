@@ -1,8 +1,8 @@
-import Project from "./../service/project/@config.js";
+import Frame from "../service/frame/@config.js";
 import Analytics from "./../service/google/youtube/analytics/@config.js"
 
 
 export default {
-    Project,
+    Frame,
     Analytics
 }
