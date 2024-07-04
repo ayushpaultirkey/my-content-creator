@@ -59,11 +59,11 @@ export default async function Update(projectId = "", prompt = "", file = null) {
         // Check if file is valid then use multi model prompt
         if(file) {
             console.log("Service/Project/Update(): File found, adding multimodel prompt");
-            await Gemini.PromptFile(file, _history);
+            await Gemini.PromptFile(Project.Config.E_GEMINI_ID, file, _history);
         };
 
         // Generative run
-        const _answer = await Gemini.Prompt(prompt, _history);
+        const _answer = await Gemini.Prompt(Project.Config.E_GEMINI_ID, prompt, _history);
         
         // Get modified slides to render only those
         const _slide = Slide.Modified(_project.property.slides, _answer.response.slides);

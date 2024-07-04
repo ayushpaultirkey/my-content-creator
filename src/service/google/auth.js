@@ -12,7 +12,7 @@ let OAUTH2_CLIENT = null;
     * @param {*} request 
     * @returns 
 */
-function HasAuthToken(request) {
+function HasToken(request) {
     if(request.session && request.session.gtoken) {
         return true
     }
@@ -84,7 +84,7 @@ function OAuth2Client() {
 
     }
     catch(error) {
-        console.error("Service/Google/Auth/OAuth2Client(): Error initializing OAuth2 client:", error);
+        console.error("Service/Google/Auth/OAuth2Client():", error);
         throw error;
     };
 
@@ -135,7 +135,8 @@ function OAuth2GenerateURL(oauth2 = null) {
             access_type: "offline",
             scope: [
                 "https://www.googleapis.com/auth/drive",
-                "https://www.googleapis.com/auth/youtube.upload"
+                "https://www.googleapis.com/auth/youtube.upload",
+                "https://www.googleapis.com/auth/yt-analytics.readonly"
             ]
         });
 
@@ -154,6 +155,6 @@ export default {
     GetAuthEvent,
     GetAuthToken,
     SetAuthToken,
-    HasAuthToken,
+    HasToken,
     OAuth2GenerateURL
 };

@@ -6,6 +6,7 @@ import axios from "axios";
 import multer from "multer";
 import fsp from "fs/promises";
 import mime from "mime-types";
+import crypto from "crypto";
 
 import directory from "./../library/directory.js";
 

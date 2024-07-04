@@ -25,6 +25,10 @@ import DUpload from "./controller/google/drive/upload.js";
 
 import YUpload from "./controller/google/youtube/youtube.js";
 
+import AReport from "./controller/analytics/report.js";
+import APrompt from "./controller/analytics/prompt.js";
+import AHistory from "./controller/analytics/history.js";
+
 
 //
 const router = express.Router();
@@ -46,6 +50,10 @@ router.get("/api/slide/update", SUpdate);
 // Asset
 router.post("/api/asset/upload", AUpload);
 router.get("/api/asset/fetch", AFetch);
+
+router.get("/api/analytics/report", AReport);
+router.get("/api/analytics/prompt", APrompt);
+router.get("/api/analytics/history", AHistory);
 
 // Gemini
 router.post("/api/google/gemini", GGemini);

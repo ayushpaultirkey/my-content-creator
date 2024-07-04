@@ -41,22 +41,41 @@ export default class Dashboard extends H12 {
         return <>
             <div class="w-full h-full p-10">
 
-                <div class="w-full h-full flex flex-col space-y-8">
-                    <div class="w-full flex">
-                        <label class="text-2xl font-semibold text-zinc-300 w-full">Dashboard</label>
-                        <div>
-                            <Authenticate args></Authenticate>
+                <div class="w-full h-full flex flex-col space-y-8 overflow-y-auto">
+
+                    <div class="space-y-3">
+                        <div class="w-full flex">
+                            <label class="text-2xl font-semibold text-zinc-300 w-full">Dashboard</label>
+                            <div class="flex space-x-2">
+                                <Authenticate args></Authenticate>
+                            </div>
+                        </div>
+                        <div class="sm:min-h-60">
+                            <div class="grid sm:grid-cols-[repeat(auto-fill,250px)] grid-cols-[repeat(auto-fill,auto)] gap-4">
+                            
+                                <div class="bg-blue-500 border-2 border-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors rounded-lg min-h-28 flex flex-col">
+                                    <button class="fa fa-plus w-full h-full text-2xl text-zinc-900" onclick={ () => { this.CreatorToggle(); } } title="Create Project"></button>
+                                </div>
+                                
+                                {p.list}
+                                
+                            </div>
                         </div>
                     </div>
-                    <div class="grid sm:grid-cols-[repeat(auto-fill,250px)] grid-cols-[repeat(auto-fill,auto)] gap-4">
-                    
-                        <div class="bg-blue-500 border-2 border-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors rounded-lg min-h-28 flex flex-col">
-                            <button class="fa fa-plus w-full h-full text-2xl text-zinc-900" onclick={ () => { this.CreatorToggle(); } } title="Create Project"></button>
+
+                    <div class="space-y-3">
+                        <div class="w-full flex md:flex-row flex-col">
+                            <label class="text-2xl font-semibold text-zinc-300 w-full">Youtube Analytics</label>
                         </div>
+                        <div class="grid sm:grid-cols-[repeat(auto-fill,250px)] grid-cols-[repeat(auto-fill,auto)] gap-4">
                         
-                        {p.list}
-                        
+                            <div class="bg-blue-500 border-2 border-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors rounded-lg min-h-28 flex flex-col" onclick={ () => { Dispatcher.Call("OnNavigate", { target: "ANALYTICS" }) } }>
+                                <button class="fa-brands fa-youtube w-full h-full text-2xl text-zinc-900" title="Open analytics"></button>
+                            </div>
+                            
+                        </div>
                     </div>
+
                 </div>
 
                 <div class="absolute top-0 left-0 w-full h-full bg-zinc-900 text-zinc-800 bg-opacity-90 flex justify-center items-center {d.create.toggle}">

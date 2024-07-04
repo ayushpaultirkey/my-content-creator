@@ -39,7 +39,7 @@ export default async function AuthStatus(request, response) {
         });
 
         //
-        _listener({ success: Google.Auth.HasAuthToken(request) });
+        _listener({ success: Google.Auth.HasToken(request) });
 
     }
     catch(error) {

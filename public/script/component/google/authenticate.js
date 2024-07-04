@@ -20,7 +20,7 @@ export default class Authenticate extends H12 {
 
     async render() {
         return <>
-            <button class={ `text-xs text-blue-700 font-semibold py-2 w-44 border-2 border-blue-800 bg-blue-950 bg-opacity-40 hover:bg-opacity-70 active:bg-opacity-90 rounded-md {g.auth.visible} ${(!this.args.style ? "" : this.args.style)}` } onclick={ Google.Authenticate }>
+            <button class={ `text-xs text-blue-700 font-semibold py-2 w-40 border-2 border-blue-800 bg-blue-950 bg-opacity-40 hover:bg-opacity-70 active:bg-opacity-90 rounded-md {g.auth.visible} ${(!this.args.style ? "" : this.args.style)}` } onclick={ Google.Authenticate }>
                 <i class="fa-brands fa-google mr-2 pointer-events-none"></i>
                 <label class="pointer-events-none">{g.auth}</label>
             </button>

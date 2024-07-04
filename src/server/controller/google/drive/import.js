@@ -15,7 +15,7 @@ export default async function Import(request, response) {
     try {
 
         // Check if there is user
-        if(!Google.Auth.HasAuthToken(request)) {
+        if(!Google.Auth.HasToken(request)) {
             throw new Error("Google account not authenticated");
         };
 

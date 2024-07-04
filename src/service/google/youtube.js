@@ -5,6 +5,7 @@ import { google } from "googleapis";
 
 import GAuth from "./auth.js";
 import Project from "../project.js";
+import Analytics from "./youtube/analytics.js";
 
 
 async function UploadFile({ projectId = "", title, description, category = 24 }, callback) {
@@ -81,4 +82,4 @@ async function UploadFile({ projectId = "", title, description, category = 24 },
 
 };
 
-export default { UploadFile };
+export default { UploadFile, Analytics };

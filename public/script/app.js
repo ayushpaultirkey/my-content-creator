@@ -1,11 +1,13 @@
 import "@style/main.css";
 import H12 from "@library/h12";
+import Lazy from "@library/h12.lazy";
 import Dispatcher from "@library/h12.dispatcher";
 import ServerEvent from "@library/serverevent";
 
 import Home from "./page/home";
 import Editor from "./page/editor";
 import Dashboard from "./page/dashboard";
+import Analytics from "./page/analytics";
 
 @Component
 class App extends H12 {
@@ -33,6 +35,11 @@ class App extends H12 {
 
         // Register server side event
         ServerEvent.Register("AuthStatus", "/api/google/auth/status");
+
+        // Lazy load font-awesome icons
+        Lazy.Style("FAIcon", "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
+        Lazy.Script("Marked", "https://cdn.jsdelivr.net/npm/marked/marked.min.js");
+        Lazy.Script("GChart", "https://www.gstatic.com/charts/loader.js");
 
     }
 
@@ -69,8 +76,9 @@ class App extends H12 {
     }
 
     Navigate = {
-        To: (event, args = { target: "DASHBOARD" }) => {
+        To: (event, args = { target: "ANALYTICS" }) => {
 
+            console.log(args.target)
             switch(args.target) {
                 case "EDITOR":
                     this.Navigate.Editor(args.project);
@@ -78,20 +86,26 @@ class App extends H12 {
                 case "DASHBOARD":
                     this.Navigate.Dashboard(args);
                     break;
+                case "ANALYTICS":
+                    this.Navigate.Analytics(args);
+                    break;
                 default:
                     this.Navigate.Home(args);
                     break;
             }
 
         },
-        Home: async () => {
+        Home: async() => {
             this.Set("{e.app}", <><Home args></Home></>);
         },
-        Dashboard: async () => {
+        Dashboard: async() => {
             this.Set("{e.app}", <><Dashboard args></Dashboard></>);
         },
-        Editor: async (project = null) => {
+        Editor: async(project = null) => {
             this.Set("{e.app}", <><Editor args project={ project }></Editor></>);
+        },
+        Analytics: async() => {
+            this.Set("{e.app}", <><Analytics args></Analytics></>);
         }
     }
 };

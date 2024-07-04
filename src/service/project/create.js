@@ -33,7 +33,7 @@ export default async function Create({prompt, file, width = 128, height = 128}, 
             callback("Project: Creating multi model prompt");
 
             // Create prompt with file
-            await Gemini.PromptFile(file, _history);
+            await Gemini.PromptFile(Project.Config.E_GEMINI_ID, file, _history);
 
         };
 
@@ -42,7 +42,7 @@ export default async function Create({prompt, file, width = 128, height = 128}, 
         callback("Project: Generating response");
 
         // Start main prompt
-        const _answer = await Gemini.Prompt(prompt, _history);
+        const _answer = await Gemini.Prompt(Project.Config.E_GEMINI_ID, prompt, _history);
         const _project = {
             config: {
                 width: width * 1,

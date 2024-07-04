@@ -7,6 +7,7 @@ import Render from "./project/render.js";
 import Create from "./project/create.js";
 import Update from "./project/update.js";
 import Export from "./project/export.js";
+import Config from "./project/@config.js";
 
 // Get directory path
 const { __dirname, __root } = directory();
@@ -206,4 +207,4 @@ const Project = {
 
 };
 
-export default { ... Project, Render, Create, Update, Export };
+export default { ... Project, Render, Create, Update, Export, Config };
