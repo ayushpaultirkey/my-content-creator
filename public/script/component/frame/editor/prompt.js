@@ -190,6 +190,7 @@ export default class Prompt extends H12 {
                     </div>
                 </div>
             </>);
+            PromptBox.value = "";
             PromptHistory.scrollTo(0, PromptHistory.scrollHeight);
 
             // Prepare data

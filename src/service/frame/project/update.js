@@ -1,59 +1,26 @@
-import Slide from "../slide.js";
+import path from "path";
+import chalk from "chalk";
+
 import Asset from "../../asset.js";
-import Project from "../project.js";
+import Gemini from "../../google/gemini.js";
+
+import Config from "../@config.js";
+import Slide from "../slide.js";
 import Read from "./read.js";
 import Path from "./path.js";
 import Save from "./save.js";
-import Config from "./../@config.js";
-import Gemini from "../../google/gemini.js";
-import fs from "fs/promises";
-import path from "path";
-
-
-async function ValidateSlideAsset(projectId, firstSlide, newSlide = []) {
-
-    try {
-
-        const _projectPath = Path(projectId);
-
-        if(!firstSlide || !firstSlide.image || !firstSlide.image[0].name) {
-            throw new Error("Invalid first slide");
-        };
-
-        for(var i = 0, len = newSlide.length; i < len; i++) {
-                
-            if(!newSlide[i].image || !newSlide[i].image[0] || !newSlide[i].image[0].name) {
-                continue;
-            };
-
-            const _oPath = path.join(_projectPath, "/asset/", firstSlide.image[0].name);
-            const _nPath = path.join(_projectPath, "/asset/", newSlide[i].image[0].name);
-
-            await fs.copyFile(_oPath, _nPath);
-
-            //
-            console.log(`S/F/Project/Update.ValidateSlideAsset(): New asset created for slide ${newSlide[i].id}`);
-            
-        };
-    }
-    catch(error) {
-        console.log("S/F/Project/Update.ValidateSlideAsset():", error);
-    };
-
-};
-
 
 export default async function Update({ projectId = "", prompt = "", file = null, callback }) {
 
     //
-    console.log("S/F/Project/Update(): Project update started");
+    console.log(chalk.green("S/Frame/Project/Update(): Project update started"));
 
     //
     try {
 
         //
         if(!prompt && !file) {
-            throw new Error("S/F/Project/Update(): Expecting either prompt or file.");
+            throw new Error("Expecting either prompt or file.");
         };
     
         //
@@ -63,8 +30,10 @@ export default async function Update({ projectId = "", prompt = "", file = null,
         
         //
         if(file) {
-            console.log("S/F/Project/Update(): File found, adding multimodel prompt");
+
+            console.log(chalk.green("S/Frame/Project/Update():"), "File found, adding multimodel prompt");
             await Gemini.PromptFile(Config.E_GEMINI, file, _history);
+
         };
 
         //
@@ -79,10 +48,10 @@ export default async function Update({ projectId = "", prompt = "", file = null,
         if(_slide.added.length > 0) {
 
             try {
-                await ValidateSlideAsset(projectId, _project.property.slides[0], _slide.added);
+                await Slide.ValidateAsset(projectId, _project.property.slides[0], _slide.added);
             }
             catch(error) {
-                console.log("S/F/Project/Update():", error);
+                console.log(chalk.red("S/Frame/Project/Update():"), error);
             };
 
         };
@@ -97,7 +66,7 @@ export default async function Update({ projectId = "", prompt = "", file = null,
         };
 
         //
-        await Project.Save(projectId, _projectUpdated);
+        await Save(projectId, _projectUpdated);
 
         //
         await Asset.CreateVoiceAsset({
@@ -119,15 +88,14 @@ export default async function Update({ projectId = "", prompt = "", file = null,
         });
 
         // Log
-        console.log("S/F/Project/Update(): Project update ended");
-
+        console.log(chalk.green("S/Frame/Project/Update():"), "Project update ended");
 
         // Return new project
         return _projectUpdated;
 
     }
     catch(error) {
-        console.log("S/F/Project/Update():", error);
+        console.log(chalk.red("S/Frame/Project/Update():"), error);
         throw error;
     };
     

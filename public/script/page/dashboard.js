@@ -3,8 +3,8 @@ import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
 import Frame from "@library/frame";
 
-import Card from "@component/dashboard/card";
-import Creator from "@component/dashboard/creator";
+import Card from "@component/frame/dashboard/card";
+import Creator from "@component/frame/dashboard/creator";
 import Authenticate from "@component/google/authenticate";
 
 @Component

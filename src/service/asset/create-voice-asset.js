@@ -1,11 +1,8 @@
 import "dotenv/config";
 import fs from "fs";
 import say from "say";
-import path from "path";
 import util from "util";
 import googlecloud from "@google-cloud/text-to-speech";
-
-import Project from "../frame/project.js";
 
 
 async function ByLocalTTS(content = [{ text, destination }]) {
@@ -100,4 +97,27 @@ async function ByExternalTTS(content = [{ text, destination }]) {
 
 };
 
-export default { ByExternalTTS, ByLocalTTS };
+
+export default async function CreateVoiceAsset({ content, useLocalTTS, callback }) {
+
+    //
+    callback("Asset: Creating voice files");
+
+    //
+    try {
+
+        //
+        if(useLocalTTS) {
+            await ByLocalTTS(content);
+        }
+        else {
+            await ByExternalTTS(content);
+        };
+
+    }
+    catch(error) {
+        console.log("Service/Asset.CreateVoiceAsset(): General error", error);
+        throw error;
+    };
+
+};

@@ -4,8 +4,9 @@ import Dispatcher from "@library/h12.dispatcher";
 import ServerEvent from "@library/sse";
 import Frame from "@library/frame";
 
-import Card from "@component/dashboard/card";
+import Card from "@component/frame/dashboard/card";
 import Attachment from "@component/attachment";
+import Config from "@library/@config";
 
 @Component
 export default class Creator extends H12 {
@@ -74,8 +75,8 @@ export default class Creator extends H12 {
         try {
 
             // Set the loader and disable button
-            Dispatcher.Call("OnLoaderShow");
-            Dispatcher.Call("OnLoaderUpdate", "Creating Project");
+            Dispatcher.Call(Config.ON_LOADER_SHOW);
+            Dispatcher.Call(Config.ON_LOADER_UPDATE, "Creating Project");
             DCreate.disabled = true;
 
             // Get prompt, width, height
@@ -108,13 +109,13 @@ export default class Creator extends H12 {
             ServerEvent(`/api/frame/project/create`, {
                 onMessage: (data) => {
 
-                    Dispatcher.Call("OnLoaderUpdate", data.message);
+                    Dispatcher.Call(Config.ON_LOADER_UPDATE, data.message);
 
                 },
                 onFinish: (data) => {
 
                     Frame.SetLocalProject(data.data.id);
-                    Dispatcher.Call("OnLoaderHide");
+                    Dispatcher.Call(Config.ON_LOADER_HIDE);
                     DCreate.disabled = false;
                     this.Toggle(false);
                     this.parent.Load();
@@ -125,7 +126,7 @@ export default class Creator extends H12 {
                     if(status !== EventSource.CLOSED && message) {
                         alert(message);
                     };
-                    Dispatcher.Call("OnLoaderHide");
+                    Dispatcher.Call(Config.ON_LOADER_HIDE);
                     DCreate.disabled = false;
                     this.Toggle(false);
 
@@ -136,7 +137,7 @@ export default class Creator extends H12 {
         catch(error) {
             alert(error);
             this.Toggle(false);
-            Dispatcher.Call("OnLoaderHide");
+            Dispatcher.Call(Config.ON_LOADER_HIDE);
             console.error("D/Creator.Create():", error);
         };
 

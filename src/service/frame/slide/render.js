@@ -2,8 +2,8 @@ import path from "path";
 import { FFScene, FFCreator } from "ffcreator";
 
 import delay from "#library/wait.js";
-import Scene from "../../slide/scene.js";
-import Duration from "../../slide/duration.js";
+import Scene from "./scene.js";
+import Duration from "./duration.js";
 
 
 export default async function Render({ slide = [], root, width, height, callback = null }) {

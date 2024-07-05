@@ -2,9 +2,8 @@ import fs from "fs/promises";
 import path from "path";
 import { FFText, FFAlbum, FFVideo } from "ffcreator";
 
-import directory from "../../library/directory.js";
+import directory from "#library/directory.js";
 import Validate from "./scene/validate.js";
-import Project from "../frame/project.js";
 
 
 // Get directory path

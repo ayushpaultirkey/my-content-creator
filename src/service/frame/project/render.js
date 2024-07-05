@@ -7,8 +7,8 @@ import delay from "../../../library/wait.js";
 
 import Read from "./read.js";
 import Path from "./path.js";
-import Scene from "../../slide/scene.js";
-import Duration from "../../slide/duration.js";
+import Scene from "../slide/scene.js";
+import Duration from "../slide/duration.js";
 import Asset from "#service/asset.js";
 
 export default async function Render({ projectId = "", callback = null }) {

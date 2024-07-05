@@ -1,6 +1,12 @@
 import path from "path";
 import directory from "#library/directory.js";
 
+/**
+ * 
+ * @param {*} projectId 
+ * @param {"asset"} other 
+ * @returns 
+ */
 export default function Path(projectId = "", other = "") {
 
     // Check for project id
@@ -13,3 +19,4 @@ export default function Path(projectId = "", other = "") {
     return path.join(__root, `/project/${projectId}/`, other);
 
 };
+

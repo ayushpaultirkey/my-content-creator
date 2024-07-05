@@ -5,11 +5,11 @@ import Dispatcher from "@library/h12.dispatcher";
 import DViewer from "@component/google/drive/viewer";
 import YTUploader from "@component/google/youtube/uploader";
 
-import Slide from "@component/editor/slide";
-import Prompt from "@component/editor/prompt";
-import Viewport from "@component/editor/viewport";
-import Project from "@component/editor/project";
-import Export from "@component/editor/export";
+import Slide from "@component/frame/editor/slide";
+import Prompt from "@component/frame/editor/prompt";
+import Viewport from "@component/frame/editor/viewport";
+import Project from "@component/frame/editor/project";
+import Export from "@component/frame/editor/export";
 import Config from "@library/@config";
 import ServerEvent from "@library/sse";
 
@@ -36,6 +36,7 @@ export default class Editor extends H12 {
             await this.Load();
 
             // Bind dispatcher
+            Dispatcher.On(Config.ON_FPROJECT_UPDATE, this.OnProjectUpdate.bind(this));
             Dispatcher.On(Config.ON_FASSET_UPDATE, this.LoadAsset.bind(this));
 
         }
@@ -207,6 +208,7 @@ export default class Editor extends H12 {
         this.Navigate(1);
 
     }
+    
 
     async OpenGDriveViewer() {
         
@@ -330,6 +332,16 @@ export default class Editor extends H12 {
             description: description
         });
     }
+
+    OnProjectUpdate(event, project) {
+
+        if(project) {
+            this.Project = project;
+            this.Load();
+        };
+        this.LoadAsset.bind(this);
+
+    };
 
     //#region File Drag n Drop
     PreventDefault(event) {

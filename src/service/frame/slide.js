@@ -1,11 +1,7 @@
-import directory from "../../library/directory.js";
-
 import Render from "./slide/render.js";
-import Modified from "../slide/modified.js";
-import Duration from "../slide/duration.js";
+import Modified from "./slide/modified.js";
+import Duration from "./slide/duration.js";
+import Scene from "./slide/scene.js";
+import ValidateAsset from "./slide/validate-asset.js";
 
-// Get current directory path and filename
-const { __root } = directory();
-
-// Export
-export default { Render, Modified, Duration };
+export default { Render, Modified, Duration, Scene, ValidateAsset };

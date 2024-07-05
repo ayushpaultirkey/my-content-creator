@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs/promises";
-import directory from "../../library/directory.js"
+import directory from "#library/directory.js"
 
 let CACHE = {};
 

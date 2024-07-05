@@ -3,7 +3,6 @@ import { FFCreator } from "ffcreator";
 
 import directory from "#library/directory.js";
 
-
 //
 const { __root } = directory();
 

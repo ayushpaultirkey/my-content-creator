@@ -1,29 +1,27 @@
 import fs from "fs/promises";
 import path from "path";
 import mime from "mime";
+import chalk from "chalk";
 
-import directory from "../../../library/directory.js";
-import Project from "../../frame/project.js";
+import Fallback from "#service/asset/fallback.js";
 
-// Get directory path
-const { __root } = directory();
 
 async function UseFallback(assetPath) {
 
     try {
 
-        // Get file type and create fallback asset pth
-        let _fallbackPath = path.join(__root, "/project/.cache/");
 
+        let _fallbackPath = "";
         let _mimetype = mime.getType(assetPath);
+
         if(_mimetype.includes("image")) {
-            _fallbackPath = path.join(_fallbackPath, "/fallback-i.png");
+            _fallbackPath = Fallback("IMAGE");
         }
         else if(_mimetype.includes("video")) {
-            _fallbackPath = path.join(_fallbackPath, "/fallback-v.mp4");
+            _fallbackPath = Fallback("VIDEO");
         }
         else if(_mimetype.includes("audio")) {
-            _fallbackPath = path.join(_fallbackPath, "/fallback-a.wav");
+            _fallbackPath = Fallback("AUDIO");
         }
         else {
             throw new Error("Invalid fallback asset type")
@@ -33,14 +31,14 @@ async function UseFallback(assetPath) {
         await fs.copyFile(_fallbackPath, assetPath);
 
         // Log
-        console.log("Service/Scene/Validate/UseFallback(): Using fallback asset in project");
+        console.log(chalk.yellow("S/Frame/Scene/Validate/UseFallback():"), "Using fallback asset in project");
 
         //
         return true;
 
     }
     catch(error) {
-        console.log("Service/Scene/Validate/UseFallback(): Unable to use fallback asset", error);
+        console.log(chalk.red("S/Frame/Scene/Validate/UseFallback():"), "Unable to use fallback asset", error);
     };
 
 };
@@ -66,7 +64,7 @@ export default async function Validate(projectPath, asset) {
         }
         catch(error) {
 
-            console.log(`Service/Scene/Validate(): Cannot find ${x} asset file`, error);
+            console.log(chalk.red("S/Frame/Scene/Validate():") `Cannot find ${x} asset file`, error);
 
             // Try to use fallback asset
             if(await UseFallback(_assetPath)) {

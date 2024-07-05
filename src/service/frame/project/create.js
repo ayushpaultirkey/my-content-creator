@@ -82,14 +82,18 @@ export default async function Create({ prompt, file, width = 128, height = 128, 
             .filter(y => (y.name && y.name.length > 3))
             .map(y => path.join(_projectPath, "/asset/", y.name))
         );
-        const _inImage = await Asset.GetExternalAsset(_parsed.keyword, _outImage.length, callback);
+        const _inImage = await Asset.FetchExternalImage({
+            keyword: _parsed.keyword,
+            count: _outImage.length,
+            callback: callback
+        });
 
         //
         console.log("S/Frame/Project/Create(): INPUT IMAGE", _inImage);
         console.log("S/Frame/Project/Create(): OUTPUT IMAGE", _outImage);
 
         //
-        await Asset.CropImage({
+        await Asset.CropImages({
             input: _inImage,
             output: _outImage,
             width: width,
