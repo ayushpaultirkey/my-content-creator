@@ -7,7 +7,7 @@ import Asset from "#service/asset.js";
     * @param {import("express").Request} request 
     * @param {import("express").Response} response 
 */
-export default async function Gemini(request, response) {
+export default async function Prompt(request, response) {
 
     //Create response object
     const _response = { message: "", success: false, data: {} };
@@ -24,8 +24,8 @@ export default async function Gemini(request, response) {
                 };
 
                 // Get query parameter
-                let { pid, prompt, files } = request.query;
-                let _file = (files && files.length > 0) ? files[0] : null;
+                const { pid, prompt, files } = request.query;
+                const _file = (files && files.length > 0) ? files[0] : null;
 
                 // Check for prompt and file
                 if(!pid) {
@@ -38,7 +38,12 @@ export default async function Gemini(request, response) {
                 };
 
                 // Update project by prompt
-                const _project = await Project.Update(pid, prompt, _file);
+                const _project = await Project.Update({
+                    projectId: pid,
+                    prompt: prompt,
+                    file: _file,
+                    callback: () => {}
+                });
 
                 // Set the response data
                 _response.message = "Project updated";

@@ -2,6 +2,7 @@ import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
 import Authenticate from "@component/google/authenticate";
+import Config from "@library/@config";
 
 @Component
 export default class Viewport extends H12 {
@@ -22,7 +23,7 @@ export default class Viewport extends H12 {
             this.Load();
 
             // Register on dispatcher event
-            Dispatcher.On("OnProjectUpdated", this.OnProjectUpdated.bind(this));
+            Dispatcher.On(Config.ON_FPROJECT_UPDATE, this.OnProjectUpdated.bind(this));
 
         };
 
@@ -53,31 +54,30 @@ export default class Viewport extends H12 {
 
     Load() {
 
-        // Check if the project is valid
-        if(!this.Project) {
-            return false;
-        };
-
-
         try {
 
-            // Clear the default slides
-            this.Set("{e.slide}", "");
+            // Check if the project is valid
+            if(!this.Project) {
+                throw new Error("Invalid project")
+            };
 
             // Get slides from the project
             const { id, property: { slides } } = this.Project;
 
+            // Clear the default slides
+            this.Set("{e.slide}", "");
+
             // Render all slides and assign event
             for(var i = 0, l = slides.length; i < l; i++) {
     
-                let _id = slides[i].id;
+                let _sid = slides[i].id;
                 let _index = i;
     
                 this.Set("{e.slide}++",
                     <>
-                        <div class="bg-zinc-900 w-20 min-w-20 h-full rounded-md shadow-md" onclick={ () => { this.SlideSelected(_id, _index); } }>
+                        <div class="bg-zinc-900 w-20 min-w-20 h-full rounded-md shadow-md" onclick={ () => { this.SlideSelected(_index); } }>
                             <video class="w-full h-full pointer-events-none" oncanplay="this.muted=true;" loop autoplay muted>
-                                <source type="video/mp4" src={ `./project/${this.Project.id}/cache/${_id}.mp4` }/>
+                                <source type="video/mp4" src={ `./project/${id}/cache/${_sid}.mp4` }/>
                             </video>
                         </div>
                     </>
@@ -85,7 +85,7 @@ export default class Viewport extends H12 {
     
             };
 
-            // Load the 1st slide
+            //
             const { Viewport, ViewportVideo } = this.element;
             Viewport.src = `./project/${id}/cache/${slides[0].id}.mp4`;
             ViewportVideo.load();
@@ -97,23 +97,28 @@ export default class Viewport extends H12 {
 
     }
 
-    SlideSelected(id, index) {
+    SlideSelected(index) {
 
-        // Check if the project is valid
-        if(!this.Project) {
+        //
+        const { Project, element } = this;
+        const { Viewport, ViewportVideo } = element;
+
+        //
+        if(!Project) {
             return false;
         };
 
-        // Get message array from the project
-        const _slide = this.Project.property.slides[index];
+        //
+        const { id, property: { slides } } = Project;
+        if(!slides[index]) {
+            return false;
+        };
 
-        // Set video url
-        const { Viewport, ViewportVideo } = this.element;
-        Viewport.src = `./project/${this.Project.id}/cache/${_slide.id}.mp4`;
+        Viewport.src = `./project/${id}/cache/${slides[index].id}.mp4`;
         ViewportVideo.load();
 
-        // Call dispatcher event
-        Dispatcher.Call("OnViewportSlideSelected", { id: id, index: index });
+        //
+        Dispatcher.Call(Config.ON_FSLIDE_SELECT, { index: index });
 
     }
 

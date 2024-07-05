@@ -1,8 +1,9 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
-import Asset from "@component/asset";
 import ServerEvent from "@library/sse";
+import Config from "@library/@config";
+import Asset from "@component/asset";
 
 @Component
 export default class Project extends H12 {
@@ -12,7 +13,7 @@ export default class Project extends H12 {
         this.Project = null;
     }
 
-    async init(args = { project }) {
+    async init(args) {
 
         // Check if the project is valid and load it
         if(args.project) {
@@ -20,10 +21,10 @@ export default class Project extends H12 {
             // Set project and load
             this.Project = args.project;
             this.Load();
-            
+
             // Register on dispatcher event
-            Dispatcher.On("OnAssetLoaded", this.OnAssetLoaded.bind(this));
-            Dispatcher.On("OnProjectUpdated", this.OnProjectUpdated.bind(this));
+            Dispatcher.On(Config.ON_FASSET_LOAD, this.OnAssetLoad.bind(this));
+            Dispatcher.On(Config.ON_FPROJECT_UPDATE, this.OnProjectUpdate.bind(this));
 
         };
 
@@ -59,7 +60,7 @@ export default class Project extends H12 {
 
                     <div class="border border-transparent border-t-zinc-700 pt-3">
                         <label class="text-xs font-semibold text-zinc-400 block mb-1">External Asset: <i class="fa-regular fa-circle-question" title="Require to login into google account"></i></label>
-                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors"><i class="fa-brands fa-google-drive mr-2 pointer-events-none"></i>Google Drive</button>
+                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ () => { this.parent.OpenGDriveViewer() } }><i class="fa-brands fa-google-drive mr-2 pointer-events-none"></i>Google Drive</button>
                     </div>
 
                     <div>
@@ -79,102 +80,110 @@ export default class Project extends H12 {
     
     async Load() {
 
+        const { Project, element, child } = this;
+
         // Check if the project is valid
-        if(!this.Project || !this.Project.property) {
+        if(!Project || !Project.property) {
             return false;
         };
 
-        const { title, description, backgroundAudio } = this.Project.property;
-        const { ProjectTitle, ProjectDescription } = this.element;
+        //
+        const { AudioAsset } = child;
+        const { ProjectTitle, ProjectDescription } = element;
+        const { title, description, backgroundAudio } = Project.property;
 
         // Set project's detail
         ProjectTitle.value = title;
         ProjectDescription.value = description;
 
         // Assign selected assets
-        this.child["AudioAsset"].SetSelected(backgroundAudio);
+        AudioAsset.SetSelected(backgroundAudio);
         
     }
 
     async Update() {
-
-        // Check if the project is valid
-        if(!this.Project) {
-            return false;
-        };
-
-        // Call dispather show loader
-        Dispatcher.Call("ShowLoader", "AI is updating slide...");
+        
+        Dispatcher.Call(Config.ON_LOADER_SHOW);
+        Dispatcher.Call(Config.ON_LOADER_UPDATE, "AI is updating slide...");
 
         try {
 
-            // Get project detail
-            const { id } = this.Project.id;
-            const { ProjectTitle, ProjectDescription } = this.element;
+            //
+            const { Project, element, child } = this;
+            const { ProjectTitle, ProjectDescription } = element;
+            const { AudioAsset } = child;
 
+            //
+            if(!Project) {
+                throw new Error("Invalid project");
+            };
+
+            //
             const _title = ProjectTitle.value;
             const _detail = ProjectDescription.value;
+            const _audio = AudioAsset.GenerateQueryString("paudio");
 
-            // Check for data
+            //
             if(!_title || !_detail) {
                 throw new Error("Please enter title and description");
             };
 
-            // Get selected audio
-            const _audio = this.child["AudioAsset"].GenerateQueryString("paudio");
-
-            // Perform the update request
-            const _response = await fetch(`/api/project/update?pid=${id}&${_audio}&ptitle=${_title}&pdetail=${_detail}`);
+            //
+            const _response = await fetch(`/api/frame/project/update?pid=${Project.id}&${_audio}&ptitle=${_title}&pdetail=${_detail}`);
             const { success, message, data } = await _response.json();
 
-            // Check if the data is updated successfully
+            //
             if(!success || !_response.ok) {
-                alert(message);
                 throw new Error(message);
             };
 
-            // Call dispatcher
-            Dispatcher.Call("OnProjectUpdated", data);
+            //
+            Dispatcher.Call(Config.ON_FPROJECT_UPDATE, data);
 
         }
         catch(error) {
+            alert(error);
             console.error("E/P.Update();", error);
         };
 
-        // Call dispather hide loader
-        Dispatcher.Call("HideLoader");
+        //
+        Dispatcher.Call(Config.ON_LOADER_HIDE);
 
     }
 
     async Render() {
 
-        // Check if the project is valid
-        if(!this.Project) {
-            alert("Invalid project, try reloading");
-            return false;
-        };
 
+        const { Project, element } = this;
+        const { PRender } = element;
+
+        //
         try {
 
-            // Disable button
-            const { PRender } = this.element;
+            //
+            if(!Project) {
+                throw new Error("Invalid project, try reloading");
+            };
+
+            //
             PRender.disabled = true;
 
-            ServerEvent(`/api/project/render?pid=${this.Project.id}`, {
+            //
+            ServerEvent(`/api/frame/project/render?pid=${Project.id}`, {
                 onOpen: () => {
                     
-                    Dispatcher.Call("OnLoaderShow");
+                    Dispatcher.Call(Config.ON_LOADER_SHOW);
 
                 },
                 onMessage: (data) => {
 
-                    Dispatcher.Call("OnLoaderUpdate", data.message);
+                    Dispatcher.Call(Config.ON_LOADER_UPDATE, data.message);
 
                 },
                 onFinish: () => {
 
                     alert("Render finished");
-                    Dispatcher.Call("OnLoaderHide");
+                    Dispatcher.Call(Config.ON_FRENDER_UPDATE);
                     PRender.disabled = false;
 
                 },
@@ -183,7 +192,7 @@ export default class Project extends H12 {
                     if(status !== EventSource.CLOSED && message) {
                         alert(message);
                     };
-                    Dispatcher.Call("OnLoaderHide");
+                    Dispatcher.Call(Config.ON_LOADER_HIDE);
                     PRender.disabled = false;
 
                 }
@@ -192,7 +201,8 @@ export default class Project extends H12 {
         }
         catch(error) {
 
-            // Alert and log
+            //
+            PRender.disabled = false;
             alert("Unable to render project");
             console.error("E/P.Render():", error);
             
@@ -200,26 +210,26 @@ export default class Project extends H12 {
 
     }
 
-    async OnAssetLoaded(event, asset) {
+    async OnAssetLoad(event, asset) {
         
-        // Check if the project is valid
+        //
         if(!this.Project) {
             return false;
         };
 
-        // Get project's property
-        const { backgroundAudio } = this.Project.property;
+        //
         const { AudioAsset } = this.child;
+        const { backgroundAudio } = this.Project.property;
 
-        // Load asset data
+        //
         AudioAsset.Load(asset, "audio");
         AudioAsset.SetSelected(backgroundAudio);
 
     }
 
-    OnProjectUpdated(event, project) {
+    OnProjectUpdate(event, project) {
 
-        // Check if the project is valid and reload it
+        //
         if(project) {
             this.Project = project;
             this.Load();

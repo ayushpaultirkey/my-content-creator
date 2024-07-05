@@ -41,7 +41,7 @@ export default class Asset extends H12 {
             if(!asset[i].type.includes(filter)) {
                 continue;
             };
-            this.Set("{p.asset}++", <><Item args type={ asset[i].type } id={ asset[i].name } url={ asset[i].url } name={ asset[i].name } index={ i + 1 }></Item></>);
+            this.Set("{p.asset}++", <><Item args type={ asset[i].type } id={ asset[i].name } url={ asset[i].path } name={ asset[i].name } index={ i + 1 }></Item></>);
         };
 
     }

@@ -5,5 +5,6 @@ import Export from "./project/export.js";
 import Exist from "./project/exist.js";
 import Read from "./project/read.js";
 import Save from "./project/save.js";
+import Path from "./project/path.js";
 
-export default { Render, Create, Update, Export, Read, Save, Exist };
+export default { Render, Create, Update, Export, Read, Save, Exist, Path };

@@ -39,19 +39,21 @@ function Fallback(type = "") {
 
 };
 
-async function GetAssets(dir = "") {
+
+
+async function GetAssets(searchIn) {
 
     try {
-        
+
         // Get files
-        const _file = await fsp.readdir(dir);
+        const _file = await fsp.readdir(searchIn);
         const _fileList = [];
 
         // Iterate for each file
         for(const file of _file) {
 
             // Get file stat and path
-            const _filePath = path.join(dir, file);
+            const _filePath = path.join(searchIn, file);
             const _fileStat = await fsp.stat(_filePath);
       
             // Check if its file
@@ -69,8 +71,7 @@ async function GetAssets(dir = "") {
                 if(_mime && (_mime.startsWith("image/") || _mime.startsWith("video/") || _mime.startsWith("audio/"))) {
                     _fileList.push({
                         name: file,
-                        type: _mime,
-                        url: `/project//asset/${file}`
+                        type: _mime
                     });
                 };
 

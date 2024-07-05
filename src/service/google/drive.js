@@ -1,21 +1,19 @@
 import "dotenv/config";
 import fs from "fs";
-import fsp from "fs/promises";
 import mime from "mime";
 import path from "path";
-import sharp from "sharp";
+import chalk from "chalk";
 import crypto from "crypto";
 import { google } from "googleapis";
 
 import directory from "#library/directory.js";
 import GAuth from "./auth.js";
-import Project from "../frame/project.js";
 
 
 const {  __root } = directory();
 
 
-async function GetFiles() {
+async function GetFiles(nextPage = null) {
 
     try {
 
@@ -33,32 +31,34 @@ async function GetFiles() {
         const _query = _mimes.map(mime => `mimeType="${mime}"`).join(" or ");
 
         // Get the files
-        const _list = await _drive.files.list({
+        const _response = await _drive.files.list({
             q: _query,
-            pageSize: 10,
+            pageSize: 15,
             fields: "nextPageToken, files(id, name, mimeType, webViewLink)",
+            pageToken: (nextPage) ? nextPage : null
         });
 
         // Retur
-        return _list.data.files;
+        return { files: _response.data.files, nextPage: _response.data.nextPageToken };
 
     }
     catch(error) {
-        console.log("Service/Google/Drive.GetFiles():", error)
-        throw error;
+        console.log(chalk.red("Service/Google/Drive.GetFiles():"), error)
+        throw new Error("Unable to get files");
     };
 
 };
 
 
-async function ImportFiles(projectId = "", id = []) {
+async function ImportFiles(id = []) {
 
     try {
 
-        const _project = await Project.GetActive(projectId);
-
+        // const _project = await Project.GetActive(projectId);
         const _auth = GAuth.OAuth2Client();
         const _drive = google.drive({ version: "v3", auth: _auth });
+
+        const _validated = [];
 
         const _download = async(fileId) => {
 
@@ -82,37 +82,21 @@ async function ImportFiles(projectId = "", id = []) {
                     const _writer = fs.createWriteStream(_tempPath);
                     _response.data.pipe(_writer);
                 
-                    _writer.on("finish", resolve);
+                    _writer.on("finish", () => {
+                        _validated.push({
+                            name: _name,
+                            path: _tempPath,
+                            mime: _mime
+                        });
+                        resolve();
+                    });
                     _writer.on("error", reject);
     
                 });
                 
-                // Create project path for the assets when downloaded
-                const _projectPath = path.join(Project.Path(projectId), `/asset/${_name}`);
-
-                // Once downlaoded finally process if its image or copy the file to project
-                if(_mime.startsWith("image/")) {
-
-                    // Process image and move it to project asset folder
-                    await sharp(_tempPath)
-                    .resize({
-                        width: (_project.config.width * 1),
-                        height: (_project.config.height * 1),
-                        fit: "cover"
-                    })
-                    .toFile(_projectPath);
-
-                }
-                else {
-
-                    // Copy other asset to project folder
-                    await fsp.copyFile(_tempPath, _projectPath);
-
-                };
-
             }
             catch(error) {
-                throw new Error(`Service/Google/Drive.ImportFile(): Error downloading or processing file ${fileId}, ${error.message}`)
+                throw new Error(`Error downloading or processing file ${fileId}, ${error.message}`)
             };
             
         };
@@ -124,25 +108,24 @@ async function ImportFiles(projectId = "", id = []) {
         
         await Promise.all(_promise);
 
+        return _validated;
+
     }
     catch(error) {
-        console.log("Service/Google/Drive.ImportFile():", error);
-        throw error;
+        console.log(chalk.red("S/Google/Drive.ImportFile():"), error);
+        throw new Error("Unable to import files from drive");
     };
 
 };
 
 
-async function UploadFile(projectId = "", sse) {
+async function UploadFile({ filePath, callback }) {
 
     try {
 
-        // Create project path for the assets when downloaded
-        const _filePath = await Project.Export.GetFile(projectId);
-
-        // Log
-        console.log("Service/Google/Drive.UploadFile(): Upload started");
-        sse("Drive: Upload started");
+        //
+        console.log(chalk.green("S/Google/Drive.UploadFile():"), "Upload started");
+        callback("Drive: Upload started");
 
         // Get auth cient and define google drive
         const _auth = GAuth.OAuth2Client();
@@ -150,25 +133,25 @@ async function UploadFile(projectId = "", sse) {
 
         // Create meta data for file
         const _metadata = {
-            "name": path.basename(_filePath.path)
+            "name": path.basename(filePath)
         };
-        const _mimeType = mime.getType(_filePath.path);
+        const _mimeType = mime.getType(filePath);
 
         // Get file size and set byte uploaded
-        let _fileSize = fs.statSync(_filePath.path).size;
+        let _fileSize = fs.statSync(filePath).size;
         let _bytesUploaded = 0;
 
         // Create media object for upload along with
         // Upload progress function
         const _media = {
             mimeType: _mimeType || "application/octet-stream",
-            body: fs.createReadStream(_filePath.path).on("data", (chunk) => {
+            body: fs.createReadStream(filePath).on("data", (chunk) => {
 
                 _bytesUploaded += chunk.length;
 
                 const _progress = Math.round((_bytesUploaded / _fileSize) * 100);
-                console.log(`Service/Google/Drive.UploadFile(): Uploaded ${_progress}%`);
-                sse(`Drive: Upload progress: ${_progress}%`);
+                console.log(chalk.blue("S/Google/Drive.UploadFile():"), `Uploaded ${_progress}%`);
+                callback(`Drive: Upload progress: ${_progress}%`);
 
             })
         };
@@ -181,13 +164,13 @@ async function UploadFile(projectId = "", sse) {
         });
         
         // Log
-        console.log("Service/Google/Drive.UploadFile(): Upload finished");
-        sse("Drive: Upload finished");
+        console.log(chalk.green("S/Google/Drive.UploadFile():"), "Upload finished");
+        callback("Drive: Upload finished");
 
     }
     catch(error) {
-        console.log("Service/Google/Drive.UploadFile():", error);
-        throw error;
+        console.log(chalk.red("S/Google/Drive.UploadFile():"), error);
+        throw new Error("Unable to upload file to drive");
     };
 
 };

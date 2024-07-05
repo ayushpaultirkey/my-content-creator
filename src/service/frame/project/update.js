@@ -10,7 +10,7 @@ import fs from "fs/promises";
 import path from "path";
 
 
-async function ValidateNewSlide(projectId, firstSlide, newSlide = []) {
+async function ValidateSlideAsset(projectId, firstSlide, newSlide = []) {
 
     try {
 
@@ -32,55 +32,57 @@ async function ValidateNewSlide(projectId, firstSlide, newSlide = []) {
             await fs.copyFile(_oPath, _nPath);
 
             //
-            console.log(`Service/Project/Update.ValidateNewSlide(): New asset created for slide ${newSlide[i].id}`);
+            console.log(`S/F/Project/Update.ValidateSlideAsset(): New asset created for slide ${newSlide[i].id}`);
             
         };
     }
     catch(error) {
-        console.log("Service/Project/Update.ValidateNewSlide():", error);
+        console.log("S/F/Project/Update.ValidateSlideAsset():", error);
     };
 
 };
 
 
-export default async function Update({ projectId = "", prompt = "", file = null }) {
+export default async function Update({ projectId = "", prompt = "", file = null, callback }) {
 
     //
-    console.log("Service/Project/Update(): Project update started");
+    console.log("S/F/Project/Update(): Project update started");
 
     //
     try {
 
         //
         if(!prompt && !file) {
-            throw new Error("Service/Project/Update(): Expecting either prompt or file.");
+            throw new Error("S/F/Project/Update(): Expecting either prompt or file.");
         };
     
         //
-        let _project = await Read(projectId);
-        let _projectPath = Path(projectId);
+        const _project = await Read(projectId);
+        const _projectPath = Path(projectId);
         let _history = _project.history;
         
         //
         if(file) {
-            console.log("Service/Project/Update(): File found, adding multimodel prompt");
+            console.log("S/F/Project/Update(): File found, adding multimodel prompt");
             await Gemini.PromptFile(Config.E_GEMINI, file, _history);
         };
 
         //
-        const _answer = await Gemini.Prompt(Config.E_GEMINI, prompt, _history);
-        
+        callback("Project: AI is updating project data");
+
         //
-        const _slide = Slide.Modified(_project.property.slides, _answer.response.slides);
+        const _response = await Gemini.Prompt(Config.E_GEMINI, prompt, _history);
+        const _parsed = JSON.parse(_response.answer);
+        const _slide = Slide.Modified(_project.property.slides, _parsed.slides);
 
         //
         if(_slide.added.length > 0) {
 
             try {
-                await ValidateNewSlide(projectId, _project.property.slides[0], _slide.added);
+                await ValidateSlideAsset(projectId, _project.property.slides[0], _slide.added);
             }
             catch(error) {
-                console.log("Service/Project/Update():", error);
+                console.log("S/F/Project/Update():", error);
             };
 
         };
@@ -90,7 +92,7 @@ export default async function Update({ projectId = "", prompt = "", file = null 
         //
         const _projectUpdated = {
             config: { ... _project.config },
-            property: { ... _answer.response },
+            property: _parsed,
             history: _history
         };
 
@@ -117,7 +119,7 @@ export default async function Update({ projectId = "", prompt = "", file = null 
         });
 
         // Log
-        console.log("Service/Project/Update(): Project update ended");
+        console.log("S/F/Project/Update(): Project update ended");
 
 
         // Return new project
@@ -125,7 +127,7 @@ export default async function Update({ projectId = "", prompt = "", file = null 
 
     }
     catch(error) {
-        console.log("Service/Project/Update():", error);
+        console.log("S/F/Project/Update():", error);
         throw error;
     };
     

@@ -69,10 +69,10 @@ export default class Prompt extends H12 {
         const { PromptBox, PromptButton, PromptHistory } = this.element;
         PromptButton.disabled = true;
         PromptBox.disabled = true;
+        this.Set("{p.loader}", "");
 
         try {
 
-            this.Set("{p.loader}", "");
             this.Set("{e.message}", "", Bubble);
 
             const _response = await fetch("/api/analytics/history");

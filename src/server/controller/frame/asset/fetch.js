@@ -1,4 +1,5 @@
-import Asset from "../../../service/asset.js";
+import Asset from "#service/asset.js";
+import Project from "#service/frame/project.js";
 
 /**
     * 
@@ -7,24 +8,31 @@ import Asset from "../../../service/asset.js";
 */
 export default async function Fetch(request, response) {
 
-    //Create response object
+    //
     const _response = { message: "", success: false, data: [] };
     
-    //Try fetch the assets
+    //
     try {
 
-        // Check if the query parameter are valid
-        const _projectId = request.query.pid;
-        if((typeof(_projectId) !== "string" || _projectId.length < 2)) {
+        //
+        const { pid } = request.query;
+        if(!pid) {
             throw new Error("Invalid project id");
         };
 
-        // Get all asset list
-        const _asset = await Asset.GetLocalAsset(_projectId);
+        //
+        const _asset = await Asset.GetAssets(Project.Path(pid, "/asset/"));
 
-        // Set success respones
+        //
+
+        //
         _response.success = true;
-        _response.data = _asset;
+        _response.data = _asset.map(x => {
+            return {
+                ... x,
+                path: `/project/${pid}/asset/${x.name}`
+            }
+        });
         
     }
     catch(error) {

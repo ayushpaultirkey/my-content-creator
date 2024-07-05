@@ -1,5 +1,5 @@
-import Google from "#service/google.js";
-
+import Auth from "#service/google/auth.js";
+import Youtube from "#service/frame/youtube.js";
 
 /**
     *
@@ -17,41 +17,52 @@ export default async function Upload(request, response) {
     response.setHeader("Connection", "keep-alive");
     response.setHeader("Content-Encoding", "none");
 
+
     try {
 
         // Check if there is user
-        if(!Google.Auth.HasToken(request)) {
+        if(!Auth.HasToken(request)) {
             throw new Error("Google account not authenticated");
         };
 
         // Check if the query parameter are valid
-        if(!request.query.pid) {
-            throw new Error("Invalid project id");
+        // pid => project id
+        // t => title
+        // d => description
+        // c => category
+        const { pid, t, d, c } = request.query;
+        if(!pid || !t || !d || !c) {
+            throw new Error("Invalid parameters");
         };
 
-        // Using project id, try to upload the render.mp4 file to drive
+        // Using project id, try to upload the render.mp4 file to youtube
         // Create callback for the server side event
-        await Google.Drive.UploadFile(request.query.pid, (text) => {
-
-            response.write(`data: ${JSON.stringify({ message: text, success: true })}\n\n`);
-
+        await Youtube.Upload({
+            projectId: pid,
+            title: t,
+            category: c,
+            description: d,
+            callback: (text) => {
+                response.write(`data: ${JSON.stringify({ message: text, success: true })}\n\n`);
+            }
         });
 
-        // Set response
-        _response.message = "File uploaded to google drive";
+        // Set response for success
+        _response.message = "File uploaded to youtube";
         _response.finished = true;
         _response.success = true;
 
     }
     catch(error) {
 
-        // Log and set response
-        console.log("/project/export/drive:", error);
+        // Log and set response for error
+        console.log("/project/export/youtube:", error);
         _response.message = error.message || "An error occurred";
 
     }
     finally {
 
+        // End response
         response.write(`data: ${JSON.stringify(_response)}\n\n`);
         response.end();
 

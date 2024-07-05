@@ -8,10 +8,10 @@ import Google from "#service/google.js";
 */
 export default async function GetFile(request, response) {
     
-    // Create response body
-    const _response = { message: "", success: false, data: [] };
 
-    // Try and get google drive files
+    const _response = { message: "", success: false, data: null };
+
+    
     try {
 
         // Check if there is user
@@ -19,8 +19,11 @@ export default async function GetFile(request, response) {
             throw new Error("Google account not authenticated");
         };
 
+        //
+        const { next } = request.query;
+
         // Get files from drive
-        const _data = await Google.Drive.GetFiles();
+        const _data = await Google.Drive.GetFiles((next ? next : null));
 
         // Set response data
         _response.data = _data;

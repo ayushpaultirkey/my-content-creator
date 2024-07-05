@@ -2,6 +2,8 @@ import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
 import Google from "@library/google";
+import Config from "@library/@config";
+import ServerEvent from "@library/sse";
 
 @Component
 export default class Export extends H12 {
@@ -25,7 +27,7 @@ export default class Export extends H12 {
             this.Load();
 
             // Bind dispatcher event
-            Dispatcher.On("OnRenderUpdated", this.OnRenderUpdated.bind(this));
+            Dispatcher.On(Config.ON_FRENDER_UPDATE, this.OnRenderUpdate.bind(this));
 
         };
 
@@ -73,7 +75,7 @@ export default class Export extends H12 {
             const { EVideoSource, EVideo } = this.element;
 
             // Check for files to export
-            const _response = await fetch(`/api/project/export/validate?pid=${this.Project.id}`);
+            const _response = await fetch(`/api/frame/project/export/validate?pid=${this.Project.id}`);
             const { success, message, url } = await _response.json();
     
             // Throw error on false success
@@ -95,7 +97,7 @@ export default class Export extends H12 {
             // Log and show message
             this.Set("{em.visible}", "");
             this.Set("{ev.visible}", "hidden");
-            console.error("E/E.Load():", error);
+            console.error("F/E/E.Load():", error);
 
         };
         
@@ -108,43 +110,53 @@ export default class Export extends H12 {
             return false;
         };
 
-        window.open(`/api/project/export/get?pid=${this.Project.id}`, "_blank"); 
+        window.open(`/api/frame/project/export/get?pid=${this.Project.id}`, "_blank"); 
 
     }
     Upload = {
         Drive: async() => {
 
-            // Check if the project is valid
-            if(!this.Project) {
-                return false;
-            };
-            
-            const { ExportDrive } = this.element;
+            const { Project, element } = this;
+            const { ExportDrive } = element;
 
             try {
+
+                // Check if the project is valid
+                if(!Project) {
+                    throw new Error("Invalid project");
+                };
 
                 // Disable button
                 ExportDrive.disabled = true;
                 
                 // Upload file to google drive by the id
-                Google.Drive.UploadFile(this.Project.id, {
+                ServerEvent(`/api/frame/drive/upload?pid=${Project.id}`, {
                     onOpen: () => {
-                        Dispatcher.Call("OnLoaderShow");
+                                        
+                        Dispatcher.Call(Config.ON_LOADER_SHOW);
+                        Dispatcher.Call(Config.ON_LOADER_UPDATE, "Uploading to drive...");
+
                     },
                     onMessage: (data) => {
-                        Dispatcher.Call("OnLoaderUpdate", data.message);
+
+                        Dispatcher.Call(Config.ON_LOADER_UPDATE, data.message);
+
                     },
                     onFinish: () => {
+
                         alert("File uploaded to google drive !");
-                        Dispatcher.Call("OnLoaderHide");
+                        Dispatcher.Call(Config.ON_LOADER_HIDE);
                         ExportDrive.disabled = false;
+
                     },
                     onError: (status, message) => {
+
                         if(status !== EventSource.CLOSED && message) {
                             alert(message);
                         };
-                        Dispatcher.Call("OnLoaderHide");
+                        Dispatcher.Call(Config.ON_LOADER_HIDE);
                         ExportDrive.disabled = false;
+
                     }
                 });
 
@@ -152,8 +164,8 @@ export default class Export extends H12 {
             catch(error) {
 
                 // Alert and log
-                alert("Unable to render project, try again later");
-                console.error("Editor/Project.Drive():", error);
+                alert("Unable to upload project, try again later");
+                console.error("F/E/E/U.Drive():", error);
                 ExportDrive.disabled = false;
                 
             };
@@ -168,7 +180,7 @@ export default class Export extends H12 {
         }
     }
 
-    OnRenderUpdated() {
+    OnRenderUpdate() {
         this.Load();
     }
 

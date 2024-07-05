@@ -1,4 +1,6 @@
-import Google from "#service/google.js";
+import chalk from "chalk";
+import Auth from "#service/google/auth.js";
+import Drive from "#service/frame/drive.js";
 
 
 /**
@@ -17,48 +19,46 @@ export default async function Upload(request, response) {
     response.setHeader("Connection", "keep-alive");
     response.setHeader("Content-Encoding", "none");
 
-
     try {
 
         // Check if there is user
-        if(!Google.Auth.HasToken(request)) {
+        if(!Auth.HasToken(request)) {
             throw new Error("Google account not authenticated");
         };
 
+        const { pid } = request.query;
+
         // Check if the query parameter are valid
-        // pid => project id
-        // t => title
-        // d => description
-        // c => category
-        const { pid, t, d, c } = request.query;
-        if(!pid || !t || !d || !c) {
-            throw new Error("Invalid parameters");
+        if(!pid) {
+            throw new Error("Invalid project id");
         };
 
-        // Using project id, try to upload the render.mp4 file to youtube
+        // Using project id, try to upload the render.mp4 file to drive
         // Create callback for the server side event
-        await Google.Youtube.UploadFile({ projectId: pid, title: t, description: d, category: c }, (text) => {
+        await Drive.UploadFile({
+            projectId: pid,
+            callback: (text) => {
 
-            response.write(`data: ${JSON.stringify({ message: text, success: true })}\n\n`);
-
+                response.write(`data: ${JSON.stringify({ message: text, success: true })}\n\n`);
+    
+            }
         });
 
-        // Set response for success
-        _response.message = "File uploaded to youtube";
+        // Set response
+        _response.message = "File uploaded to google drive";
         _response.finished = true;
         _response.success = true;
 
     }
     catch(error) {
 
-        // Log and set response for error
-        console.log("/project/export/youtube:", error);
+        // Log and set response
+        console.log(chalk.red("/frame/drive/upload:"), error);
         _response.message = error.message || "An error occurred";
 
     }
     finally {
 
-        // End response
         response.write(`data: ${JSON.stringify(_response)}\n\n`);
         response.end();
 

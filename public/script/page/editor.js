@@ -10,6 +10,8 @@ import Prompt from "@component/editor/prompt";
 import Viewport from "@component/editor/viewport";
 import Project from "@component/editor/project";
 import Export from "@component/editor/export";
+import Config from "@library/@config";
+import ServerEvent from "@library/sse";
 
 @Component
 export default class Editor extends H12 {
@@ -21,7 +23,7 @@ export default class Editor extends H12 {
         this.SlideIndex = 0;
     }
 
-    async init(args = { project }) {
+    async init(args) {
 
         this.Set("{e.gdrive}", "G");
         this.Set("{e.ytupload}", "Y")
@@ -34,12 +36,13 @@ export default class Editor extends H12 {
             await this.Load();
 
             // Bind dispatcher
-            Dispatcher.On("OnAssetUpdated", this.LoadAsset.bind(this));
+            Dispatcher.On(Config.ON_FASSET_UPDATE, this.LoadAsset.bind(this));
 
         }
         else {
-            // Show message
+            
             alert("Unable to get project");
+
         };
 
     }
@@ -52,14 +55,14 @@ export default class Editor extends H12 {
 
                     <div class="w-full h-full bg-zinc-900 flex-col flex p-4 absolute -left-full md:w-auto md:h-auto md:static md:left-auto" id="NavigationTab">
                         <button class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-blue-500 fa fa-grip"></i>Dashboard</button>
-                        <button onclick={ () => { this.Tab(0); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-red-500 fa-solid fa-wand-magic-sparkles"></i>Prompt</button>
-                        <button onclick={ () => { this.Tab(1); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-green-500 fa-solid fa-film"></i>Slide</button>
-                        <button onclick={ () => { this.Tab(2); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-yellow-500 fa-solid fa-folder-open"></i>Project</button>
-                        <button onclick={ () => { this.Tab(3); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-cyan-500 fa-solid fa-cloud-arrow-up"></i>Export</button>
-                        <button onclick={ () => { this.Tab(4); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-indigo-500  fa-solid fa-gear"></i>Settings</button>
+                        <button onclick={ () => { this.TabSwitch(0); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-red-500 fa-solid fa-wand-magic-sparkles"></i>Prompt</button>
+                        <button onclick={ () => { this.TabSwitch(1); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-green-500 fa-solid fa-film"></i>Slide</button>
+                        <button onclick={ () => { this.TabSwitch(2); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-yellow-500 fa-solid fa-folder-open"></i>Project</button>
+                        <button onclick={ () => { this.TabSwitch(3); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-cyan-500 fa-solid fa-cloud-arrow-up"></i>Export</button>
+                        <button onclick={ () => { this.TabSwitch(4); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-indigo-500  fa-solid fa-gear"></i>Settings</button>
                     </div>
 
-                    <div class="w-full h-full bg-zinc-800 border-r border-zinc-700 absolute -left-full md:min-w-[340px] md:max-w-[340px] md:static md:left-auto" id="PropertyTab">
+                    <div class="w-full h-full bg-zinc-800 border-r border-zinc-700 absolute -left-full md:min-w-[300px] md:max-w-[300px] lg:min-w-[360px] lg:max-w-[360px] md:static md:left-auto" id="PropertyTab">
                 
                         <div id="EditorTab" class="w-full h-full">
 
@@ -90,8 +93,8 @@ export default class Editor extends H12 {
                         </div>
 
                         <div class="absolute right-10 top-3 flex space-x-6 md:hidden">
-                            <button class="fa-solid fa-bars text-blue-500 text-xl" onclick={ () => { this.Scroll(0); } }></button>
-                            <button class="fa-solid fa-arrow-right text-blue-500 text-xl" onclick={ () => { this.Scroll(2); } }></button>
+                            <button class="fa-solid fa-bars text-blue-500 text-xl" onclick={ () => { this.Navigate(0); } }></button>
+                            <button class="fa-solid fa-arrow-right text-blue-500 text-xl" onclick={ () => { this.Navigate(2); } }></button>
                         </div>
                     
                     </div>
@@ -99,8 +102,8 @@ export default class Editor extends H12 {
                     <div class="w-full h-full absolute left-0 md:static md:left-auto overflow-hidden" id="ViewportTab">
                         <Viewport args id="Viewport" project={ this.args.project }></Viewport>
                         <div class="absolute left-10 top-10 flex space-x-6 md:hidden">
-                            <button class="fa-solid fa-bars text-blue-500 text-xl" onclick={ () => { this.Scroll(0); } }></button>
-                            <button class="fa-solid fa-pen-to-square text-blue-500 text-xl" onclick={ () => { this.Scroll(1); } }></button>
+                            <button class="fa-solid fa-bars text-blue-500 text-xl" onclick={ () => { this.Navigate(0); } }></button>
+                            <button class="fa-solid fa-pen-to-square text-blue-500 text-xl" onclick={ () => { this.Navigate(1); } }></button>
                         </div>
                     </div>
 
@@ -120,7 +123,44 @@ export default class Editor extends H12 {
         </>;
     }
 
-    Scroll(index = 0) {
+
+    async Load() {
+
+        this.BindDrag();
+        this.LoadAsset();
+
+    }
+
+    async LoadAsset() {
+
+        // Try and load project assets
+        try {
+            
+            const { id: pid } = this.Project;
+
+            // Load project assets
+            const _response = await fetch(`/api/frame/asset/fetch?pid=${pid}`);
+            const { message, success, data } = await _response.json();
+            
+            if(!success || !_response.ok) {
+                throw new Error(message);
+            };
+    
+            // Store loaded asset
+            this.ProjectAsset = data;
+
+            // Distribute loaded asset
+            Dispatcher.Call(Config.ON_FASSET_LOAD, data);
+
+        }
+        catch(error) {
+            alert("Unable to load project assets");
+            console.error("Editor/LoadAsset():", error);
+        };
+
+    }
+
+    Navigate(index = 0) {
 
         const { NavigationTab, ViewportTab, PropertyTab } = this.element;
 
@@ -149,12 +189,11 @@ export default class Editor extends H12 {
                 ViewportTab.classList.add("left-0");
                 ViewportTab.classList.remove("-left-full");
                 break;
-
-        }
+        };
 
     }
 
-    Tab(index = 0) {
+    TabSwitch(index = 0) {
 
         const _children = Array.from(this.element.EditorTab.children);
 
@@ -165,60 +204,131 @@ export default class Editor extends H12 {
             _children[index].classList.remove("hidden");
         };
 
-        this.Scroll(1);
+        this.Navigate(1);
 
     }
 
-    async Load() {
-
-        this.BindDrag();
-        this.LoadAsset();
-
-    }
-
-    async LoadAsset() {
-
-        // Try and load project assets
-        try {
-
-            // Load project assets
-            const _response = await fetch(`/api/asset/fetch?pid=${this.Project.id}`);
-            const { message, success, data } = await _response.json();
-            
-            if(!success || !_response.ok) {
-                throw new Error(message);
-            };
-    
-            // Store loaded asset
-            this.ProjectAsset = data;
-
-            // Distribute loaded asset
-            Dispatcher.Call("OnAssetLoaded", data);
-
-        }
-        catch(error) {
-            alert("Unable to load project assets");
-            console.error("Editor/LoadAsset():", error);
-        };
-
-    }
-
-    async OpenDriveViewer() {
+    async OpenGDriveViewer() {
         
         if(!this.child["GDrive"]) {
-            this.Set("{e.gdrive}", <><DViewer args ref="DViewer" id="GDrive" project={ this.args.project }></DViewer></>);
-            console.warn("E.OpenDriveViewer(): DViewer imported");
+            
+            //
+            this.Set("{e.gdrive}", <><DViewer args ref="DViewer" id="GDrive"></DViewer></>);
+            this.child["GDrive"].OnImport = async function() {
+
+                Dispatcher.Call(Config.ON_LOADER_SHOW);
+                Dispatcher.Call(Config.ON_LOADER_UPDATE, "Downloading File");
+
+                try {
+                    
+                    const { Project } = this.parent;
+                    if(!Project) {
+                        throw new Error("Invalid project")
+                    };
+
+                    const _fileId = this.Selected;
+                    const  _response = await fetch(`/api/frame/drive/import?pid=${Project.id}&fid=${JSON.stringify(_fileId)}`);
+                    const { success, message } = await _response.json();
+            
+                    if(!success || !_response.ok) {
+                        throw new Error(message);
+                    };
+            
+                    this.Hide();
+                    alert("Files imported");
+                    Dispatcher.Call(Config.ON_FASSET_UPDATE);
+            
+                }
+                catch(error) {
+                    alert(error);
+                    console.error("F/E/OpenGDriveViewer().OnImport():", error);
+                    Dispatcher.Call(Config.ON_LOADER_HIDE);
+                };
+
+                Dispatcher.Call(Config.ON_LOADER_HIDE);
+
+
+            };
+            
+            //
+            console.warn("E.OpenGDriveViewer(): DViewer imported");
+
         };
         this.child["GDrive"].Show(this.Project);
         
     }
     async OpenYTUploader() {
 
+        if(!this.Project) {
+            return false;
+        };
+
         if(!this.child["GYoutube"]) {
-            this.Set("{e.ytupload}", <><YTUploader args ref="YTUploader" id="GYoutube" project={ this.args.project }></YTUploader></>);
+            this.Set("{e.ytupload}", <><YTUploader args ref="YTUploader" id="GYoutube"></YTUploader></>);
+            this.child["GYoutube"].OnUpload = async function({ title, description, category, onStart, onEnd }) {
+
+                try {
+
+                    onStart();
+
+                    const { Project } = this.parent;
+                    if(!Project) {
+                        return false;
+                    };
+
+                    if(title.length < 2 || description.length < 2) {
+                        throw new Error("Please enter title and description");
+                    };
+        
+                    //
+                    ServerEvent(`/api/frame/youtube/upload?pid=${Project.id}&t=${title}&d=${description}&c=${category}`, {
+                        onOpen: () => {
+
+                            Dispatcher.Call(Config.ON_LOADER_SHOW);
+                            Dispatcher.Call(Config.ON_LOADER_UPDATE, "Uploading Video");
+
+                        },
+                        onMessage: (data) => {
+
+                            Dispatcher.Call(Config.ON_LOADER_SHOW);
+                            Dispatcher.Call(Config.ON_LOADER_UPDATE, data.message);
+                            
+                        },
+                        onFinish: () => {
+
+                            alert("Video uploaded to youtube !");
+                            Dispatcher.Call(Config.ON_LOADER_HIDE);
+
+                        },
+                        onError: (status, message) => {
+
+                            if(status !== EventSource.CLOSED && message) {
+                                alert(message);
+                            };
+                            Dispatcher.Call(Config.ON_LOADER_HIDE);
+
+                        }
+                    });
+        
+                }
+                catch(error) {
+        
+                    // Alert and log
+                    alert(error);
+                    console.error("F/E/OpenYTUploader().OnUpload():", error);
+                    onEnd();
+                    
+                };
+
+            };
             console.warn("E.OpenYTUploader(): YTUploader imported");
         };
-        this.child["GYoutube"].Show();
+
+        const { title, description } = this.Project.property;
+        this.child["GYoutube"].Show({
+            title: title,
+            description: description
+        });
     }
 
     //#region File Drag n Drop
@@ -272,7 +382,7 @@ export default class Editor extends H12 {
 
             await Promise.all(_filesToUpload.map(file => this.UploadFile(file)));
 
-            Dispatcher.Call("OnAssetUpdated");
+            Dispatcher.Call(Config.ON_FASSET_UPDATE);
 
         }
         catch(error) {
@@ -285,16 +395,16 @@ export default class Editor extends H12 {
 
         try {
 
-            // Build request body
-            const _url = `/api/asset/upload?pid=${this.Project.id}`;
+            //
+            const _url = `/api/frame/asset/upload?pid=${this.Project.id}`;
             const _form = new FormData();
             _form.append("files", file);
 
-            // Send request
+            //
             const _response = await fetch(_url, { method: "POST", body: _form });
             const { success, message } = await _response.json();
 
-            // Check or request
+            //
             if(!success || !_response.ok) {
                 throw new Error(message);
             };

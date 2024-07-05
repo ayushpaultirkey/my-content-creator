@@ -1,7 +1,7 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
-import MyCreator from "@library/mycreator";
+import Frame from "@library/frame";
 
 import Card from "@component/dashboard/card";
 import Creator from "@component/dashboard/creator";
@@ -84,7 +84,7 @@ export default class Dashboard extends H12 {
             this.Set("{d.frame}", "", Card);
 
             // Get validated projects and add it to list
-            const _project = await MyCreator.Project.GetValidated();
+            const _project = await Frame.GetValidProject();
             for(var i = 0; i < _project.length; i++) {
 
                 const { title } = _project[i].property;

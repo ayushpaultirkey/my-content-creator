@@ -7,18 +7,13 @@ export default class Viewer extends H12 {
     constructor() {
         super();
         this.Selected = [];
+        this.NextPage = null;
     }
 
-    async init(args = { project }) {
+    async init() {
 
-        if(args.project) {
-
-            this.Project = args.project;
-
-            this.Set("{d.list}", "");
-            this.Set("{d.spin}", "");
-
-        };
+        this.Set("{d.list}", "");
+        this.Set("{d.spin}", "");
 
     }
 
@@ -36,7 +31,7 @@ export default class Viewer extends H12 {
                         {d.list}
                     </div>
                     <div class="space-x-2">
-                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.Import }><i class="fa fa-download mr-2"></i>Import</button>
+                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.#Import }><i class="fa fa-download mr-2"></i>Import</button>
                         <button class="p-2 px-6 text-xs text-zinc-300 font-semibold rounded-md bg-zinc-600 hover:bg-zinc-700 active:bg-zinc-800 transition-colors" onclick={ this.Hide }><i class="fa fa-xmark mr-2"></i>Cancel</button>
                     </div>
                 </div>
@@ -46,27 +41,21 @@ export default class Viewer extends H12 {
     }
 
     Show() {
-
         this.root.classList.remove("collapse");
         this.Load();
-
     }
 
     Hide() {
-
         this.root.classList.add("collapse");
-        
     }
 
     Select(id = "") {
-
         if(!this.Selected.includes(id)) {
             this.Selected.push(id);
         }
         else{
             this.Selected.splice(this.Selected.indexOf(id), 1);
         };
-
     }
 
     async Load() {
@@ -80,7 +69,7 @@ export default class Viewer extends H12 {
             this.Set("{d.spin}", "fa-spin");
 
             // Fetch google drive files
-            const _response = await fetch("/api/google/drive/getfile");
+            const _response = await fetch(`/api/google/drive/getfile${(this.NextPage) ? `?next=${this.NextPage}` : ""}`);
             const { success, message, data } = await _response.json();
             
             // Check if the request was successfull
@@ -89,7 +78,9 @@ export default class Viewer extends H12 {
             };
 
             // Iterate over files and render them
-            const _file = data;
+            const _file = data.files;
+            this.NextPage = data.nextPage;
+
             for(var i = 0, len = _file.length; i < len; i++) {
 
                 // Get id, mime
@@ -135,32 +126,9 @@ export default class Viewer extends H12 {
 
     }
 
-    async Import() {
-
-        if(!this.Project) {
-            return false;
-        };
-
-        try {
-
-            const _fileId = this.Selected;
-    
-            const  _response = await fetch(`/api/google/drive/import?pid=${this.args.project.id}&fid=${JSON.stringify(_fileId)}`);
-            const { success, message } = await _response.json();
-
-            if(!success || !_response.ok) {
-                alert("Unable to import files");
-                throw new Error(message);
-            };
-
-            alert("Files imported");
-            Dispatcher.Call("OnAssetUpdated");
-
-        }
-        catch(error) {
-            console.error("C/G/D/V.Import():", error);
-        }
-
+    async OnImport() {}
+    async #Import() {
+        this.OnImport();
     }
 
 };

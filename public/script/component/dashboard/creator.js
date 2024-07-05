@@ -2,7 +2,7 @@ import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
 import ServerEvent from "@library/sse";
-import MyCreator from "@library/mycreator";
+import Frame from "@library/frame";
 
 import Card from "@component/dashboard/card";
 import Attachment from "@component/attachment";
@@ -64,32 +64,6 @@ export default class Creator extends H12 {
         </>;
     }
 
-    async Load() {
-
-        try {
-
-            // Clear the key's value and remove all
-            // component reference from the child
-            this.Set("{p.list}", "", Card);
-
-            // Get validated projects and add it to list
-            const _project = await MyCreator.Project.GetValidated();
-            for(var i = 0; i < _project.length; i++) {
-
-                const { title } = _project[i].property;
-
-                this.Set("{p.list}++", <><Card args title={ title } data={ _project[i] }></Card></>);
-
-            };
-
-        }
-        catch(error) {
-            console.error("D/Creator.Load():", error);
-            alert("Unable to load projects, try again later");
-        };
-
-    }
-
     async Create() {
 
         // Get elements
@@ -139,11 +113,11 @@ export default class Creator extends H12 {
                 },
                 onFinish: (data) => {
 
-                    MyCreator.Project.SetLocal(data.data.id);
+                    Frame.SetLocalProject(data.data.id);
                     Dispatcher.Call("OnLoaderHide");
                     DCreate.disabled = false;
                     this.Toggle(false);
-                    this.Load();
+                    this.parent.Load();
 
                 },
                 onError: (status, message) => {

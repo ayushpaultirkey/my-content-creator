@@ -19,5 +19,6 @@ html, body {
     background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-    background: #888;
+    background: rgb(65, 65, 65);
+    border-radius: 50px;
 }

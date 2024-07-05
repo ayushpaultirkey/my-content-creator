@@ -1,6 +1,7 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
+import Config from "@library/@config";
 import Asset from "@component/asset";
 
 @Component
@@ -22,15 +23,20 @@ export default class Slide extends H12 {
             this.Load();
 
             // Register on dispatcher event
-            Dispatcher.On("OnAssetLoaded", this.OnAssetLoaded.bind(this));
-            Dispatcher.On("OnProjectUpdated", this.OnProjectUpdated.bind(this));
-            Dispatcher.On("OnViewportSlideSelected", this.OnViewportSlideSelected.bind(this));
+            Dispatcher.On(Config.ON_FASSET_LOAD, this.OnAssetLoad.bind(this));
+            Dispatcher.On(Config.ON_FSLIDE_SELECT, this.OnSlideSelect.bind(this));
+            Dispatcher.On(Config.ON_FPROJECT_UPDATE, this.OnProjectUpdate.bind(this));
             
         };
 
     }
 
     async render() {
+
+        const { project } = this.args;
+        if(!project) {
+            return <><label>Invalid project</label></>;
+        };
         
         return <>
             <div class="w-full h-full overflow-hidden hidden">
@@ -47,12 +53,12 @@ export default class Slide extends H12 {
 
                     <div>
                         <label class="text-xs font-semibold text-zinc-400">Images:</label>
-                        <Asset args id="ImageAsset" projectid={ this.args.project.id }></Asset>
+                        <Asset args id="ImageAsset" projectid={ project.id }></Asset>
                     </div>
 
                     <div>
                         <label class="text-xs font-semibold text-zinc-400">Videos:</label>
-                        <Asset args id="VideoAsset" projectid={ this.args.project.id }></Asset>
+                        <Asset args id="VideoAsset" projectid={ project.id }></Asset>
                     </div>
 
                     <div class="border border-transparent border-t-zinc-700 pt-3">
@@ -61,7 +67,7 @@ export default class Slide extends H12 {
                     
                     <div class="border border-transparent border-t-zinc-700 pt-3">
                         <label class="text-xs font-semibold text-zinc-400 block mb-1">External Asset: <i class="fa-regular fa-circle-question" title="Require to login into google account"></i></label>
-                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ () => { this.parent.OpenDriveViewer() } }><i class="fa-brands fa-google-drive mr-2 pointer-events-none"></i>Google Drive</button>
+                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ () => { this.parent.OpenGDriveViewer() } }><i class="fa-brands fa-google-drive mr-2 pointer-events-none"></i>Google Drive</button>
                     </div>
 
                     <div>
@@ -87,70 +93,79 @@ export default class Slide extends H12 {
 
     async Load() {
 
+        const { Project, element, child } = this;
+        const { ImageAsset, VideoAsset } = child;
+        const { SlideContent } = element;
+
         // Check if the project is valid
-        if(!this.Project && !this.Project.property.slides[this.Index]) {
+        if(!Project || !Project.property.slides[this.Index] || !ImageAsset || !VideoAsset) {
             return false;
         };
 
         // Get working slide
-        let { content, image, video } = this.Project.property.slides[this.Index];
+        let { content, image, video } = Project.property.slides[this.Index];
 
         // Set slid'es content
-        this.element.SlideContent.value = content;
+        SlideContent.value = content;
 
         // Assign selected assets
-        this.child["ImageAsset"].SetSelected(image);
-        this.child["VideoAsset"].SetSelected(video);
+        ImageAsset.SetSelected(image);
+        VideoAsset.SetSelected(video);
 
     }
 
     async Update() {
 
         // Call dispather show loader
-        Dispatcher.Call("ShowLoader", "AI is updating slide...");
+        Dispatcher.Call(Config.ON_LOADER_SHOW);
+        Dispatcher.Call(Config.ON_LOADER_UPDATE, "AI is updating slide...");
 
         try {
 
+            //
+            const { Project, element, child } = this;
+            const { ImageAsset, VideoAsset } = child;
+            const { SlideContent } = element;
+
             // Check if the project is valid
-            if(!this.Project) {
+            if(!Project || !ImageAsset || !VideoAsset) {
                 throw new Error("Invalid project");
             };
 
             // Check if the slide's content is not empty
-            const _content = this.element.SlideContent.value;
+            const _content = SlideContent.value;
             if(_content.length < 5) {
-                alert("Please enter slide's content");
                 throw new Error("Please enter slide's content");
             };
 
             // Get project id and the slide's id by the index
-            const _projectId = this.Project.id;
-            const _slideId = this.Project.property.slides[this.Index].id;
+            const { id, property: { slides } } = Project;
+            const _slideId = slides[this.Index].id;
 
             // Get selected images
-            const _image = this.child["ImageAsset"].GenerateQueryString("pimage");
-            const _video = this.child["VideoAsset"].GenerateQueryString("pvideo");
+            const _image = ImageAsset.GenerateQueryString("pimage");
+            const _video = VideoAsset.GenerateQueryString("pvideo");
 
             // Perform the update request
-            const _response = await fetch(`/api/slide/update?pid=${_projectId}&sid=${_slideId}&scontent=${_content}&${_image}&${_video}`);
+            const _response = await fetch(`/api/frame/slide/update?pid=${id}&sid=${_slideId}&scontent=${_content}&${_image}&${_video}`);
             const { success, message, data } = await _response.json();
 
             // Check if the data is updated successfully
             if(!success || !_response.ok) {
-                alert(message);
                 throw new Error(message);
             };
 
             // Update project data
-            Dispatcher.Call("OnProjectUpdated", data);
+            Dispatcher.Call(Config.ON_FPROJECT_UPDATE, data);
 
         }
         catch(error) {
+            alert(error);
             console.error("E/S.Update():", error);
         };
 
         // Call dispather hide loader
-        Dispatcher.Call("HideLoader");
+        Dispatcher.Call(Config.ON_LOADER_HIDE);
 
     }
 
@@ -172,34 +187,39 @@ export default class Slide extends H12 {
 
     }
 
-    async OnAssetLoaded(event, asset) {
+    async OnAssetLoad(event, asset) {
         
-        // Check if the project is valid
-        if(!this.Project) {
+        //
+        const { Project, child } = this;
+        const { ImageAsset, VideoAsset } = child;
+        const { property: { slides } } = Project;
+
+        //
+        if(!Project || !ImageAsset || !VideoAsset) {
             return false;
         };
 
         // Get working slide
-        let { image, video } = this.Project.property.slides[this.Index];
+        let { image, video } = slides[this.Index];
 
         // Update the assets collection
-        await this.child["ImageAsset"].Load(asset);
-        await this.child["VideoAsset"].Load(asset, "video");
+        await ImageAsset.Load(asset);
+        await VideoAsset.Load(asset, "video");
 
         // Assign selected assets
-        this.child["ImageAsset"].SetSelected(image);
-        this.child["VideoAsset"].SetSelected(video);
+        ImageAsset.SetSelected(image);
+        VideoAsset.SetSelected(video);
 
     }
 
-    OnViewportSlideSelected(event, { id, index }) {
+    OnSlideSelect(event, { index }) {
 
         this.Index = index;
         this.Load();
 
     }
 
-    OnProjectUpdated(event, project) {
+    OnProjectUpdate(event, project) {
 
         if(project) {
             this.Project = project;

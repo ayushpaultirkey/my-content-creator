@@ -1,14 +1,11 @@
 import "@style/main.css";
 import H12 from "@library/h12";
-import Dispatcher from "@library/h12.dispatcher";
-import Google from "@library/google";
 
 @Component
 export default class Uploader extends H12 {
 
     constructor() {
         super();
-        this.Project = null;
         this.Categories = [
             { id: "1", value: "Film & Animation" },
             { id: "2", value: "Autos & Vehicles" },
@@ -56,11 +53,6 @@ export default class Uploader extends H12 {
         };
         this.element.YTCategory.value = 24;
 
-        // Check if project is valid and store it
-        if(args.project) {
-            this.Project = args.project;
-        };
-
     }
 
     async render() {
@@ -85,7 +77,7 @@ export default class Uploader extends H12 {
                         <select class="block md:w-96 w-full text-xs font-semibold bg-zinc-300 border border-zinc-400 p-2 rounded-md placeholder:text-zinc-600 text-zinc-800" id="YTCategory">{y.option}</select>
                     </div>
                     <div class="space-x-2">
-                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" id="YTUpload" onclick={ this.#Upload }><i class="fa fa-upload mr-2"></i>Upload</button>
+                        <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors" id="YTUpload" onclick={ this.Upload }><i class="fa fa-upload mr-2"></i>Upload</button>
                         <button class="p-2 px-6 text-xs text-zinc-300 font-semibold rounded-md bg-zinc-600 hover:bg-zinc-700 active:bg-zinc-800 transition-colors" onclick={ this.Hide }><i class="fa fa-xmark mr-2"></i>Cancel</button>
                     </div>
                 </div>
@@ -94,84 +86,42 @@ export default class Uploader extends H12 {
         </>;
     }
 
-    Show() {
+    Show({ title, description }) {
         this.root.classList.remove("collapse");
-        this.Load();
+        this.Load({ title, description });
     }
 
     Hide() {
         this.root.classList.add("collapse");
     }
 
-    Load() {
+    Load({ title, description }) {
 
-        if(!this.Project || !this.Project.project) {
-            return false;
-        };
-
-        const { property: { title, description } } = this.Project;
         const { YTTitle, YTDescription } = this.element;
-
         YTTitle.value = title;
         YTDescription.value = description;
 
     }
 
-    async #Upload() {
+    async OnUpload({ title, description, category, onStart, onEnd }) {}
+    async Upload() {
 
-        if(!this.Project) {
-            return false;
-        };
+        //
+        const { YTTitle, YTDescription, YTCategory, YTUpload } = this.element;
 
-        try {
-
-            // Get values and check it
-            const { YTTitle, YTDescription, YTCategory, YTUpload } = this.element;
-
-            //
-            const _category = YTCategory.value;
-            const _title = encodeURIComponent(YTTitle.value);
-            const _description = encodeURIComponent(YTDescription.value);
-
-            if(_title.length < 2 || _description.length < 2) {
-                throw new Error("Please enter title and description")
-            };
-
-            //
-            YTUpload.disabled = true;
-
-            //
-            Google.Youtube.UploadFile(this.Project.id, _title, _description, _category, {
-                onOpen: () => {
-                    Dispatcher.Call("OnLoaderShow");
-                },
-                onMessage: (data) => {
-                    Dispatcher.Call("OnLoaderUpdate", data.message);
-                },
-                onFinish: () => {
-                    alert("File uploaded to google drive !");
-                    Dispatcher.Call("OnLoaderHide");
-                    YTUpload.disabled = false;
-                },
-                onError: (status, message) => {
-                    if(status !== EventSource.CLOSED && message) {
-                        alert(message);
-                    };
-                    Dispatcher.Call("OnLoaderHide");
-                    YTUpload.disabled = false;
-                }
-            });
-
-        }
-        catch(error) {
-
-            // Alert and log
-            alert("Unable to render project, try again later");
-            console.error("C/G/Y/Uploader.Upload():", error);
-            YTUpload.disabled = false;
-            
-        };
-
+        this.OnUpload({
+            category: YTCategory.value,
+            title: encodeURIComponent(YTTitle.value),
+            description: encodeURIComponent(YTDescription.value),
+            onStart: () => {
+                YTUpload.disabled = true;
+            },
+            onEnd: () => {
+                this.Hide();
+                YTUpload.disabled = false;
+            }
+        });
+        
     }
 
 

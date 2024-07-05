@@ -38,7 +38,7 @@ export default async function Render(request, response) {
 
         //
         _response.message = "Rendering finished";
-        _response.url = `/project/${_projectId}/export/${_fileName}`;
+        _response.url = `/project/${pid}/export/${_fileName}`;
         _response.success = true;
         _response.finished = true;
 

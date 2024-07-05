@@ -1,4 +1,4 @@
-import Frame from "#service/frame.js";
+import Project from "#service/frame/project.js";
 
 
 /**
@@ -21,7 +21,7 @@ export default async function Update(request, response) {
         };
 
         //
-        const _project = await Frame.Project.Read(pid);
+        const _project = await Project.Read(pid);
         const _property = _project.property;
 
         //
@@ -43,7 +43,14 @@ export default async function Update(request, response) {
             const _audioPrompt = JSON.stringify(_projectAudio);
     
             //
-            const _projectUpdated = await Frame.Project.Update(pid, `Change the project's ${_projectTitle} ${_projectDetail}`);
+            const _projectUpdated = await Project.Update({
+                projectId: pid,
+                prompt: `Change the project's ${_projectTitle} ${_projectDetail}`,
+                file: undefined,
+                callback: () => {
+                    console.log("")
+                }
+            });
     
             // Update response body
             _response.message = "Project update";

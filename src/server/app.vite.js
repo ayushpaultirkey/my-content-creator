@@ -1,6 +1,5 @@
 import "dotenv/config";
 import open from "open";
-import cors from "cors";
 import path from "path";
 import express from "express";
 import crypto from "crypto";
@@ -32,9 +31,6 @@ export default function init() {
     // Use bodyParser middleware to parse JSON bodies
     app.use(bodyParser.json());
     app.use(cookieParser());
-    
-    // Use CORS middleware
-    app.use(cors());
 
     // Set session
     app.use(session({

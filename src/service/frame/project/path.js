@@ -12,4 +12,4 @@ export default function Path(projectId = "", other = "") {
     const { __root } = directory();
     return path.join(__root, `/project/${projectId}/`, other);
 
-}
+};

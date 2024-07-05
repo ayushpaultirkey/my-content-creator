@@ -3,6 +3,7 @@ import H12 from "@library/h12";
 import Lazy from "@library/h12.lazy";
 import Dispatcher from "@library/h12.dispatcher";
 import ServerEvent from "@library/serverevent";
+import Config from "@library/@config";
 
 import Home from "./page/home";
 import Editor from "./page/editor";
@@ -24,12 +25,9 @@ class App extends H12 {
         this.Set("{a.loader.text}", "Please Wait, AI Is Crafting...");
 
         // Register dispatcher event
-        Dispatcher.On("ShowLoader", this.Loader.Show.bind(this));
-        Dispatcher.On("HideLoader", this.Loader.Hide.bind(this));
-
-        Dispatcher.On("OnLoaderShow", this.Loader.Show.bind(this));
-        Dispatcher.On("OnLoaderHide", this.Loader.Hide.bind(this));
-        Dispatcher.On("OnLoaderUpdate", this.Loader.Update.bind(this));
+        Dispatcher.On(Config.ON_LOADER_SHOW, this.Loader.Show.bind(this));
+        Dispatcher.On(Config.ON_LOADER_HIDE, this.Loader.Hide.bind(this));
+        Dispatcher.On(Config.ON_LOADER_UPDATE, this.Loader.Update.bind(this));
         
         Dispatcher.On("OnNavigate", this.Navigate.To.bind(this));
 

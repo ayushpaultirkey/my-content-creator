@@ -1,6 +1,7 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
+import Config from "@library/@config";
 import Attachment from "@component/attachment";
 
 @Component
@@ -16,6 +17,7 @@ export default class Prompt extends H12 {
         // Set default value
         this.Set("{c.fname}", "");
         this.Set("{c.fvisible}", "hidden");
+        this.Set("{p.loader}", "hidden");
 
         // Check if the project is valid and load it
         if(args.project) {
@@ -25,7 +27,7 @@ export default class Prompt extends H12 {
             this.Load();
 
             // Register on dispatcher event
-            Dispatcher.On("OnProjectUpdated", this.OnProjectUpdated.bind(this));
+            Dispatcher.On(Config.ON_FPROJECT_UPDATE, this.OnProjectUpdate.bind(this));
 
         };
 
@@ -41,15 +43,20 @@ export default class Prompt extends H12 {
                     </div>
 
                     <div class="w-full h-full flex flex-col overflow-hidden">
-                        <div class="h-full space-y-2 pb-2 flex flex-col overflow-auto">
-                            {e.message}
+                        <div class="h-full space-y-2 pb-2 flex flex-col overflow-auto" id="PromptHistory">
+                            <div class="space-y-2">
+                                {e.message}
+                            </div>
+                            <div class="flex justify-center items-center {p.loader}">
+                                <i class="fa fa-spinner text-gray-400"></i>
+                            </div>
                         </div>
                         <div>
-                            <Attachment args id="Uploader"></Attachment>
+                            <Attachment args id="FUploader"></Attachment>
                             <div class="bg-zinc-400 flex rounded-lg overflow-hidden">
-                                <button class="text-xs font-semibold bg-transparent p-3 hover:bg-zinc-500 active:bg-zinc-600 fa fa-paperclip" onclick={ () => { this.child["Uploader"].Open(); } }></button>
+                                <button class="text-xs font-semibold bg-transparent p-3 hover:bg-zinc-500 active:bg-zinc-600 fa fa-paperclip" onclick={ () => { this.child["FUploader"].Open(); } }></button>
                                 <input id="PromptBox" type="text" class="text-xs font-semibold bg-transparent placeholder:text-zinc-600 w-full py-3 resize-none" placeholder="Ask anything..." />
-                                <button class="text-xs font-semibold bg-transparent p-3 hover:bg-zinc-500 active:bg-zinc-600" onclick={ this.Update }>Ask</button>
+                                <button class="text-xs font-semibold bg-transparent p-3 hover:bg-zinc-500 active:bg-zinc-600" id="PromptButton" onclick={ this.Update }>Ask</button>
                             </div>
                         </div>
                     </div>
@@ -61,30 +68,29 @@ export default class Prompt extends H12 {
 
     async Load() {
 
-        // Check if the project is valid
-        if(!this.Project) {
-            return false;
-        };
-
-        // Try and render the messages
         try {
+            
+            //
+            if(!this.Project) {
+                throw new Error("Invalid project");
+            };
 
-            // Clear the old messages before loading
+            //
             this.Set("{e.message}", "");
     
-            // Get message array from the project
-            const _history = this.Project.history;
+            //
+            const { history } = this.Project;
 
             // Iterate over all project messages
-            for(var i = 0, len = _history.length; i < len; i++) {
+            for(var i = 0, len = history.length; i < len; i++) {
 
                 // Check type of message
-                let { fileData, text } = _history[i].parts[0];
+                let { fileData, text } = history[i].parts[0];
                 let _text = "";
                 let _icon = "";
                 let _visible = "hidden";
                 try {
-                    if(_history[i].role === "user") {
+                    if(history[i].role === "user") {
                         if(!fileData) {
                             if(text.length == 0) {
                                 continue;
@@ -119,13 +125,13 @@ export default class Prompt extends H12 {
                 }
                 catch(error) {
                     console.error("Editor/Prompt/Load():", error);
-                    _text = "<json parse error>";
+                    _text = "(JSON Data Error)";
                 };
 
                 // Add chat bubble
                 this.Set("{e.message}++", <>
-                    <div class={ `flex ${(_history[i].role == "user") ? "justify-end" : ""}` }>
-                        <div class={ `w-2/3 bg-zinc-500 text-xs font-semibold p-2 rounded-md shadow-md` }>
+                    <div class={ `flex ${(history[i].role == "user") ? "justify-end mr-1" : ""}` }>
+                        <div class={ `w-2/3 bg-zinc-500 text-xs font-semibold p-2 rounded-md ${history[i].role == "user" ? "rounded-br-none" : "rounded-bl-none"} shadow-md` }>
                             <i class={ `fa ${_icon} ${_visible} mr-1` }></i>
                             <label class="break-words">{ _text }</label>
                         </div>
@@ -133,6 +139,11 @@ export default class Prompt extends H12 {
                 </>);
     
             };
+
+            //
+            const { PromptHistory } = this.element;
+            setTimeout(() => { PromptHistory.scrollTo(0, PromptHistory.scrollHeight); }, 10);
+
         }
         catch(error) {
             console.error("E/P.Load():", error);
@@ -142,29 +153,47 @@ export default class Prompt extends H12 {
 
     async Update() {
 
-        // Check if the project is valid
-        if(!this.Project) {
-            return false;
-        };
-        
-        // Call dispather show loader
-        Dispatcher.Call("ShowLoader", "AI is updating slide...");
+        const { Project, element, child } = this;
+        const { PromptHistory, PromptBox, PromptButton } = element;
+        PromptButton.disabled = true;
+        PromptBox.disabled = true;
+        this.Set("{p.loader}", "");
+
+        //
+        Dispatcher.Call(Config.ON_LOADER_SHOW);
+        Dispatcher.Call(Config.ON_LOADER_UPDATE, "AI is updating slide...");
 
         try {
 
-            // Get project id and the slide's id by the index
-            const _projectId = this.Project.id;
-            const _prompt = this.element.PromptBox.value;
-            const _file = this.child["Uploader"].File;
-
-            // Check for project description and file
-            if(_prompt.length < 5 && _file == null) {
-                alert("Please enter the project description or attach file");
-                throw new Error("Project description or attachment is required");
+            //
+            if(!Project) {
+                throw new Error("Invalid project");
             };
 
+            const { id: pid } = Project;
+            const { FUploader } = child;
+
+            const _file = FUploader.File;
+            const _prompt = PromptBox.value;
+
+            //
+            if(_prompt.length < 3 && _file == null) {
+                alert("Please enter the prompt or attach file");
+                throw new Error("Project prompt or attachment is required");
+            };
+
+            //
+            this.Set("{e.message}++", <>
+                <div class="flex justify-end">
+                    <div class="w-2/3 bg-zinc-500 text-xs font-semibold p-2 rounded-md shadow-md">
+                        <label class="break-words">{ _prompt }</label>
+                    </div>
+                </div>
+            </>);
+            PromptHistory.scrollTo(0, PromptHistory.scrollHeight);
+
             // Prepare data
-            const _url = `/api/google/gemini?pid=${_projectId}&prompt=${_prompt}`;
+            const _url = `/api/frame/prompt?pid=${pid}&prompt=${_prompt}`;
             const _form = new FormData();
             _form.append("files", _file);
 
@@ -178,26 +207,27 @@ export default class Prompt extends H12 {
             };
 
             // Update project data
-            Dispatcher.Call("OnProjectUpdated", data);
+            Dispatcher.Call(Config.ON_FPROJECT_UPDATE, data);
 
         }
         catch(error) {
             console.error("E/P.Update():", error);
         };
 
-        // Call dispather hide loader
-        Dispatcher.Call("HideLoader");
+        //
+        this.Set("{p.loader}", "hidden");
+        Dispatcher.Call(Config.ON_LOADER_HIDE);
+        PromptButton.disabled = false;
+        PromptBox.disabled = false;
 
     }
 
-    OnProjectUpdated(event, project) {
+    OnProjectUpdate(event, project) {
 
-        // Check if the project is valid and load it
+        //
         if(project) {
-
             this.Project = project;
             this.Load();
-
         };
 
     };

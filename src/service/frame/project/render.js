@@ -4,16 +4,12 @@ import crypto from "crypto";
 import { FFScene, FFCreator } from "ffcreator";
 
 import delay from "../../../library/wait.js";
-import directory from "../../../library/directory.js";
 
 import Read from "./read.js";
 import Path from "./path.js";
 import Scene from "../../slide/scene.js";
 import Duration from "../../slide/duration.js";
 import Asset from "#service/asset.js";
-
-// Get directory path
-const { __root } = directory();
 
 export default async function Render({ projectId = "", callback = null }) {
 
