@@ -1,4 +1,4 @@
-import Google from "#service/google.js";
+import GAuth from "#service/google/auth.js";
 
 /**
     * 
@@ -11,8 +11,8 @@ export default async function Auth(request, response) {
     try {
 
         //
-        const _auth = Google.Auth.OAuth2Client();
-        const _authUrl = Google.Auth.OAuth2GenerateURL(_auth);
+        const _auth = GAuth.OAuth2Client(request);
+        const _authUrl = GAuth.OAuth2GenerateURL(_auth);
 
         //
         response.redirect(_authUrl);
@@ -22,8 +22,6 @@ export default async function Auth(request, response) {
 
         //
         console.log("/google/auth:", error);
-
-        //
         response.send("Unable to authenticate");
 
     };

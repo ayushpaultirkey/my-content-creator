@@ -27,11 +27,39 @@ import YUpload from "./controller/frame/youtube/upload.js";
 import AReport from "./controller/analytics/report.js";
 import APrompt from "./controller/analytics/prompt.js";
 import AHistory from "./controller/analytics/history.js";
-import YChannel from "./controller/google/youtube/channel.js";
+import Auth from "#service/google/auth.js";
+import chalk from "chalk";
 
 
 //
 const router = express.Router();
+
+router.use((request, response, next) => {
+
+    if(!request.session.gclient) {
+        Auth.OAuth2Client(request);
+        console.log(chalk.green("router.use():"), "oauth2 client created");
+    };
+
+    next();
+
+});
+router.use((request, response, next) => {
+
+    let uid = request.cookies.uid;
+    if(!uid) {
+        uid = crypto.randomUUID();
+        response.cookie("uid", uid, {
+            maxAge: 1000 * 60 * 60 * 24,
+            httpOnly: true,
+            secure: request.secure || request.headers["x-forwarded-proto"] === "https"
+        });
+    };
+
+    request.uid = uid;
+    next();
+
+});
 
 // Project
 router.post("/api/frame/project/create", PCreate.POSTCreate);
@@ -67,9 +95,6 @@ router.get("/api/google/auth/callback", GAuthCallback);
 
 // Drive
 router.get("/api/google/drive/getfile", DGetFile);
-
-// Youtube
-router.get("/api/google/youtube/channel", YChannel);
 
 //
 export default router;

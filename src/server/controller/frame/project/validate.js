@@ -1,4 +1,5 @@
 import Project from "#service/frame/project.js";
+import chalk from "chalk";
 
 
 /**
@@ -49,9 +50,7 @@ export default async function Validate(request, response) {
 
         // Set error message
         _response.message = error.message || "An error occurred";
-
-        // Log error message
-        console.log("/project/validate:", error);
+        console.log(chalk.red("/project/validate:"), error);
 
     }
     finally {

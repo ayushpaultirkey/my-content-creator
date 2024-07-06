@@ -14,6 +14,7 @@ import Cache from "../service/asset/cache.js";
 import Gemini from "./../service/google/gemini.js";
 import Config from "./../config/@config.js";
 import directory from "./../library/directory.js";
+import Auth from "./../service/google/auth.js";
 
 //
 export default function init() {
@@ -34,36 +35,13 @@ export default function init() {
 
     // Set session
     app.use(session({
-        genid: () => {
-            return crypto.randomUUID();
-        },
         secret: 'APP_SESSION',
         resave: false,
-        saveUninitialized: true,
-        cookie: {
-            secure: false
-        }
+        saveUninitialized: true
     }));
 
     // Use response compression
     app.use(compression());
-
-    // Create unique client id
-    app.use((request, response, next) => {
-
-        let uid = request.cookies.uid;
-        if(!uid) {
-            uid = crypto.randomUUID();
-            response.cookie("uid", uid, {
-                maxAge: 1000 * 60 * 60 * 24,
-                httpOnly: true,
-                secure: request.secure || request.headers["x-forwarded-proto"] === 'https'
-            });
-        };
-        request.uid = uid;
-        next();
-
-    });
 
     // Add project path
     const { __root } = directory();

@@ -4,7 +4,7 @@ import { google } from "googleapis";
 
 import Auth from "./../auth.js";
 
-export default async function Channel({ request, callback }) {
+export default async function Videos({ pageToken, channelId, callback }) {
 
     try {
 
@@ -12,30 +12,31 @@ export default async function Channel({ request, callback }) {
         let _data = {};
 
         // Log and callback
-        console.log(chalk.green("/S/Google/Youtube.Channel():"), "Channel read started");
-        callback("Youtube: Channel read started");
+        console.log(chalk.green("/S/Google/Youtube.Videos():"), "Channel read started");
+        callback("Youtube: Video listing started");
 
         // Get auth and load channel data
-        const _auth = Auth.OAuth2Client(request);
+        const _auth = Auth.OAuth2Client();
         const _youtube = google.youtube({ version: "v3", auth: _auth });
-        const _response = await _youtube.channels.list({
-            part: ["snippet", "statistics"],
-            mine: true,
+
+        //
+        const _response = await _youtube.search.list({
+            part: "snippet",
+            forMine: true,
+            maxResults: 10,
+            pageToken: (!pageToken) ? null : pageToken,
         });
-        
+
         // Get channel data and check it
-        const _channel = _response.data.items[0];
-        if(!_channel) {
-            throw new Error("Channel not found");
+        const _videos = _response.data;
+        if(!_videos) {
+            throw new Error("Videos not found");
         };
 
         // Copy the data and prepare to return
         const { title, description, customUrl } = _channel.snippet;
         const { commentCount, subscriberCount, videoCount, viewCount } = _channel.statistics;
-
-        //
         _data = {
-            id: _channel.id,
             name: title,
             description: description,
             url: customUrl,
@@ -48,8 +49,8 @@ export default async function Channel({ request, callback }) {
         };
         
         // Log and callback
-        console.log(chalk.green("/S/Google/Youtube.Channel():"), "Channel read ended");
-        callback("Youtube: Channel read ended");
+        console.log(chalk.green("/S/Google/Youtube.Videos():"), "Video listing ended");
+        callback("Youtube: Video listing ended");
 
         //
         return _data;
@@ -57,8 +58,8 @@ export default async function Channel({ request, callback }) {
     }
     catch(error) {
 
-        console.log(chalk.red("/S/Google/Youtube.Channel():"), error);
-        throw new Error("Unable to read channel data");
+        console.log(chalk.red("/S/Google/Youtube.Videos():"), error);
+        throw new Error("Unable to read videos");
 
     };
 

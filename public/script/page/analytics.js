@@ -6,6 +6,7 @@ import Lazy from "@library/h12.lazy";
 import Authenticate from "@component/google/authenticate";
 import Channel from "@component/analytics/channel";
 import Config from "@library/@config";
+import Video from "@component/analytics/video";
 
 @Component
 export default class Analytics extends H12 {
@@ -33,7 +34,8 @@ export default class Analytics extends H12 {
                     <div class="w-full h-full bg-zinc-900 flex-col flex p-4 absolute -left-full md:w-auto md:h-auto md:static md:left-auto" id="NavigationTab">
                         <button class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-blue-500 fa fa-grip"></i>Dashboard</button>
                         <button onclick={ () => { this.Tab(0); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-red-500 fa-solid fa-wand-magic-sparkles"></i>Prompt</button>
-                        <button onclick={ () => { this.Tab(1); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-blue-500 fa-solid fa-layer-group"></i>Channel</button>
+                        <button onclick={ () => { this.Tab(1); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-orange-500 fa-solid fa-layer-group"></i>Channel</button>
+                        <button onclick={ () => { this.Tab(2); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-blue-500 fa-solid fa-video"></i>Videos</button>
                     </div>
 
                     <div class="w-full h-full bg-zinc-800 border-r border-zinc-700 absolute -left-full md:min-w-[300px] md:max-w-[300px] lg:min-w-[400px] lg:max-w-[400px] md:static md:left-auto" id="PropertyTab">
@@ -41,6 +43,7 @@ export default class Analytics extends H12 {
                         <div class="w-full h-full" id="AnalyticNav">
                             <Prompt args></Prompt>
                             <Channel args></Channel>
+                            <Video args></Video>
                         </div>
 
                         <div class="absolute right-10 top-3 flex space-x-6 md:hidden">
@@ -56,11 +59,9 @@ export default class Analytics extends H12 {
                             <button class="fa-solid fa-bars text-blue-500" onclick={ () => { this.Scroll(0); } }></button>
                             <button class="fa-solid fa-pen-to-square text-blue-500" onclick={ () => { this.Scroll(1); } }></button>
                         </div>
-
                         <div class="w-full h-full flex justify-center items-center">
                             <div id="chart" style="height: 450px; width: 100%;"/>
                         </div>
-
                     </div>
 
                 </div>

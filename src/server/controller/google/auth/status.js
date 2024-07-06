@@ -12,7 +12,7 @@ export default async function AuthStatus(request, response) {
     try {
 
         //
-        const _authEvent = Auth.GetAuthEvent();
+        const _authEvent = Auth.GetEvent();
 
         //
         response.setHeader("Content-Type", "text/event-stream");

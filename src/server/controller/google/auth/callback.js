@@ -1,4 +1,4 @@
-import Google from "#service/google.js";
+import Auth from "#service/google/auth.js";
 
 /**
     * 
@@ -8,17 +8,14 @@ import Google from "#service/google.js";
 export default async function AuthCallback(request, response) {
 
     //
-    const _authEvent = Google.Auth.GetAuthEvent();
+    const _authEvent = Auth.GetEvent();
 
     //
     try {
 
         //
-        const _code = request.query.code;
-        const _token = await Google.Auth.OAuth2Callback(_code);
-
-        //
-        Google.Auth.SetAuthToken(request, _token);
+        const { code } = request.query;
+        await Auth.OAuth2Callback(request, response, code);
 
         //
         _authEvent.emit("login", { success: true });

@@ -7,7 +7,7 @@ import Youtube from "#service/google/youtube.js";
     * @param {import("express").Request} request 
     * @param {import("express").Response} response 
 */
-export default async function Channel(request, response) {
+export default async function Videos(request, response) {
     
     //
     const _response = { message: "", success: false, data: null };

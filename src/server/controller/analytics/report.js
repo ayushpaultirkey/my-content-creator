@@ -32,23 +32,22 @@ export default async function Report(request, response) {
             throw new Error("Google account not authenticated");
         };
 
-        // Check if video id exists
-        // Else get the channel's analytics
-        // const { vid } = request.query;
-
-        // Get channel analytics result
-        // const _analytics = await Google.Youtube.Analytics.Report();
-        // _response.data = _analytics.data;
+        let _data = {};
 
         // Get files from drive
         if(!refresh && await Analytics.Exist(uid)) {
-
-            _response.data = await Analytics.Read(uid);
-
+            _data = await Analytics.Read(uid);
         }
         else {
+            
+            // Get channel analytics result
+            // const _analytics = await Google.Youtube.Analytics.Report();
+            // _response.data = _analytics.data;
 
-            const _channel = await Youtube.Channel({ callback: () => {} });
+            const _channel = await Youtube.Channel({
+                request: request,
+                callback: () => {}
+            });
             const _channelData = {
                 channel: _channel,
                 analytic: Sample.data
@@ -63,11 +62,16 @@ export default async function Report(request, response) {
             };
             
             await Analytics.Save(uid, _finalData);
-            _response.data = _finalData;
+            _data = _finalData;
 
         };
 
         //
+        if(_data) {
+            delete _data.id;
+        };
+
+        _response.data = _data;
         _response.success = true;
 
     }

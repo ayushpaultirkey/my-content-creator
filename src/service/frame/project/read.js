@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import Path from "./path.js";
+import chalk from "chalk";
 
 export default async function Read(projectId = "") {
 
@@ -17,7 +18,7 @@ export default async function Read(projectId = "") {
 
     }
     catch(error) {
-        console.log("Service/Project.Read():", error);
+        console.log(chalk.red("Service/Project.Read():"), error);
         throw new Error("Unable to read project file");
     };
 
