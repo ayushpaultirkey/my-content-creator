@@ -2,6 +2,7 @@ import "dotenv/config";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleAIFileManager } from "@google/generative-ai/server";
 import Container from "#library/container.js";
+import chalk from "chalk";
 
 
 /**
@@ -54,44 +55,41 @@ function Initialize(id, systemInstruction, responseMimeType = "text/plain") {
 */
 async function PromptFile(id, file = {}, history = [], validate = true) {
 
-    // Log
-    console.log(`Service/Gemini.PromptFile(): Multimodel prompt started`);
-
-    //
-    const { filemanager } = Container.Get(id);
-    if(!filemanager) {
-        console.log(`Service/Google/Gemini.PromptFile(): Filemanager not found`);
-        return false;
-    };
-
-    // Validate the history before prompting,
-    // this can check for valid asset urls
-    if(validate) {
-        for(var i = 0, len = history.length; i < len; i++) {
-            try {
-                if(history[i].role == "user" && typeof(history[i].parts[0].fileData) !== "undefined") {
-                    const _uri = history[i].parts[0].fileData.fileUri.split("/files/")[1];
-                    await filemanager.getFile(_uri);
-                };
-            }
-            catch(error) {
-                delete history[i].parts[0].fileData;
-                history[i].parts[0].text = "Cannot view asset since it was expired after 48 hours.";
-                console.log(`Service/Gemini.PromptFile(): File not exists, it will be removed from history`);
-            };
-        };
-    };
-
     // Try and upload asset
     try {
+
+        // Log
+        console.log(chalk.green("Service/Gemini.PromptFile():"), "Multimodel prompt started");
+
+        //
+        const { filemanager } = Container.Get(id);
+        if(!filemanager) {
+            throw new Error("Filemanager not found")
+        };
+
+        // Validate the history before prompting,
+        // this can check for valid asset urls
+        if(validate) {
+            for(var i = 0, len = history.length; i < len; i++) {
+                try {
+                    if(history[i].role == "user" && typeof(history[i].parts[0].fileData) !== "undefined") {
+                        const _uri = history[i].parts[0].fileData.fileUri.split("/files/")[1];
+                        await filemanager.getFile(_uri);
+                    };
+                }
+                catch(error) {
+                    delete history[i].parts[0].fileData;
+                    history[i].parts[0].text = "Cannot view asset since it was expired after 48 hours.";
+                    console.log(chalk.yellow("/S/Gemini.PromptFile()"), "File not exists, it will be removed from history");
+                };
+            };
+        };
 
         // Upload file to file namager
         const _upload = await filemanager.uploadFile(file.path, {
             mimeType: file.mimetype,
             displayName: file.filename,
         });
-    
-        // Get uploaded file
         const _file = _upload.file;
     
         // Add file to history
@@ -106,7 +104,7 @@ async function PromptFile(id, file = {}, history = [], validate = true) {
         });
     
         // Log
-        console.log(`Service/Google/Gemini.PromptFile(): Uploaded file ${_file.name}`);
+        console.log(chalk.green("/S/Google/Gemini.PromptFile():"), `Uploaded file ${_file.name}`);
 
         // Return the file with updated history
         return { file: _file, history: history };
@@ -114,8 +112,8 @@ async function PromptFile(id, file = {}, history = [], validate = true) {
     }
     catch(error) {
 
-        console.log("Service/Google/Gemini.PromptFile(): ", error);
-        throw error;
+        console.log(chalk.red("/S/Google/Gemini.PromptFile():"), error);
+        throw new Error("Unable to prompt using file");
 
     };
 
@@ -139,7 +137,7 @@ async function Prompt(id, prompt = "", history = []) {
         };
 
         // Log
-        console.log("Service/Google/Gemini.Prompt(): Prompt started");
+        console.log(chalk.green("/S/Google/Gemini.Prompt():"), "Prompt started");
 
         // Set the model message history
         let _chat = model.startChat({
@@ -151,14 +149,14 @@ async function Prompt(id, prompt = "", history = []) {
         let _answer = _result.response.text();
 
         // Log
-        console.log("Service/Google/Gemini.Prompt(): Prompt ended");
+        console.log(chalk.green("/S/Google/Gemini.Prompt():"), "Prompt ended");
 
         // Return data
         return { answer: _answer, history: history };
 
     }
     catch(error) {
-        console.log("Service/Google/Gemini.Prompt():", error);
+        console.log(chalk.red("/S/Google/Gemini.Prompt():"), error);
         throw new Error("Unable to generate answer");
     };
 

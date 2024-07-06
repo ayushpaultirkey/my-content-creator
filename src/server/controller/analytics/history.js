@@ -1,4 +1,4 @@
-import Analytics from "#service/google/youtube/analytics.js";
+import Analytics from "#service/analytics.js";
 
 
 /**

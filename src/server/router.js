@@ -27,6 +27,7 @@ import YUpload from "./controller/frame/youtube/upload.js";
 import AReport from "./controller/analytics/report.js";
 import APrompt from "./controller/analytics/prompt.js";
 import AHistory from "./controller/analytics/history.js";
+import YChannel from "./controller/google/youtube/channel.js";
 
 
 //
@@ -53,9 +54,9 @@ router.get("/api/frame/project/export/validate", EValidate);
 
 // Asset
 
-router.get("/api/analytics/report", AReport);
 router.get("/api/analytics/prompt", APrompt);
 router.get("/api/analytics/history", AHistory);
+router.get("/api/analytics/report", AReport);
 
 // Gemini
 
@@ -67,6 +68,8 @@ router.get("/api/google/auth/callback", GAuthCallback);
 // Drive
 router.get("/api/google/drive/getfile", DGetFile);
 
+// Youtube
+router.get("/api/google/youtube/channel", YChannel);
 
 //
 export default router;

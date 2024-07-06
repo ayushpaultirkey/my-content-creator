@@ -6,7 +6,7 @@ import ServerEvent from "@library/serverevent";
 import Config from "@library/@config";
 
 import Home from "./page/home";
-import Editor from "./page/editor";
+import Editor from "./page/frame";
 import Dashboard from "./page/dashboard";
 import Analytics from "./page/analytics";
 
@@ -36,8 +36,6 @@ class App extends H12 {
 
         // Lazy load font-awesome icons
         Lazy.Style("FAIcon", "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
-        Lazy.Script("Marked", "https://cdn.jsdelivr.net/npm/marked/marked.min.js");
-        Lazy.Script("GChart", "https://www.gstatic.com/charts/loader.js");
 
     }
 
@@ -103,7 +101,28 @@ class App extends H12 {
             this.Set("{e.app}", <><Editor args project={ project }></Editor></>);
         },
         Analytics: async() => {
-            this.Set("{e.app}", <><Analytics args></Analytics></>);
+
+            try {
+                
+                Lazy.Script("Marked", "https://cdn.jsdelivr.net/npm/marked/marked.min.js");
+                Lazy.Script("GChart", "https://www.gstatic.com/charts/loader.js");
+
+                const _authStat = ServerEvent.HistoryLast("AuthStatus");
+                if(!_authStat) {
+                    throw new Error("Invalid auth data");
+                }
+                const { success } = JSON.parse(_authStat);
+                if(!success) {
+                    throw new Error("Google account not authenticated");
+                };
+                this.Set("{e.app}", <><Analytics args></Analytics></>);
+
+            }
+            catch(error) {
+                alert(error);
+                console.log("/A.Navigate.To.Analytics():", error);
+            };
+            
         }
     }
 };

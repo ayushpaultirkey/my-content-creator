@@ -1,4 +1,5 @@
-import Analytics from "./youtube/analytics.js";
+import Analytics from "../analytics.js";
 import Upload from "./youtube/upload.js"
+import Channel from "./youtube/channel.js"
 
-export default { Upload, Analytics };
+export default { Upload, Analytics, Channel };

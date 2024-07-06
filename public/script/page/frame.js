@@ -14,7 +14,7 @@ import Config from "@library/@config";
 import ServerEvent from "@library/sse";
 
 @Component
-export default class Editor extends H12 {
+export default class Frame extends H12 {
     
     constructor() {
         super();

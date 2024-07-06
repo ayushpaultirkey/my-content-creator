@@ -7,4 +7,5 @@ export default {
     ON_FASSET_LOAD: "oFrameAL",
     ON_FASSET_UPDATE: "oFrameAU",
     ON_FRENDER_UPDATE: "oFrameRU",
+    ON_ANALYTICS_REPORT: "oAnaltyicsR",
 };

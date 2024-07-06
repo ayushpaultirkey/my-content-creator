@@ -1,4 +1,4 @@
-import Google from "#service/google.js";
+import Auth from "#service/google/auth.js";
 
 
 /**
@@ -12,7 +12,7 @@ export default async function AuthStatus(request, response) {
     try {
 
         //
-        const _authEvent = Google.Auth.GetAuthEvent();
+        const _authEvent = Auth.GetAuthEvent();
 
         //
         response.setHeader("Content-Type", "text/event-stream");
@@ -39,7 +39,7 @@ export default async function AuthStatus(request, response) {
         });
 
         //
-        _listener({ success: Google.Auth.HasToken(request) });
+        _listener({ success: Auth.HasToken(request) });
 
     }
     catch(error) {

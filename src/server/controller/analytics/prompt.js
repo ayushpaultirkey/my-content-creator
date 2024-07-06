@@ -1,6 +1,6 @@
-import Google from "#service/google.js";
-import Analytics from "#service/google/youtube/analytics.js";
-
+import Analytics from "#service/analytics.js";
+import Gemini from "#service/google/gemini.js";
+import chalk from "chalk";
 
 /**
     *
@@ -24,16 +24,16 @@ export default async function Prompt(request, response) {
 
         // Read current chat session file
         // And check if its valid
-        let _data = await Analytics.Local.Read(uid);
+        let _data = await Analytics.Read(uid);
         if(!_data) {
             throw new Error("Invalid chat session data");
         };
 
         // Generate answer
-        const { answer } = await Google.Gemini.Prompt(Analytics.Config.E_GEMINI_ID, q, _data);
-
+        const { answer } = await Gemini.Prompt(Analytics.Config.E_GEMINI, q, _data.history);
+        
         // Update chat session data
-        await Analytics.Local.Save(uid, _data);
+        await Analytics.Save(uid, _data);
 
         // Send response
         _response.data = answer;
@@ -43,7 +43,7 @@ export default async function Prompt(request, response) {
     catch(error) {
 
         // Log and set response for error
-        console.log("/analytics/prompt:", error);
+        console.log(chalk.red("/analytics/prompt:"), error);
         _response.message = error.message || "An error occurred";
 
     }
