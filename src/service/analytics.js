@@ -1,60 +1,23 @@
-import fs from "fs/promises";
-import path from "path";
-
-import Report from "./google/youtube/analytics/report.js";
+import IO from "./analytics/io.js";
+import Videos from "./analytics/videos.js";
+import Video from "./analytics/video.js";
+import Comment from "./analytics/video/comment.js";
+import Report from "./analytics/report.js";
+import Analyze from "./analytics/analyze.js";
 import Config from "./google/youtube/analytics/@config.js";
-import directory from "#library/directory.js";
-import chalk from "chalk";
+import Prompt from "./analytics/video/comment/prompt.js";
+import Send from "./analytics/video/comment/send.js";
 
-const { __root } = directory();
-
-function Path(id) {
-    return path.join(__root, `/project/.temp/${id}.json`);
+export default {
+    ... IO,
+    Config,
+    Videos,
+    Report,
+    Analyze,
+    Video: Object.assign(Video, {
+        Comment: Object.assign(Comment, {
+            Prompt,
+            Send
+        })
+    })
 };
-
-async function Exist(id = "") {
-    try {
-        await fs.access(Path(id));
-        return true;
-    }
-    catch(error) {
-        return false;
-    }
-};
-
-async function Read(id = "") {
-    try {
-
-        if(await Exist(id)) {
-
-            const _data = await fs.readFile(Path(id));
-            const _parsed = JSON.parse(_data);
-            
-            console.log(chalk.green("/S/Analytics/Read():"), "Analytic file found");
-
-            return _parsed;
-        }
-        else {
-            return [];
-        };
-
-    }
-    catch(error) {
-        console.log(chalk.red("/S/Analytics/Read():"), error);
-        throw new Error("Unable to read chat session");
-    }
-};
-
-async function Save(id = "", data = {}) {
-    try {
-        await fs.writeFile(Path(id), JSON.stringify(data));
-        console.log(chalk.green("/S/Analytics/Save():"), "Chat session saved");
-    }
-    catch(error) {
-        console.log(chalk.red("/S/Analytics/Save():"), error);
-        throw new Error("Unable to save chat session");
-    }
-};
-
-
-export default { Read, Path, Save, Exist, Config };

@@ -31,8 +31,14 @@ export default class Prompt extends H12 {
 
         //
         Dispatcher.On(Config.ON_ANALYTICS_REPORT, this.OnAnalyticReport.bind(this));
-        Dispatcher.On("Marked", () => { this.ApplyFormat(); });
-        if(Lazy.Status("Marked")) {
+        Dispatcher.On(Config.ON_ANALYTICS_CPROMPT, this.OnAnalyticReport.bind(this));
+        Dispatcher.On("Marked", () => {
+            this.ApplyFormat();
+        });
+        Dispatcher.On("DOMPurify", () => {
+            this.ApplyFormat();
+        });
+        if(Lazy.Status("Marked") && Lazy.Status("DOMPurify")) {
             this.ApplyFormat();
         };
 
@@ -82,7 +88,6 @@ export default class Prompt extends H12 {
             this.Set("{e.message}", "", Bubble);
 
             const { history } = this.Report;
-
             for(const chat of history) {
     
                 const { role, parts } = chat;
@@ -145,12 +150,16 @@ export default class Prompt extends H12 {
     }
 
     ApplyFormat() {
-        this.CanFormat = true;
-        for(const c in this.child) {
-            if(this.child[c] instanceof Bubble) {
-                this.child[c].Format();
-            };
-        }
+
+        if(Lazy.Status("Marked") && Lazy.Status("DOMPurify")) {
+            this.CanFormat = true;
+            for(const c in this.child) {
+                if(this.child[c] instanceof Bubble) {
+                    this.child[c].Format();
+                };
+            }
+        };
+        
     }
 
     async OnAnalyticReport(event, report) {

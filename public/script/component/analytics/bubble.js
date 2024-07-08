@@ -11,7 +11,7 @@ export default class Bubble extends H12 {
 
         const { TBox } = this.element;
         if(!this.parent.CanFormat) {
-            TBox.innerHTML = (this.IsJson(text) ? "(Embedded Channel Data)" : text);
+            TBox.innerText = (this.IsJson(text) ? "(Embedded Channel Data)" : text);
         }
         else {
             this.Format();
@@ -22,7 +22,7 @@ export default class Bubble extends H12 {
 
         const { TBox } = this.element;
         const { text } = this.args;
-        TBox.innerHTML = marked.parse((this.IsJson(text) ? "(Embedded Channel Data)" : text));
+        TBox.innerHTML = marked.parse((this.IsJson(text) ? "(Embedded Channel Data)" : DOMPurify.sanitize(text)));
 
     }
     IsJson(data) {

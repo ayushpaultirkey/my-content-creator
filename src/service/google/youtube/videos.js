@@ -4,48 +4,52 @@ import { google } from "googleapis";
 
 import Auth from "./../auth.js";
 
-export default async function Videos({ pageToken, channelId, callback }) {
+export default async function Videos({ pageToken, request, callback }) {
 
     try {
 
-        // For return
-        let _data = {};
-
         // Log and callback
-        console.log(chalk.green("/S/Google/Youtube.Videos():"), "Channel read started");
+        console.log(chalk.green("/S/Google/Youtube.Videos():"), "Video listing started");
         callback("Youtube: Video listing started");
 
         // Get auth and load channel data
-        const _auth = Auth.OAuth2Client();
-        const _youtube = google.youtube({ version: "v3", auth: _auth });
+        const _auth = Auth.OAuth2Client(request);
+        const _youtube = google.youtube({ version: "v3" });
 
         //
         const _response = await _youtube.search.list({
+            auth: _auth,
             part: "snippet",
+            type: "video",
             forMine: true,
-            maxResults: 10,
+            maxResults: 100,
             pageToken: (!pageToken) ? null : pageToken,
         });
 
         // Get channel data and check it
-        const _videos = _response.data;
-        if(!_videos) {
+        const { items } = _response.data;
+        if(!items) {
             throw new Error("Videos not found");
         };
 
-        // Copy the data and prepare to return
-        const { title, description, customUrl } = _channel.snippet;
-        const { commentCount, subscriberCount, videoCount, viewCount } = _channel.statistics;
-        _data = {
-            name: title,
-            description: description,
-            url: customUrl,
-            count: {
-                comment: commentCount,
-                subscriber: subscriberCount,
-                video: videoCount,
-                view: viewCount
-            }
+        //
+        const _videos = {};
+        for(var i = 0, ilen = items.length; i < ilen; i++) {
+
+            const { id, snippet } = items[i];
+
+            if(!id.kind.includes("video")) {
+                continue;
+            };
+
+            _videos[id.videoId] = {
+                title: snippet.title,
+                description: snippet.description,
+                thumbnail: snippet.thumbnails.high.url,
+                published: snippet.publishedAt,
+                published: snippet.publishedAt,
+            };
+
         };
         
         // Log and callback
@@ -53,7 +57,7 @@ export default async function Videos({ pageToken, channelId, callback }) {
         callback("Youtube: Video listing ended");
 
         //
-        return _data;
+        return { videos: _videos, pageToken: _response.data.nextPageToken };
 
     }
     catch(error) {

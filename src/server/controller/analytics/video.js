@@ -12,7 +12,7 @@ import Sample from "#service/google/youtube/analytics/@sample.js";
     * @param {import("express").Request} request 
     * @param {import("express").Response} response 
 */
-export default async function Report(request, response) {
+export default async function Video(request, response) {
 
     // Create response object
     const _response = { message: "", success: false, data: {} };
@@ -22,9 +22,9 @@ export default async function Report(request, response) {
 
         // Check for session uid and query
         const { uid } = request.cookies;
-        const { refresh } = request.query;
-        if(!uid) {
-            throw new Error("Invalid session");
+        const { videoId, refresh } = request.query;
+        if(!uid || !videoId) {
+            throw new Error("Invalid video id or session id");
         };
 
         // Check if there is user
@@ -32,15 +32,18 @@ export default async function Report(request, response) {
             throw new Error("Google account not authenticated");
         };
 
-        let _data = await Analytics.Report({
-            request: request,
+        //
+        const _data = await Analytics.Video({
             refresh: refresh,
             rid: uid,
+            videoId: videoId,
+            request: request,
             callback: () => {
-                
-            }
-        });
 
+            }
+        })
+
+        //
         _response.data = _data;
         _response.success = true;
 
@@ -48,7 +51,7 @@ export default async function Report(request, response) {
     catch(error) {
 
         // Log and set response for error
-        console.log("/analytics/report:", error);
+        console.log(chalk.red("/analytics/videos:"), error);
         _response.message = error.message || "An error occurred";
 
     }

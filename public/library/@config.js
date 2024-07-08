@@ -8,4 +8,6 @@ export default {
     ON_FASSET_UPDATE: "oFrameAU",
     ON_FRENDER_UPDATE: "oFrameRU",
     ON_ANALYTICS_REPORT: "oAnaltyicsR",
+    ON_ANALYTICS_CPROMPT: "oAnaltyicsCP",
+    ON_VIDEO_SELECT: "OnAnalyticsVS"
 };

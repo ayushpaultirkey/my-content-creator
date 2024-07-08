@@ -27,6 +27,14 @@ import YUpload from "./controller/frame/youtube/upload.js";
 import AReport from "./controller/analytics/report.js";
 import APrompt from "./controller/analytics/prompt.js";
 import AHistory from "./controller/analytics/history.js";
+import AVideos from "./controller/analytics/videos.js";
+import AVideo from "./controller/analytics/video.js";
+import ANVideo from "./controller/analytics/analyze/video.js";
+import YComment from "./controller/analytics/video/comment.js";
+import YCPrompt from "./controller/analytics/video/comment/prompt.js";
+import YCSend from "./controller/analytics/video/comment/send.js";
+
+
 import Auth from "#service/google/auth.js";
 import chalk from "chalk";
 
@@ -81,10 +89,15 @@ router.get("/api/frame/project/export/get", EGet);
 router.get("/api/frame/project/export/validate", EValidate);
 
 // Asset
-
 router.get("/api/analytics/prompt", APrompt);
 router.get("/api/analytics/history", AHistory);
 router.get("/api/analytics/report", AReport);
+router.get("/api/analytics/videos", AVideos);
+router.get("/api/analytics/video", AVideo);
+router.get("/api/analytics/video/comment", YComment);
+router.get("/api/analytics/video/comment/prompt", YCPrompt);
+router.get("/api/analytics/video/comment/send", YCSend);
+router.get("/api/analytics/analyze/video", ANVideo);
 
 // Gemini
 

@@ -1,6 +1,6 @@
+import chalk from "chalk";
 import Analytics from "#service/analytics.js";
 import Gemini from "#service/google/gemini.js";
-import chalk from "chalk";
 
 /**
     *

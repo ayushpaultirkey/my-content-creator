@@ -69,8 +69,18 @@ export default class Channel extends H12 {
                         <button
                             class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors"
                             onclick={ () => { this.parent.Load(); }}>
-                            <i class="fa-solid fa-splotch mr-2 pointer-events-none"></i>
+                            <i class="fa-solid fa-refresh mr-2 pointer-events-none"></i>
                             Reload
+                        </button>
+                    </div>
+
+                    <div class="border border-transparent border-t-zinc-700 pt-3">
+                        <label class="text-xs font-semibold text-zinc-400 block mb-1">Analyze Data:</label>
+                        <button
+                            class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors"
+                            onclick={ () => { this.parent.Load(); }}>
+                            <i class="fa-solid fa-splotch mr-2 pointer-events-none"></i>
+                            Analyze
                         </button>
                     </div>
 
@@ -87,14 +97,14 @@ export default class Channel extends H12 {
                 throw new Error("Invalid report");
             };
 
-            const { channel } = this.Report;
+            const { channel: { detail } } = this.Report;
             
-            this.Set("{c.name}", channel.name);
-            this.Set("{c.description}", (channel.description) ? channel.description : "No Description");
-            this.Set("{c.url}", channel.url);
-            this.Set("{c.subs}", channel.count.subscriber);
-            this.Set("{c.view}", channel.count.view);
-            this.Set("{c.video}", channel.count.video);
+            this.Set("{c.name}", detail.name);
+            this.Set("{c.description}", (detail.description) ? detail.description : "No Description");
+            this.Set("{c.url}", detail.url);
+            this.Set("{c.subs}", detail.count.subscriber);
+            this.Set("{c.view}", detail.count.view);
+            this.Set("{c.video}", detail.count.video);
 
 
         }
@@ -108,12 +118,10 @@ export default class Channel extends H12 {
     }
 
     async OnAnalyticReport(event, report) {
-        
         if(report) {
             this.Report = report;
             this.Load();
         };
-
     }
 
 };

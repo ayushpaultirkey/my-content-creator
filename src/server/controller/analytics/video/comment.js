@@ -1,30 +1,27 @@
 import chalk from "chalk";
 
 import Auth from "#service/google/auth.js";
-import Gemini from "#service/google/gemini.js";
-import Youtube from "#service/google/youtube.js";
 import Analytics from "#service/analytics.js";
 
-import Sample from "#service/google/youtube/analytics/@sample.js";
 
 /**
     *
     * @param {import("express").Request} request 
     * @param {import("express").Response} response 
 */
-export default async function Report(request, response) {
+export default async function Comment(request, response) {
 
     // Create response object
-    const _response = { message: "", success: false, data: {} };
+    const _response = { message: "", success: false, data: null };
 
     //
     try {
 
         // Check for session uid and query
         const { uid } = request.cookies;
-        const { refresh } = request.query;
-        if(!uid) {
-            throw new Error("Invalid session");
+        const { videoId, channelId } = request.query;
+        if(!uid || !videoId || !channelId) {
+            throw new Error("Invalid video, channel or reference id");
         };
 
         // Check if there is user
@@ -32,15 +29,18 @@ export default async function Report(request, response) {
             throw new Error("Google account not authenticated");
         };
 
-        let _data = await Analytics.Report({
+        //
+        const _data = await Analytics.Video.Comment({
             request: request,
-            refresh: refresh,
             rid: uid,
+            videoId: videoId,
+            channelId: channelId,
             callback: () => {
-                
+
             }
         });
 
+        //
         _response.data = _data;
         _response.success = true;
 
@@ -48,7 +48,7 @@ export default async function Report(request, response) {
     catch(error) {
 
         // Log and set response for error
-        console.log("/analytics/report:", error);
+        console.log(chalk.red("/analytics/videos:"), error);
         _response.message = error.message || "An error occurred";
 
     }

@@ -55,9 +55,6 @@ function OAuth2Client(request) {
             };
             console.log(chalk.green("/S/Google/Auth/OAuth2Client():"), "OAuth2 new client created");
             
-            //
-            return _client;
-
         }
         else {
             
@@ -69,9 +66,7 @@ function OAuth2Client(request) {
         };
 
         if(cookies.atk) {
-            _client.setCredentials({
-                access_token: cookies.atk
-            });
+            _client.setCredentials(JSON.parse(cookies.atk));
             console.log(chalk.green("/S/Google/Auth/OAuth2Client():"), "OAuth2 access token found in cookie");
         };
 
@@ -103,7 +98,7 @@ async function OAuth2Callback(request, response, code = "") {
             httpOnly: true,
             secure: request.secure || request.headers["x-forwarded-proto"] === "https"
         };
-        response.cookie("atk", tokens.access_token, _config);
+        response.cookie("atk", JSON.stringify(tokens), _config);
         response.cookie("uid", crypto.randomUUID(), _config);
 
         //
@@ -138,7 +133,8 @@ function OAuth2GenerateURL(oauth2 = null) {
             scope: [
                 "https://www.googleapis.com/auth/drive",
                 "https://www.googleapis.com/auth/youtube",
-                "https://www.googleapis.com/auth/yt-analytics.readonly"
+                "https://www.googleapis.com/auth/yt-analytics.readonly",
+                "https://www.googleapis.com/auth/youtube.force-ssl"
             ]
         });
 

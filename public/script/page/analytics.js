@@ -7,6 +7,8 @@ import Authenticate from "@component/google/authenticate";
 import Channel from "@component/analytics/channel";
 import Config from "@library/@config";
 import Video from "@component/analytics/video";
+import Graph from "@component/analytics/graph";
+import Detail from "@component/analytics/detail";
 
 @Component
 export default class Analytics extends H12 {
@@ -18,10 +20,7 @@ export default class Analytics extends H12 {
 
     async init() {
 
-        if(Lazy.Status("GChart")) {
-            this.Load();
-        };
-        Dispatcher.On("GChart", this.Load.bind(this));
+        this.Load();
 
     }
 
@@ -53,14 +52,17 @@ export default class Analytics extends H12 {
                     
                     </div>
 
-                    <div class="w-full h-full absolute left-0 md:static md:left-auto overflow-hidden p-4">
+                    <div class="w-full h-full absolute left-0 md:static md:left-auto overflow-hidden">
                         <Authenticate args style="absolute top-10 right-10"></Authenticate>
                         <div class="absolute left-6 top-6 flex space-x-6 md:hidden z-10">
                             <button class="fa-solid fa-bars text-blue-500" onclick={ () => { this.Scroll(0); } }></button>
                             <button class="fa-solid fa-pen-to-square text-blue-500" onclick={ () => { this.Scroll(1); } }></button>
                         </div>
-                        <div class="w-full h-full flex justify-center items-center">
-                            <div id="chart" style="height: 450px; width: 100%;"/>
+                        <div class="w-full h-full overflow-auto">
+                            <div class="overflow-auto" id="Viewport">
+                                <Graph args></Graph>
+                                <Detail args></Detail>
+                            </div>
                         </div>
                     </div>
 
@@ -117,6 +119,18 @@ export default class Analytics extends H12 {
         this.Scroll(1);
 
     }
+    TabViewport(index = 0) {
+        
+        const _children = Array.from(this.element.Viewport.children);
+
+        if(index >= 0 && index < _children.length) {
+            _children.forEach(x => {
+                x.classList.add("hidden");
+            });
+            _children[index].classList.remove("hidden");
+        };
+
+    }
 
     async Load() {
 
@@ -133,7 +147,6 @@ export default class Analytics extends H12 {
             };
 
             this.Report = data;
-            this.LoadGraph(data.analytic);
             Dispatcher.Call(Config.ON_ANALYTICS_REPORT, data);
 
         }
@@ -146,61 +159,5 @@ export default class Analytics extends H12 {
 
     }
 
-    LoadGraph(data) {
-
-        google.charts.load("current", { "packages": [ "corechart" ]});
-        google.charts.setOnLoadCallback(() => {
-
-            var _data = google.visualization.arrayToDataTable([
-                data.columnHeaders.map(x => x.name),
-                ... data.rows
-            ]);
-    
-            var options = {
-                title: 'Channel Performance (1 Month)',
-                curveType: 'linear',
-                legend: {
-                    position: 'bottom',
-                    textStyle: {
-                        color: 'rgb(161, 161, 170)',
-                        fontSize: 10,
-                    }
-                },
-                backgroundColor: 'transparent',
-                titleTextStyle: {
-                    color: 'gray',
-                    fontSize: 10,
-                },
-                hAxis: {
-                    textStyle: {
-                        color: 'rgb(161, 161, 170)',
-                        fontSize: 8,
-                    },
-                    gridlines: {
-                        color: 'rgb(39, 39, 42)'
-                    }
-                },
-                vAxis: {
-                    textStyle: {
-                        color: 'rgb(161, 161, 170)',
-                        fontSize: 10,
-                    },
-                    gridlines: {
-                        color: 'rgb(20, 39, 42)',
-                        count: 3
-                    }
-                }
-            };
-    
-            var _chart = new google.visualization.LineChart(this.element.chart)
-            _chart.draw(_data, options);
-
-            window.onresize = () => {
-                _chart.draw(_data, options);
-            };
-
-        });
-
-    }
     
 };
