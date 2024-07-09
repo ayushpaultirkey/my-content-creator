@@ -89,7 +89,7 @@ router.get("/api/frame/project/export/get", EGet);
 router.get("/api/frame/project/export/validate", EValidate);
 
 // Asset
-router.get("/api/analytics/prompt", APrompt);
+router.post("/api/analytics/prompt", APrompt);
 router.get("/api/analytics/history", AHistory);
 router.get("/api/analytics/report", AReport);
 router.get("/api/analytics/videos", AVideos);

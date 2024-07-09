@@ -4,7 +4,7 @@ import path from "path";
 import express from "express";
 import crypto from "crypto";
 import session from "express-session";
-import cookieParser from 'cookie-parser';
+import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import compression from "compression";
 import viteExpress from "vite-express";
@@ -12,9 +12,8 @@ import viteExpress from "vite-express";
 import router from "./router.js";
 import Cache from "../service/asset/cache.js";
 import Gemini from "./../service/google/gemini.js";
-import Config from "./../config/@config.js";
 import directory from "./../library/directory.js";
-import Auth from "./../service/google/auth.js";
+import Config from "./../config/@config.js";
 
 //
 export default function init() {
@@ -35,7 +34,7 @@ export default function init() {
 
     // Set session
     app.use(session({
-        secret: 'APP_SESSION',
+        secret: crypto.randomUUID(),
         resave: false,
         saveUninitialized: true
     }));
@@ -45,7 +44,16 @@ export default function init() {
 
     // Add project path
     const { __root } = directory();
-    app.use("/project", express.static(path.join(__root, "/project/")));
+    app.use("/project", (request, response, next) => {
+
+        const _path = request.path;
+        if(_path.endsWith(".mp4") || _path.endsWith(".avi") || _path.endsWith(".mov")) {
+            res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
+            res.setHeader("Expires", "0");
+            res.setHeader("Pragma", "no-cache");
+        };
+
+    }, express.static(path.join(__root, "/project/")));
     
     // Serve files
     app.use("/", router);

@@ -26,8 +26,7 @@ export default class Analytics extends H12 {
 
     async render() {
         return <>
-            <div class="w-full h-full relative GGH">
-                
+            <div class="w-full h-full relative">
                 <div class="w-full h-full flex flex-row relative">
 
                     <div class="w-full h-full bg-zinc-900 flex-col flex p-4 absolute -left-full md:w-auto md:h-auto md:static md:left-auto" id="NavigationTab">
@@ -37,7 +36,7 @@ export default class Analytics extends H12 {
                         <button onclick={ () => { this.Tab(2); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-blue-500 fa-solid fa-video"></i>Videos</button>
                     </div>
 
-                    <div class="w-full h-full bg-zinc-800 border-r border-zinc-700 absolute -left-full md:min-w-[300px] md:max-w-[300px] lg:min-w-[400px] lg:max-w-[400px] md:static md:left-auto" id="PropertyTab">
+                    <div class="w-full h-full bg-zinc-800 border-r border-zinc-700 absolute -left-full md:min-w-[300px] md:max-w-[300px] lg:min-w-[350px] lg:max-w-[350px] xl:min-w-[450px] xl:max-w-[450px] md:static md:left-auto" id="PropertyTab">
                 
                         <div class="w-full h-full" id="AnalyticNav">
                             <Prompt args></Prompt>
@@ -67,7 +66,6 @@ export default class Analytics extends H12 {
                     </div>
 
                 </div>
-
             </div>
         </>;
     }
@@ -132,14 +130,14 @@ export default class Analytics extends H12 {
 
     }
 
-    async Load() {
+    async Load(param = "") {
 
         Dispatcher.Call(Config.ON_LOADER_SHOW);
         Dispatcher.Call(Config.ON_LOADER_UPDATE, "Loading analytics report");
 
         try {
 
-            const _response = await fetch("/api/analytics/report");
+            const _response = await fetch(`/api/analytics/report${param}`);
             const { success, message, data } = await _response.json();
     
             if(!_response.ok || !success) {

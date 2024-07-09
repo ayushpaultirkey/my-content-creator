@@ -32,15 +32,9 @@ export default class Prompt extends H12 {
         //
         Dispatcher.On(Config.ON_ANALYTICS_REPORT, this.OnAnalyticReport.bind(this));
         Dispatcher.On(Config.ON_ANALYTICS_CPROMPT, this.OnAnalyticReport.bind(this));
-        Dispatcher.On("Marked", () => {
-            this.ApplyFormat();
-        });
-        Dispatcher.On("DOMPurify", () => {
-            this.ApplyFormat();
-        });
-        if(Lazy.Status("Marked") && Lazy.Status("DOMPurify")) {
-            this.ApplyFormat();
-        };
+        Dispatcher.On("Marked", () => { this.ApplyFormat(); });
+        Dispatcher.On("DOMPurify", () => { this.ApplyFormat(); });
+        this.ApplyFormat();
 
     }
 
@@ -59,13 +53,13 @@ export default class Prompt extends H12 {
                                 {e.message}
                             </div>
                             <div class="flex justify-center items-center {p.loader}">
-                                <i class="fa fa-spinner text-gray-400"></i>
+                                <i class="fa fa-splotch fa-spin text-xl text-gray-400"></i>
                             </div>
                         </div>
                         <div>
-                            <Attachment args id="Uploader"></Attachment>
+                            <Attachment args id="FUploader"></Attachment>
                             <div class="bg-zinc-400 flex rounded-lg overflow-hidden">
-                                <button class="text-xs font-semibold bg-transparent p-3 hover:bg-zinc-500 active:bg-zinc-600 fa fa-paperclip" onclick={ () => { this.child["Uploader"].Open(); } }></button>
+                                <button class="text-xs font-semibold bg-transparent p-3 hover:bg-zinc-500 active:bg-zinc-600 fa fa-paperclip" onclick={ () => { this.child["FUploader"].Open(); } }></button>
                                 <input id="PromptBox" type="text" class="text-xs font-semibold bg-transparent placeholder:text-zinc-600 w-full py-3 resize-none" placeholder="Ask anything..." />
                                 <button class="text-xs font-semibold bg-transparent p-3 hover:bg-zinc-500 active:bg-zinc-600" onclick={ () => { this.Send() } } id="PromptButton">Ask</button>
                             </div>
@@ -89,9 +83,11 @@ export default class Prompt extends H12 {
 
             const { history } = this.Report;
             for(const chat of history) {
-    
+                
                 const { role, parts } = chat;
-                this.Set("{e.message}++", <><Bubble args text={ parts[0].text } align={ (role == "user" ? "L" : "R") }></Bubble></>);
+                const _text = (parts[0].fileData) ? "*(Embedded File)*" : parts[0].text;
+
+                this.Set("{e.message}++", <><Bubble args text={ _text } align={ (role == "user" ? "L" : "R") }></Bubble></>);
 
             };
 
@@ -100,7 +96,7 @@ export default class Prompt extends H12 {
         }
         catch(error) {
             alert(error);
-            console.log("C/A/P.Load():", error);
+            console.log(error);
         };
 
         PromptButton.disabled = false;
@@ -108,7 +104,7 @@ export default class Prompt extends H12 {
 
     }
 
-    async Send(text) {
+    async Send() {
 
         const { PromptBox, PromptButton, PromptHistory } = this.element;
         PromptButton.disabled = true;
@@ -116,31 +112,46 @@ export default class Prompt extends H12 {
 
         try {
 
-            if(PromptBox.value.trim().length === 0) {
-                throw new Error("Please enter something, before asking");
+            //
+            const { FUploader } = this.child;
+            const _prompt = PromptBox.value;
+            const _file = FUploader.File;
+
+            //
+            if(_prompt.trim().length === 0 && _file == null) {
+                throw new Error("Please enter the prompt or attach file");
             };
 
-            const _prompt = text ? text : PromptBox.value;
+            //
             PromptBox.value = "";
+            FUploader.AttachRemove();
 
+            //
             this.Set("{p.loader}", "");
             this.Set("{e.message}++", <><Bubble args text={ _prompt } align="L"></Bubble></>);
             PromptHistory.scrollTo(0, PromptHistory.scrollHeight);
 
-            const _response = await fetch(`/api/analytics/prompt?q=${encodeURIComponent(_prompt)}`);
+            //
+            const _url = `/api/analytics/prompt?q=${encodeURIComponent(_prompt)}`;
+            const _form = new FormData();
+            _form.append("files", _file);
+
+            //
+            const _response = await fetch(_url, { method: "POST", body: _form });
             const { success, message, data } = await _response.json();
-    
+
+            //
             if(!success || !_response.ok) {
                 throw new Error(message);
             };
 
-            this.Set("{e.message}++", <><Bubble args text={ data } align="R"></Bubble></>);
-            PromptHistory.scrollTo(0, PromptHistory.scrollHeight);
+            //
+            Dispatcher.Call(Config.ON_ANALYTICS_CPROMPT, data);
     
         }
         catch(error) {
             alert(error);
-            console.log("C/A/P.Send():", error);
+            console.log(error);
         };
 
         this.Set("{p.loader}", "hidden");
@@ -150,7 +161,6 @@ export default class Prompt extends H12 {
     }
 
     ApplyFormat() {
-
         if(Lazy.Status("Marked") && Lazy.Status("DOMPurify")) {
             this.CanFormat = true;
             for(const c in this.child) {
@@ -159,16 +169,13 @@ export default class Prompt extends H12 {
                 };
             }
         };
-        
     }
 
     async OnAnalyticReport(event, report) {
-        
         if(report) {
             this.Report = report;
             this.Load();
         };
-
     }
 
 };

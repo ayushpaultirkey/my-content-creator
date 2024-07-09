@@ -65,20 +65,10 @@ export default class Channel extends H12 {
                     </div>
 
                     <div class="border border-transparent border-t-zinc-700 pt-3">
-                        <label class="text-xs font-semibold text-zinc-400 block mb-1">Refresh Data:</label>
-                        <button
-                            class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors"
-                            onclick={ () => { this.parent.Load(); }}>
-                            <i class="fa-solid fa-refresh mr-2 pointer-events-none"></i>
-                            Reload
-                        </button>
-                    </div>
-
-                    <div class="border border-transparent border-t-zinc-700 pt-3">
                         <label class="text-xs font-semibold text-zinc-400 block mb-1">Analyze Data:</label>
                         <button
                             class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors"
-                            onclick={ () => { this.parent.Load(); }}>
+                            onclick={ () => { this.parent.Load("?refresh=true"); }}>
                             <i class="fa-solid fa-splotch mr-2 pointer-events-none"></i>
                             Analyze
                         </button>

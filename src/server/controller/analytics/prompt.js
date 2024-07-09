@@ -1,6 +1,7 @@
 import chalk from "chalk";
+
+import Asset from "#service/asset.js";
 import Analytics from "#service/analytics.js";
-import Gemini from "#service/google/gemini.js";
 
 /**
     *
@@ -9,47 +10,70 @@ import Gemini from "#service/google/gemini.js";
 */
 export default async function Prompt(request, response) {
 
-    // Create response object
+    //Create response object
     const _response = { message: "", success: false, data: {} };
-
-    //
+    
     try {
 
-        // Check for session uid and query
-        const { uid } = request.cookies;
-        const { q } = request.query;
-        if(!q || !uid) {
-            throw new Error("Invalid prompt or session");
-        };
+        // Use multer to handle file uploads
+        Asset.Uploader(request, response, async(error) => {
+            try {
 
-        // Read current chat session file
-        // And check if its valid
-        let _data = await Analytics.Read(uid);
-        if(!_data) {
-            throw new Error("Invalid chat session data");
-        };
+                // An error occurred when uploading.
+                if(error) {
+                    throw new Error(error.message);
+                };
 
-        // Generate answer
-        const { answer } = await Gemini.Prompt(Analytics.Config.E_GEMINI, q, _data.history);
-        
-        // Update chat session data
-        await Analytics.Save(uid, _data);
+                //
+                const { cookies, query, files } = request;
+                const { uid } = cookies;
+                const { q } = query;
+                if(!uid) {
+                    throw new Error("Invalid resource id");
+                };
+                const _file = (files && files.length > 0) ? files[0] : null;
 
-        // Send response
-        _response.data = answer;
-        _response.success = true;
+                // Check for prompt and file
+                if(!_file && (!q || q.trim().length < 5)) {
+                    throw new Error("Please enter either prompt or attach file");
+                };
+
+                //
+                const _data = await Analytics.Prompt({
+                    file: _file,
+                    prompt: q,
+                    rid: uid,
+                    request: request,
+                    callback: () => {}
+                });
+
+                // Set the response data
+                _response.message = "Project updated";
+                _response.success = true;
+                _response.data = _data;
+
+            }
+            catch (error) {
+                        
+                // Log and set error message
+                _response.message = error.message || "Unable to upload asset";
+                console.log(chalk.red("/analytics/prompt:"), "Upload error", error);
+
+            }
+            finally {
+
+                // Send response
+                response.send(_response);
+
+            };
+        });
 
     }
     catch(error) {
 
-        // Log and set response for error
-        console.log(chalk.red("/analytics/prompt:"), error);
+        // Log ad set error message
         _response.message = error.message || "An error occurred";
-
-    }
-    finally {
-
-        // send response
+        console.log(chalk.red("/analytics/prompt:"), error);
         response.send(_response);
 
     };

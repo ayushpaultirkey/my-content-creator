@@ -34,13 +34,13 @@ function Initialize(id, systemInstruction, responseMimeType = "text/plain") {
                 model: _model
             });
 
-            console.log(`Service/Google/Gemini.Initialize(): ${id} gemini instance added to container.`);
+            console.log(chalk.green("/S/Google/Gemini.Initialize():"), `${id} gemini instance added to container.`);
     
         };
 
     }
     catch(error) {
-        console.log("Service/Google/Gemini.Initialize():", error);
+        console.log(chalk.red("/S/Google/Gemini.Initialize():"), error);
         throw error;
     }
 

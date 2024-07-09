@@ -24,7 +24,8 @@ export default async function Prompt(request, response) {
                 };
 
                 // Get query parameter
-                const { pid, prompt, files } = request.query;
+                const { files, query } = request;
+                const { pid, prompt } = query;
                 const _file = (files && files.length > 0) ? files[0] : null;
 
                 // Check for prompt and file

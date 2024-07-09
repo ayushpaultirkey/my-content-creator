@@ -5,13 +5,12 @@ import H12 from "@library/h12";
 export default class Bubble extends H12 {
     constructor() {
         super();
-        this.Visible = false;
     }
     async init({ text }) {
 
         const { TBox } = this.element;
         if(!this.parent.CanFormat) {
-            TBox.innerText = (this.IsJson(text) ? "(Embedded Channel Data)" : text);
+            TBox.innerText = (this.IsJson(text) ? "*(Embedded JSON)*" : text);
         }
         else {
             this.Format();
@@ -22,7 +21,7 @@ export default class Bubble extends H12 {
 
         const { TBox } = this.element;
         const { text } = this.args;
-        TBox.innerHTML = marked.parse((this.IsJson(text) ? "(Embedded Channel Data)" : DOMPurify.sanitize(text)));
+        TBox.innerHTML = marked.parse((this.IsJson(text) ? "*(Embedded JSON)*" : DOMPurify.sanitize(text)));
 
     }
     IsJson(data) {
@@ -46,9 +45,5 @@ export default class Bubble extends H12 {
             </div>
         </>
 
-    }
-    Toggle() {
-        this.Set("{x.text}", (this.Visible) ? "" : this.args.text);
-        this.Visible = !this.Visible;
     }
 };
