@@ -38,6 +38,7 @@ export default async function Upload(request, response) {
         // Using project id, try to upload the render.mp4 file to youtube
         // Create callback for the server side event
         await Youtube.Upload({
+            request: request,
             projectId: pid,
             title: t,
             category: c,

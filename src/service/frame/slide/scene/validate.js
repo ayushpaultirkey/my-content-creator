@@ -64,7 +64,7 @@ export default async function Validate(projectPath, asset) {
         }
         catch(error) {
 
-            console.log(chalk.red("S/Frame/Scene/Validate():") `Cannot find ${x} asset file`, error);
+            console.log(chalk.red("S/Frame/Scene/Validate():"), `Cannot find ${x} asset file`, error);
 
             // Try to use fallback asset
             if(await UseFallback(_assetPath)) {

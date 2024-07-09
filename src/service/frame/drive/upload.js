@@ -2,7 +2,7 @@ import chalk from "chalk";
 import Drive from "#service/google/drive.js";
 import Project from "#service/frame/project.js";
 
-export default async function UploadFile({ projectId = "", callback }) {
+export default async function UploadFile({ projectId = "", request, callback }) {
 
     try {
 
@@ -17,6 +17,7 @@ export default async function UploadFile({ projectId = "", callback }) {
         //
         await Drive.UploadFile({
             filePath: _filePath.path,
+            request: request,
             callback: callback
         });
 

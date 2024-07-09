@@ -28,6 +28,7 @@ export default async function Import(request, response) {
         
         //
         await Drive.ImportFiles({
+            request: request,
             fileId: JSON.parse(fid),
             projectId: pid, 
             callback: () => {

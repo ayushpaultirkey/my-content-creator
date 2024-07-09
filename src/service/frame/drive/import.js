@@ -6,7 +6,7 @@ import sharp from "sharp";
 import Drive from "#service/google/drive.js";
 import Project from "#service/frame/project.js";
 
-export default async function ImportFiles({ projectId = "", fileId = [], callback }) {
+export default async function ImportFiles({ projectId = "", fileId = [], request, callback }) {
 
     try {
 
@@ -21,7 +21,12 @@ export default async function ImportFiles({ projectId = "", fileId = [], callbac
         const _project = await Project.Read(projectId);
         const _projectAsset = Project.Path(projectId, "/asset/");
 
-        const _files = await Drive.ImportFiles(fileId);
+        const _files = await Drive.ImportFiles({
+            id: fileId,
+            request: request,
+            callback: callback
+        });
+
         for(var i = 0, len = _files.length; i < len; i++) {
 
             const { name, path: fpath, mime } = _files[i];

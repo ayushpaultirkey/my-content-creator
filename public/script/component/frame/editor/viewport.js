@@ -87,7 +87,7 @@ export default class Viewport extends H12 {
 
             //
             const { Viewport, ViewportVideo } = this.element;
-            Viewport.src = `./project/${id}/cache/${slides[0].id}.mp4`;
+            Viewport.src = `./project/${id}/cache/${slides[0].id}.mp4?r=${crypto.randomUUID()}`;
             ViewportVideo.load();
 
         }
@@ -114,7 +114,7 @@ export default class Viewport extends H12 {
             return false;
         };
 
-        Viewport.src = `./project/${id}/cache/${slides[index].id}.mp4`;
+        Viewport.src = `./project/${id}/cache/${slides[index].id}.mp4?r=${crypto.randomUUID()}`;
         ViewportVideo.load();
 
         //

@@ -4,6 +4,7 @@ import { FFText, FFAlbum, FFVideo } from "ffcreator";
 
 import directory from "#library/directory.js";
 import Validate from "./scene/validate.js";
+import chalk from "chalk";
 
 
 // Get directory path
@@ -45,6 +46,9 @@ async function AddVideo({ projectPath, scene, video, totalTime, showAt, width, h
 
             };
 
+            //
+            console.log(chalk.green("/S/Frame/Scene/AddVideo(): Video added"));
+
         }
         catch(error) {
             console.log("Service/Scene.AddVideo(): Unable to add video", error);
@@ -80,9 +84,34 @@ async function AddImage({ projectPath, scene, image, totalTime, showAt, hideAt, 
         _album.addEffect("fadeOut", 1, hideAt);
         scene.addChild(_album);
         
+        //
+        console.log(chalk.green("/S/Frame/Scene/AddImage(): Image added"));
+
     };
 
 };
+
+async function AddBGM({ projectPath, creator, audio, volume }) {
+
+    // Add audio if available
+    try {
+
+        // Check if audio exists
+        const _audioPath = path.join(projectPath, `/asset/${audio}`);
+        await fs.access(_audioPath);
+
+        // Set audio file
+        creator.addAudio({ path: _audioPath, start: 0, volume: volume });
+
+        //
+        console.log(chalk.green("/S/Frame/Scene/AddBGM(): Background audio added"));
+
+    }
+    catch(error) {
+        console.log(`/S/Frame/Scene.AddBGM(): Cannot find audio`, error);
+    };
+
+}
 
 
 async function AddAudio({ projectPath, scene, audio, volume, showAt }) {
@@ -96,6 +125,9 @@ async function AddAudio({ projectPath, scene, audio, volume, showAt }) {
 
         // Set audio file
         scene.addAudio({ path: _audioPath, start: showAt, volume: volume });
+
+        //
+        console.log(chalk.green("/S/Frame/Scene/AddAudio(): Audio added"));
 
     }
     catch(error) {
@@ -124,6 +156,9 @@ async function AddText({ projectPath, scene, content, showAt, hideAt, width, hei
         _text.setWrap(width / 1.5);
         scene.addChild(_text);
 
+        //
+        console.log(chalk.green("/S/Frame/Scene/AddText(): Text added"));
+
     }
     catch(error) {
         console.log(`Service/Scene.AddText(): Cannot add text`, error);
@@ -133,4 +168,4 @@ async function AddText({ projectPath, scene, content, showAt, hideAt, width, hei
 
 
 // Export
-export default { AddAudio, AddImage, AddVideo, AddText };
+export default { AddAudio, AddImage, AddVideo, AddText, AddBGM };

@@ -2,6 +2,7 @@ import "@style/main.css";
 import H12 from "@library/h12";
 import Item from "./asset/item";
 import Dispatcher from "@library/h12.dispatcher";
+import Config from "@library/@config";
 
 @Component
 export default class Asset extends H12 {
@@ -15,7 +16,7 @@ export default class Asset extends H12 {
 
         // Register on input file
         this.element.AssetUpload.addEventListener("change", this.#Upload.bind(this));
-    
+
     }
 
     async render() {
@@ -37,11 +38,13 @@ export default class Asset extends H12 {
             </div>
         </>);
 
+        let _count = 1;
         for(var i = 0, l = asset.length; i < l; i++) {
             if(!asset[i].type.includes(filter)) {
                 continue;
             };
-            this.Set("{p.asset}++", <><Item args type={ asset[i].type } id={ asset[i].name } url={ asset[i].path } name={ asset[i].name } index={ i + 1 }></Item></>);
+            this.Set("{p.asset}++", <><Item args type={ asset[i].type } id={ asset[i].name } url={ asset[i].path } name={ asset[i].name } index={ _count }></Item></>);
+            _count++;
         };
 
     }
@@ -54,7 +57,6 @@ export default class Asset extends H12 {
         };
 
         this.Selected = asset.map(x => x.name);
-
         for(var item in this.child) {
             this.child[item].SetIndex(this.Selected.indexOf(item));
         };
@@ -107,7 +109,7 @@ export default class Asset extends H12 {
                 };
 
                 // Build request body
-                const _url = `/api/asset/upload?pid=${this.args.projectid}`;
+                const _url = `/api/frame/asset/upload?pid=${this.args.projectid}`;
                 const _form = new FormData();
                 _form.append("files", _file);
     
@@ -121,7 +123,7 @@ export default class Asset extends H12 {
                 };
     
                 // Call dispatcher event
-                Dispatcher.Call("OnAssetUpdated");
+                Dispatcher.Call(Config.ON_FASSET_UPDATE);
                 
 
             }

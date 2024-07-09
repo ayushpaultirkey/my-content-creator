@@ -7,7 +7,7 @@ import { google } from "googleapis";
 import Auth from "./../auth.js";
 
 
-export default async function Upload({ filePath, title, description, category = 24, callback }) {
+export default async function Upload({ request, filePath, title, description, category = 24, callback }) {
 
     try {
 
@@ -26,7 +26,7 @@ export default async function Upload({ filePath, title, description, category = 
         };
 
         // Get auth cient and define google drive
-        const _auth = Auth.OAuth2Client();
+        const _auth = Auth.OAuth2Client(request);
         const _youtube = google.youtube({ version: "v3", auth: _auth });
 
         // Define video metadata

@@ -41,7 +41,7 @@ export default class Prompt extends H12 {
     async render() {
         return <>
             <div class="w-full h-full overflow-hidden">
-                <div class="w-full h-full p-4 px-5 flex flex-col space-y-3 overflow-auto">
+                <div class="w-full h-full p-4 px-5 flex flex-col space-y-3 overflow-hidden">
         
                     <div class="border border-transparent border-b-zinc-700 pb-3">
                         <label class="font-semibold text-zinc-400"><i class="mr-2 fa-solid fa-wand-magic-sparkles"></i>Prompt</label>

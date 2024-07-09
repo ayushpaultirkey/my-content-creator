@@ -36,6 +36,7 @@ export default async function Upload(request, response) {
         // Using project id, try to upload the render.mp4 file to drive
         // Create callback for the server side event
         await Drive.UploadFile({
+            request: request,
             projectId: pid,
             callback: (text) => {
 

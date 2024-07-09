@@ -45,7 +45,7 @@ export default async function Update(request, response) {
             //
             const _projectUpdated = await Project.Update({
                 projectId: pid,
-                prompt: `Change the project's ${_projectTitle} ${_projectDetail}`,
+                prompt: `Change the project's ${_projectTitle} ${_projectDetail} audio to ${_audioPrompt}`,
                 file: undefined,
                 callback: () => {
                     console.log("")

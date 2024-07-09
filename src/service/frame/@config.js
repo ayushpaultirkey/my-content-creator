@@ -20,6 +20,7 @@ export default {
     "title": string,
     "description": string,
     "keyword": string,
+    "audio": [{ name: string }],
     "slides": [{
     "id": string,
     "content": string,
@@ -32,6 +33,8 @@ export default {
     "title": is the title for the video, keep it precise and accurate.
     "description": the detailed description for the video, use seo to make the description stand out by using emojis, hashtag or other things and easy to understand.
     "keyword": a single word in lower case to describe the video and it can be used to search related contents.
+    "audio": an array of audio, you cannot set the value for this, until and unless user tell you.
+    "audio"."name": this will be the name for the image file, you cannot set the value for this, until and unless user tell you.
     "slides": this is a array that contain multiple slides of the video.
     "slides"."id": the slide id should be unique and cannot be changed once created, it should be like this: "slide1", "slide2".
     "slides"."content": the content for the slide, don't use any text formatting and keep it precise if the video duration is not long.

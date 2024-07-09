@@ -13,12 +13,12 @@ import GAuth from "./auth.js";
 const {  __root } = directory();
 
 
-async function GetFiles(nextPage = null) {
+async function GetFiles({ nextPage = null, request, callback }) {
 
     try {
 
         // Get auth cient
-        const _auth = GAuth.OAuth2Client();
+        const _auth = GAuth.OAuth2Client(request);
 
         // Define google drive
         const _drive = google.drive({ version: "v3", auth: _auth });
@@ -50,12 +50,12 @@ async function GetFiles(nextPage = null) {
 };
 
 
-async function ImportFiles(id = []) {
+async function ImportFiles({ request, id = [], callback }) {
 
     try {
 
         // const _project = await Project.GetActive(projectId);
-        const _auth = GAuth.OAuth2Client();
+        const _auth = GAuth.OAuth2Client(request);
         const _drive = google.drive({ version: "v3", auth: _auth });
 
         const _validated = [];
@@ -119,7 +119,7 @@ async function ImportFiles(id = []) {
 };
 
 
-async function UploadFile({ filePath, callback }) {
+async function UploadFile({ filePath, request, callback }) {
 
     try {
 
@@ -128,7 +128,7 @@ async function UploadFile({ filePath, callback }) {
         callback("Drive: Upload started");
 
         // Get auth cient and define google drive
-        const _auth = GAuth.OAuth2Client();
+        const _auth = GAuth.OAuth2Client(request);
         const _drive = google.drive({ version: "v3", auth: _auth });
 
         // Create meta data for file

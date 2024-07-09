@@ -30,7 +30,7 @@ export default class Analytics extends H12 {
                 <div class="w-full h-full flex flex-row relative">
 
                     <div class="w-full h-full bg-zinc-900 flex-col flex p-4 absolute -left-full md:w-auto md:h-auto md:static md:left-auto" id="NavigationTab">
-                        <button class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-blue-500 fa fa-grip"></i>Dashboard</button>
+                        <button onclick={ () => { Dispatcher.Call("OnNavigate", { target: "DASHBOARD" }) } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-blue-500 fa fa-grip"></i>Dashboard</button>
                         <button onclick={ () => { this.Tab(0); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-red-500 fa-solid fa-wand-magic-sparkles"></i>Prompt</button>
                         <button onclick={ () => { this.Tab(1); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-orange-500 fa-solid fa-layer-group"></i>Channel</button>
                         <button onclick={ () => { this.Tab(2); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-blue-500 fa-solid fa-video"></i>Videos</button>
@@ -58,7 +58,7 @@ export default class Analytics extends H12 {
                             <button class="fa-solid fa-pen-to-square text-blue-500" onclick={ () => { this.Scroll(1); } }></button>
                         </div>
                         <div class="w-full h-full overflow-auto">
-                            <div class="overflow-auto" id="Viewport">
+                            <div id="Viewport">
                                 <Graph args></Graph>
                                 <Detail args></Detail>
                             </div>

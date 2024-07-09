@@ -171,14 +171,10 @@ export default class Project extends H12 {
             //
             ServerEvent(`/api/frame/project/render?pid=${Project.id}`, {
                 onOpen: () => {
-                    
                     Dispatcher.Call(Config.ON_LOADER_SHOW);
-
                 },
                 onMessage: (data) => {
-
                     Dispatcher.Call(Config.ON_LOADER_UPDATE, data.message);
-
                 },
                 onFinish: () => {
 
@@ -219,11 +215,11 @@ export default class Project extends H12 {
 
         //
         const { AudioAsset } = this.child;
-        const { backgroundAudio } = this.Project.property;
+        const { audio } = this.Project.property;
 
         //
-        AudioAsset.Load(asset, "audio");
-        AudioAsset.SetSelected(backgroundAudio);
+        await AudioAsset.Load(asset, "audio");
+        AudioAsset.SetSelected(audio);
 
     }
 

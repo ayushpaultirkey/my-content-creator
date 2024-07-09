@@ -23,7 +23,11 @@ export default async function GetFile(request, response) {
         const { next } = request.query;
 
         // Get files from drive
-        const _data = await Google.Drive.GetFiles((next ? next : null));
+        const _data = await Google.Drive.GetFiles({
+            request: request,
+            nextPage: (next ? next : null),
+            callback: () => {}
+        });
 
         // Set response data
         _response.data = _data;

@@ -21,7 +21,7 @@ export default class Graph extends H12 {
 
     async render() {
         return <>
-            <div class="w-full h-full">
+            <div class="w-full h-full pt-12">
                 <div style="height: 450px; width: 100%;"></div>
             </div>
         </>;

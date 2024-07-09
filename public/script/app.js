@@ -38,10 +38,6 @@ class App extends H12 {
         Lazy.Script("DOMPurify", "https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js");
         Lazy.Style("FAIcon", "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
-        setTimeout(() => {
-            this.Navigate.Analytics();
-        }, 500);
-
     }
 
     async render() {

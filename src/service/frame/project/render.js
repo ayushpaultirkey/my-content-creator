@@ -10,6 +10,7 @@ import Path from "./path.js";
 import Scene from "../slide/scene.js";
 import Duration from "../slide/duration.js";
 import Asset from "#service/asset.js";
+import chalk from "chalk";
 
 export default async function Render({ projectId = "", callback = null }) {
 
@@ -39,6 +40,19 @@ export default async function Render({ projectId = "", callback = null }) {
             height: H
         });
 
+        // Get background audio file
+        const _audio = _property.audio;
+        if(_audio && _audio[0] && _audio[0].name) {
+
+            await Scene.AddBGM({
+                projectPath: _projectPath,
+                creator: _creator,
+                audio: _audio[0].name,
+                volume: 1,
+            });
+
+        };
+
         // Create volume index
         let _vindex = 0;
         function _volumeMapping(v, inStart, inEnd, outStart, outEnd) {
@@ -50,7 +64,7 @@ export default async function Render({ projectId = "", callback = null }) {
 
             // Get narration audio length
             const _duration = await Duration({
-                dir: path.join(_projectPath, `/asset/${slide.id}.wav`),
+                filePath: path.join(_projectPath, `/asset/${slide.id}.wav`),
                 content: slide.content
             });
 
@@ -121,9 +135,7 @@ export default async function Render({ projectId = "", callback = null }) {
         _creator.on("start", () => {
 
             // Send SSE
-            callback(`Rendering: Project rendering started`);
-
-            // Log
+            callback(`Rendering: Project rendering warming up`);
             console.log(`Service/Project/Render(): Project render ${projectId} started`);
             
         });

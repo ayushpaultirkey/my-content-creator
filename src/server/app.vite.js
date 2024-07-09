@@ -44,16 +44,7 @@ export default function init() {
 
     // Add project path
     const { __root } = directory();
-    app.use("/project", (request, response, next) => {
-
-        const _path = request.path;
-        if(_path.endsWith(".mp4") || _path.endsWith(".avi") || _path.endsWith(".mov")) {
-            res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
-            res.setHeader("Expires", "0");
-            res.setHeader("Pragma", "no-cache");
-        };
-
-    }, express.static(path.join(__root, "/project/")));
+    app.use("/project", express.static(path.join(__root, "/project/")));
     
     // Serve files
     app.use("/", router);
