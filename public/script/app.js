@@ -75,7 +75,6 @@ class App extends H12 {
     Navigate = {
         To: (event, args = { target: "DASHBOARD" }) => {
 
-            console.log(args.target)
             switch(args.target) {
                 case "EDITOR":
                     this.Navigate.Editor(args.project);
@@ -121,7 +120,7 @@ class App extends H12 {
             }
             catch(error) {
                 alert(error);
-                console.log("/A.Navigate.To.Analytics():", error);
+                console.error(error);
             };
             
         }

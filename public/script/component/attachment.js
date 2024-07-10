@@ -53,7 +53,7 @@ export default class Attachment extends H12 {
             };
         }
         else {
-            console.warn(`Attachment/AttachFile(): File ${_file.name} is not supported and was not uploaded.`);
+            console.warn("Invalid file type");
             alert("File format not supported");
         };
 

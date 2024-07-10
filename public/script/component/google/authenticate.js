@@ -44,7 +44,7 @@ export default class Authenticate extends H12 {
 
         }
         catch(error) {
-            console.error("C/G/A.CheckHistory():", error);
+            console.error(error);
         };
 
     }
@@ -73,7 +73,7 @@ export default class Authenticate extends H12 {
             catch(error) {
 
                 this.Set("{g.auth.visible}", "hidden");
-                console.error("C/G/A.Authenticate():", error);
+                console.error(error);
                 Destroy(_id);
 
             };
@@ -83,7 +83,7 @@ export default class Authenticate extends H12 {
         Bind(_id, "error", () => {
 
             this.Set("{g.auth.visible}", "hidden");
-            console.error("C/G/A.Authenticate(): error");
+            console.error("auth error");
             Destroy(_id);
 
         });

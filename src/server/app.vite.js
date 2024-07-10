@@ -8,13 +8,13 @@ import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import compression from "compression";
 import viteExpress from "vite-express";
+import chalk from "chalk";
 
 import router from "./router.js";
-import Cache from "../service/asset/cache.js";
-import Gemini from "./../service/google/gemini.js";
-import directory from "./../library/directory.js";
 import Config from "./../config/@config.js";
-import chalk from "chalk";
+import Cache from "#service/asset/cache.js";
+import Gemini from "#service/google/gemini.js";
+import directory from "#library/directory.js";
 
 //
 export default function init() {

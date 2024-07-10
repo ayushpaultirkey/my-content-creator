@@ -1,9 +1,8 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
-import Google from "@library/google";
 import Config from "@library/@config";
-import ServerEvent from "@library/sse";
+import ServerEvent from "@library/serverevent.p";
 
 @Component
 export default class Export extends H12 {
@@ -97,7 +96,7 @@ export default class Export extends H12 {
             // Log and show message
             this.Set("{em.visible}", "");
             this.Set("{ev.visible}", "hidden");
-            console.error("F/E/E.Load():", error);
+            console.error(error);
 
         };
         
@@ -165,7 +164,7 @@ export default class Export extends H12 {
 
                 // Alert and log
                 alert("Unable to upload project, try again later");
-                console.error("F/E/E/U.Drive():", error);
+                console.error(error);
                 ExportDrive.disabled = false;
                 
             };

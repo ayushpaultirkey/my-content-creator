@@ -161,7 +161,7 @@ export default class Slide extends H12 {
         }
         catch(error) {
             alert(error);
-            console.error("E/S.Update():", error);
+            console.error(error);
         };
 
         // Call dispather hide loader
@@ -182,7 +182,7 @@ export default class Slide extends H12 {
             this.element.SlideContent.value = _example[index];
         }
         catch(error) {
-            console.error("E/S.SetExample():", error);
+            console.error(error);
         };
 
     }

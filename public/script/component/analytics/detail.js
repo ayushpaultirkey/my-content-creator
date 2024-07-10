@@ -1,13 +1,7 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
-import Prompt from "@component/analytics/prompt";
-import Lazy from "@library/h12.lazy";
-import Authenticate from "@component/google/authenticate";
-import Channel from "@component/analytics/channel";
 import Config from "@library/@config";
-import Video from "@component/analytics/video";
-import Graph from "@component/analytics/graph";
 import Comment from "./comment";
 
 @Component

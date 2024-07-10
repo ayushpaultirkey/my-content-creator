@@ -5,6 +5,7 @@ import { Downloader } from "nodejs-file-downloader";
 import url from "url";
 import path from "path";
 import os from "os";
+import chalk from "chalk";
 
 /**
     * 
@@ -48,20 +49,20 @@ async function download(url, output, name) {
 
         },
         onError: function(error) {
-            console.log(`Unable to download ${name} from ${url}`);
-            console.log(error);
+            console.log(chalk.red(`Unable to download ${name} from ${url}`));
+            console.log(chalk.red(error));
         }
     });
 
     // Start download
     try {
-        console.log(`${name} download started.`);
+        console.log(chalk.green(`${name} download started.`));
         await _downloader.download();
         unzipSync(join(__dirname, output, name), join(__dirname, output));
-        console.log(`${name} downloaded & extraced at ${output}${name}`);
+        console.log(chalk.green(`${name} downloaded & extraced at ${output}${name}`));
     }
     catch(error) {
-        console.log("Unable to download file", error);
+        console.log(chalk.red("Unable to download file"), error);
     };
 
 };
@@ -78,16 +79,16 @@ async function download(url, output, name) {
         try {
             await download(url, output, "ffmpeg-6.1-win-64.zip");
             await download(url, output, "ffprobe-6.1-win-64.zip");
-            console.log("All files downloaded");
-            console.log("use `npm start` command to start application");
+            console.log(chalk.green("All files downloaded"));
+            console.log(chalk.green("use `npm start` command to start application"));
         }
         catch(ex) {
-            console.log("Unable to download ffmpeg library, try downloading it manually and place it at /library/", ex);
+            console.log(chalk.red("Unable to download ffmpeg library, try downloading it manually and place it at /library/"), ex);
         };
 
     }
     else if(platform === "linux") {
-        console.log("Use: sudo apt install ffmpeg")
+        console.log(chalk.green("Use: sudo apt install ffmpeg"));
     }
 
 

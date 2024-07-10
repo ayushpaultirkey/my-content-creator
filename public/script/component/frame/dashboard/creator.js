@@ -1,10 +1,8 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
-import ServerEvent from "@library/sse";
+import ServerEvent from "@library/serverevent.p";
 import Frame from "@library/frame";
-
-import Card from "@component/frame/dashboard/card";
 import Attachment from "@component/attachment";
 import Config from "@library/@config";
 
@@ -138,7 +136,7 @@ export default class Creator extends H12 {
             alert(error);
             this.Toggle(false);
             Dispatcher.Call(Config.ON_LOADER_HIDE);
-            console.error("D/Creator.Create():", error);
+            console.error(error);
         };
 
     }

@@ -124,7 +124,7 @@ export default class Prompt extends H12 {
                     };
                 }
                 catch(error) {
-                    console.error("Editor/Prompt/Load():", error);
+                    console.error(error);
                     _text = "(JSON Data Error)";
                 };
 
@@ -146,7 +146,7 @@ export default class Prompt extends H12 {
 
         }
         catch(error) {
-            console.error("E/P.Load():", error);
+            console.error(error);
         };
 
     }
@@ -212,7 +212,7 @@ export default class Prompt extends H12 {
 
         }
         catch(error) {
-            console.error("E/P.Update():", error);
+            console.error(error);
         };
 
         //

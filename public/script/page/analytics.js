@@ -2,7 +2,7 @@ import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
 import Prompt from "@component/analytics/prompt";
-import Lazy from "@library/h12.lazy";
+import Misc from "@library/misc";
 import Authenticate from "@component/google/authenticate";
 import Channel from "@component/analytics/channel";
 import Config from "@library/@config";
@@ -45,13 +45,13 @@ export default class Analytics extends H12 {
                         </div>
 
                         <div class="absolute right-10 top-3 flex space-x-6 md:hidden">
-                            <button class="fa-solid fa-bars text-blue-500 text-xl" onclick={ () => { this.Scroll(0); } }></button>
-                            <button class="fa-solid fa-arrow-right text-blue-500 text-xl" onclick={ () => { this.Scroll(2); } }></button>
+                            <button class="fa-solid fa-bars text-blue-500 text-xl" onclick={ () => { this.Navigate(0); } }></button>
+                            <button class="fa-solid fa-arrow-right text-blue-500 text-xl" onclick={ () => { this.Navigate(2); } }></button>
                         </div>
                     
                     </div>
 
-                    <div class="w-full h-full absolute left-0 md:static md:left-auto overflow-hidden">
+                    <div class="w-full h-full absolute left-0 md:static md:left-auto overflow-hidden" id="ViewportTab">
                         <Authenticate args style="absolute top-10 right-10"></Authenticate>
                         <div class="absolute left-6 top-6 flex space-x-6 md:hidden z-10">
                             <button class="fa-solid fa-bars text-blue-500" onclick={ () => { this.Scroll(0); } }></button>
@@ -70,39 +70,13 @@ export default class Analytics extends H12 {
         </>;
     }
 
-    Scroll(index = 0) {
+    Navigate(index = 0) {
 
-        // const { NavigationTab, ViewportTab, PropertyTab } = this.element;
-
-        // switch(index) {
-        //     case 0:
-        //         NavigationTab.classList.add("left-0");
-        //         NavigationTab.classList.remove("-left-full");
-        //         ViewportTab.classList.add("-left-full");
-        //         ViewportTab.classList.remove("left-0");
-        //         PropertyTab.classList.add("-left-full");
-        //         PropertyTab.classList.remove("left-0");
-        //         break;
-        //     case 1:
-        //         NavigationTab.classList.add("-left-full");
-        //         NavigationTab.classList.remove("left-0");
-        //         ViewportTab.classList.add("-left-full");
-        //         ViewportTab.classList.remove("left-0");
-        //         PropertyTab.classList.add("left-0");
-        //         PropertyTab.classList.remove("-left-full");
-        //         break;
-        //     case 2:
-        //         NavigationTab.classList.add("-left-full");
-        //         NavigationTab.classList.remove("left-0");
-        //         PropertyTab.classList.add("-left-full");
-        //         PropertyTab.classList.remove("left-0");
-        //         ViewportTab.classList.add("left-0");
-        //         ViewportTab.classList.remove("-left-full");
-        //         break;
-
-        // }
+        const { NavigationTab, ViewportTab, PropertyTab } = this.element;
+        Misc.TabNavigate(index, [NavigationTab, ViewportTab, PropertyTab]);
 
     }
+
     Tab(index = 0) {
 
         const _children = Array.from(this.element.AnalyticNav.children);
@@ -114,9 +88,10 @@ export default class Analytics extends H12 {
             _children[index].classList.remove("hidden");
         };
 
-        this.Scroll(1);
+        this.Navigate(1);
 
     }
+    
     TabViewport(index = 0) {
         
         const _children = Array.from(this.element.Viewport.children);

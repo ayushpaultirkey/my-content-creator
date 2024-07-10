@@ -1,10 +1,7 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
-import Attachment from "@component/attachment";
-import Lazy from "@library/h12.lazy";
 import Config from "@library/@config";
-
 
 @Component
 export default class Channel extends H12 {

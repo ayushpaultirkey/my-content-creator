@@ -52,7 +52,7 @@ export default class Asset extends H12 {
     SetSelected(asset = [{ name }]) {
 
         if(!asset) {
-            console.error("Component/Asset.OnSelectedItem(): Invalid asset");
+            console.error("Invalid asset");
             return false;
         };
 
@@ -66,7 +66,7 @@ export default class Asset extends H12 {
     OnSelectItem(id) {
 
         if(!id) {
-            console.error("Component/Asset.OnSelectedItem(): Invalid id");
+            console.error("Invalid id");
             return false;
         };
 
@@ -104,7 +104,7 @@ export default class Asset extends H12 {
 
                 // Check for file
                 if(!_file) {
-                    console.warn(`Component/Asset.Upload(): File data invalid.`);
+                    console.warn("Invalid file data");
                     return false;
                 };
 
@@ -129,7 +129,7 @@ export default class Asset extends H12 {
             }
             else {
 
-                console.warn(`Component/Asset.Upload(): File ${_file.name} is not supported and was not uploaded.`);
+                console.warn("Invalid file type");
                 throw new Error("File format not supported");
 
             };

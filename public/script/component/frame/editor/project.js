@@ -1,7 +1,7 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
-import ServerEvent from "@library/sse";
+import ServerEvent from "@library/serverevent.p";
 import Config from "@library/@config";
 import Asset from "@component/asset";
 
@@ -143,7 +143,7 @@ export default class Project extends H12 {
         }
         catch(error) {
             alert(error);
-            console.error("E/P.Update();", error);
+            console.error(error);
         };
 
         //
@@ -200,7 +200,7 @@ export default class Project extends H12 {
             //
             PRender.disabled = false;
             alert("Unable to render project");
-            console.error("E/P.Render():", error);
+            console.error(error);
             
         };
 

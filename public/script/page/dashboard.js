@@ -23,7 +23,7 @@ export default class Dashboard extends H12 {
         }
         catch(error) {
             alert("Unable to load dashbaord");
-            console.error("D/init():", error);
+            console.error(error);
         };
 
     }
@@ -95,7 +95,7 @@ export default class Dashboard extends H12 {
 
         }
         catch(error) {
-            console.error("D.Load():", error);
+            console.error(error);
             alert("Unable to load projects, try again later");
         };
 
@@ -105,7 +105,7 @@ export default class Dashboard extends H12 {
 
         if(!this.child["DCreator"]) {
             this.Set("{d.creator}", <><Creator args id="DCreator"></Creator></>);
-            console.warn("D.OpenCreator(): Creater component builded");
+            console.warn("Creater component builded");
         };
         this.child["DCreator"].Toggle();
 

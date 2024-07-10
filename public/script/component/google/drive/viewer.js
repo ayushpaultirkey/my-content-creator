@@ -119,7 +119,7 @@ export default class Viewer extends H12 {
         }
         catch(error) {
             alert(error.message);
-            console.error("C/G/D/V.Load():", error);
+            console.error(error);
         }
 
         this.Set("{d.spin}", "");

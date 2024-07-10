@@ -1,17 +1,15 @@
 import "@style/main.css";
 import H12 from "@library/h12";
+import Misc from "@library/misc";
+import Config from "@library/@config";
 import Dispatcher from "@library/h12.dispatcher";
-
-import DViewer from "@component/google/drive/viewer";
-import YTUploader from "@component/google/youtube/uploader";
-
 import Slide from "@component/frame/editor/slide";
 import Prompt from "@component/frame/editor/prompt";
 import Viewport from "@component/frame/editor/viewport";
 import Project from "@component/frame/editor/project";
 import Export from "@component/frame/editor/export";
-import Config from "@library/@config";
-import ServerEvent from "@library/sse";
+import DragNDrop from "@component/frame/function/drag-n-drop";
+import DynImport from "@component/frame/function/dynamic-import";
 
 @Component
 export default class Frame extends H12 {
@@ -31,13 +29,25 @@ export default class Frame extends H12 {
         // Check if the project is valid
         if(args.project) {
 
-            // Set project for editor and load
+            // Set project
             this.Project = args.project;
-            await this.Load();
 
             // Bind dispatcher
             Dispatcher.On(Config.ON_FPROJECT_UPDATE, this.OnProjectUpdate.bind(this));
             Dispatcher.On(Config.ON_FASSET_UPDATE, this.LoadAsset.bind(this));
+
+            //
+            this.OpenYTUploader = DynImport.OpenYTUploader.bind(this);
+            this.OpenGDriveViewer = DynImport.OpenGDriveViewer.bind(this);
+
+            //
+            this.BindDrag = DragNDrop.BindDrag.bind(this);
+            this.HandleDrop = DragNDrop.HandleDrop.bind(this);
+            this.UploadFile = DragNDrop.UploadFile.bind(this);
+            this.PreventDefault = DragNDrop.PreventDefault.bind(this);
+
+            //
+            await this.Load();
 
         }
         else {
@@ -124,7 +134,6 @@ export default class Frame extends H12 {
         </>;
     }
 
-
     async Load() {
 
         this.BindDrag();
@@ -156,7 +165,7 @@ export default class Frame extends H12 {
         }
         catch(error) {
             alert("Unable to load project assets");
-            console.error("Editor/LoadAsset():", error);
+            console.error(error);
         };
 
     }
@@ -164,33 +173,7 @@ export default class Frame extends H12 {
     Navigate(index = 0) {
 
         const { NavigationTab, ViewportTab, PropertyTab } = this.element;
-
-        switch(index) {
-            case 0:
-                NavigationTab.classList.add("left-0");
-                NavigationTab.classList.remove("-left-full");
-                ViewportTab.classList.add("-left-full");
-                ViewportTab.classList.remove("left-0");
-                PropertyTab.classList.add("-left-full");
-                PropertyTab.classList.remove("left-0");
-                break;
-            case 1:
-                NavigationTab.classList.add("-left-full");
-                NavigationTab.classList.remove("left-0");
-                ViewportTab.classList.add("-left-full");
-                ViewportTab.classList.remove("left-0");
-                PropertyTab.classList.add("left-0");
-                PropertyTab.classList.remove("-left-full");
-                break;
-            case 2:
-                NavigationTab.classList.add("-left-full");
-                NavigationTab.classList.remove("left-0");
-                PropertyTab.classList.add("-left-full");
-                PropertyTab.classList.remove("left-0");
-                ViewportTab.classList.add("left-0");
-                ViewportTab.classList.remove("-left-full");
-                break;
-        };
+        Misc.TabNavigate(index, [NavigationTab, ViewportTab, PropertyTab]);
 
     }
 
@@ -209,130 +192,6 @@ export default class Frame extends H12 {
 
     }
     
-
-    async OpenGDriveViewer() {
-        
-        if(!this.child["GDrive"]) {
-            
-            //
-            this.Set("{e.gdrive}", <><DViewer args ref="DViewer" id="GDrive"></DViewer></>);
-            this.child["GDrive"].OnImport = async function() {
-
-                Dispatcher.Call(Config.ON_LOADER_SHOW);
-                Dispatcher.Call(Config.ON_LOADER_UPDATE, "Downloading File");
-
-                try {
-                    
-                    const { Project } = this.parent;
-                    if(!Project) {
-                        throw new Error("Invalid project")
-                    };
-
-                    const _fileId = this.Selected;
-                    const  _response = await fetch(`/api/frame/drive/import?pid=${Project.id}&fid=${JSON.stringify(_fileId)}`);
-                    const { success, message } = await _response.json();
-            
-                    if(!success || !_response.ok) {
-                        throw new Error(message);
-                    };
-            
-                    this.Hide();
-                    alert("Files imported");
-                    Dispatcher.Call(Config.ON_FASSET_UPDATE);
-            
-                }
-                catch(error) {
-                    alert(error);
-                    console.error("F/E/OpenGDriveViewer().OnImport():", error);
-                    Dispatcher.Call(Config.ON_LOADER_HIDE);
-                };
-
-                Dispatcher.Call(Config.ON_LOADER_HIDE);
-
-
-            };
-            
-            //
-            console.warn("E.OpenGDriveViewer(): DViewer imported");
-
-        };
-        this.child["GDrive"].Show(this.Project);
-        
-    }
-    async OpenYTUploader() {
-
-        if(!this.Project) {
-            return false;
-        };
-
-        if(!this.child["GYoutube"]) {
-            this.Set("{e.ytupload}", <><YTUploader args ref="YTUploader" id="GYoutube"></YTUploader></>);
-            this.child["GYoutube"].OnUpload = async function({ title, description, category, onStart, onEnd }) {
-
-                try {
-
-                    onStart();
-
-                    const { Project } = this.parent;
-                    if(!Project) {
-                        return false;
-                    };
-
-                    if(title.length < 2 || description.length < 2) {
-                        throw new Error("Please enter title and description");
-                    };
-        
-                    //
-                    ServerEvent(`/api/frame/youtube/upload?pid=${Project.id}&t=${title}&d=${description}&c=${category}`, {
-                        onOpen: () => {
-
-                            Dispatcher.Call(Config.ON_LOADER_SHOW);
-                            Dispatcher.Call(Config.ON_LOADER_UPDATE, "Uploading Video");
-
-                        },
-                        onMessage: (data) => {
-
-                            Dispatcher.Call(Config.ON_LOADER_SHOW);
-                            Dispatcher.Call(Config.ON_LOADER_UPDATE, data.message);
-                            
-                        },
-                        onFinish: () => {
-
-                            alert("Video uploaded to youtube !");
-                            Dispatcher.Call(Config.ON_LOADER_HIDE);
-
-                        },
-                        onError: (status, message) => {
-
-                            if(status !== EventSource.CLOSED && message) {
-                                alert(message);
-                            };
-                            Dispatcher.Call(Config.ON_LOADER_HIDE);
-
-                        }
-                    });
-        
-                }
-                catch(error) {
-        
-                    // Alert and log
-                    alert(error);
-                    console.error("F/E/OpenYTUploader().OnUpload():", error);
-                    onEnd();
-                    
-                };
-
-            };
-            console.warn("E.OpenYTUploader(): YTUploader imported");
-        };
-
-        const { title, description } = this.Project.property;
-        this.child["GYoutube"].Show({
-            title: title,
-            description: description
-        });
-    }
-
     OnProjectUpdate(event, project) {
 
         if(project) {
@@ -342,93 +201,5 @@ export default class Frame extends H12 {
         this.LoadAsset.bind(this);
 
     };
-
-    //#region File Drag n Drop
-    PreventDefault(event) {
-        
-        event.preventDefault();
-        event.stopPropagation();
-
-    }
-
-    BindDrag() {
-
-        // Set file drag n drop event
-        ["dragenter", "dragover", "dragleave", "drop"].forEach(name => {
-            this.root.addEventListener(name, this.PreventDefault, false);
-        });
-        ["dragenter", "dragover"].forEach(name => {
-            this.root.addEventListener(name, () => this.element.EditorUploader.classList.remove("collapse"), false);
-        });
-        ["dragleave", "drop"].forEach(name => {
-            this.root.addEventListener(name, () => this.element.EditorUploader.classList.add("collapse"), false);
-        });
-        this.root.addEventListener("drop", this.HandleDrop.bind(this), false);
-
-    }
-
-    async HandleDrop(event) {
-
-        // Check if the project is valid
-        if(!this.Project) {
-            console.error("E.HandleDrop(): Invalid project");
-            return false;
-        };
-
-        const _data = event.dataTransfer;
-        const _file = _data.files;
-
-        // Filter the files to be uploaded
-        const _filesToUpload = [..._file].filter(x => {
-            if(x.type.startsWith("image/") || x.type.startsWith("video/") || x.type.startsWith("audio/")) {
-                return true;
-            }
-            else {
-                console.warn(`E.HandleDrop(): ${x.name} not supported.`);
-                return false;
-            };
-        });
-
-        // Upload all files and wait for the uploads to complete
-        try {
-
-            await Promise.all(_filesToUpload.map(file => this.UploadFile(file)));
-
-            Dispatcher.Call(Config.ON_FASSET_UPDATE);
-
-        }
-        catch(error) {
-            console.error("E.HandleDrop(): Error file upload:", error);
-        };
-
-    }
-
-    async UploadFile(file) {
-
-        try {
-
-            //
-            const _url = `/api/frame/asset/upload?pid=${this.Project.id}`;
-            const _form = new FormData();
-            _form.append("files", file);
-
-            //
-            const _response = await fetch(_url, { method: "POST", body: _form });
-            const { success, message } = await _response.json();
-
-            //
-            if(!success || !_response.ok) {
-                throw new Error(message);
-            };
-
-
-        }
-        catch(error) {
-            alert(error);
-            console.error(error);
-        };
-
-    }
-    //#endregion
 
 };
