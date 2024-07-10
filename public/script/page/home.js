@@ -20,7 +20,6 @@ export default class Home extends H12 {
                 </div>
                 <div class="flex space-x-2">
                     <button class="p-3 px-6 text-xs rounded-md bg-blue-500 font-semibold hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.OpenDashboard }>Open Dashboard</button>
-                    <button class="p-3 px-6 text-xs rounded-md bg-blue-500 font-semibold hover:bg-blue-600 active:bg-blue-700 transition-colors" onclick={ this.OpenDashboard }>Open Youtube Analytics</button>
                 </div>
             </div>
         </>;

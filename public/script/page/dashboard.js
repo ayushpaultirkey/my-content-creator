@@ -35,9 +35,12 @@ export default class Dashboard extends H12 {
                 <div class="w-full h-full flex flex-col space-y-8 overflow-y-auto">
 
                     <div class="space-y-3">
-                        <div class="w-full flex">
-                            <label class="text-2xl font-semibold text-zinc-300 w-full">Dashboard</label>
-                            <div class="flex space-x-2">
+                        <div class="w-full flex space-x-0 space-y-2 flex-col sm:flex-row sm:space-x-3 sm:space-y-0">
+                            <div class="w-full space-x-3">
+                                <button class="fa fa-arrow-left text-xl text-zinc-500 hover:text-blue-600 active:text-blue-700" onclick={ () => { Dispatcher.Call("OnNavigate", { target: "HOME" }) } }></button>
+                                <label class="text-2xl font-semibold text-zinc-300">Dashboard</label>
+                            </div>
+                            <div>
                                 <Authenticate args></Authenticate>
                             </div>
                         </div>
