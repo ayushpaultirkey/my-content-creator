@@ -1,14 +1,15 @@
 import "@style/main.css";
 import H12 from "@library/h12";
-import Dispatcher from "@library/h12.dispatcher";
-import Prompt from "@component/analytics/prompt";
 import Misc from "@library/misc";
-import Authenticate from "@component/google/authenticate";
-import Channel from "@component/analytics/channel";
-import Config from "@library/@config";
+import Config from "@library/config";
+import Dispatcher from "@library/h12.dispatcher";
+
 import Video from "@component/analytics/video";
 import Graph from "@component/analytics/graph";
 import Detail from "@component/analytics/detail";
+import Prompt from "@component/analytics/prompt";
+import Channel from "@component/analytics/channel";
+import Authenticate from "@component/google/authenticate";
 
 @Component
 export default class Analytics extends H12 {

@@ -1,22 +1,30 @@
 export default {
+    /**
+        * Get the local project's id
+        * @returns {[string]}
+    */
     GetLocalProject: function() {
 
         try {
 
             const _project = localStorage.getItem("PROJECT");
             if(!_project) {
-                throw new Error("L/F/GetLocalProject(): no project")
+                throw new Error("No project")
             };
             
             return JSON.parse(_project);
 
         }
         catch(error) {
-            console.warn("L/F/GetLocalProject():", error);
+            console.warn(error);
             return [];
-        }
+        };
 
     },
+    /**
+        * Get the validated projects by their id
+        * @returns
+    */
     GetValidProject: async function(update = true) {
 
         try {
@@ -33,10 +41,10 @@ export default {
                 return [];
             };
     
-            // Update local project
+            // Check if the local project can be updated
             if(update) {
 
-                // Get Response dat
+                // Get Response data and add to PROJECT
                 const _validId = [];
                 const _project = data;
                 for(var i = 0; i < _project.length; i++) {
@@ -52,11 +60,14 @@ export default {
 
         }
         catch(error) {
-            console.log("L/F/GetValidated(): ", error);
+            console.log(error);
             return [];
-        }
+        };
 
     },
+    /**
+        * Add the project's id to the local storage
+    */
     SetLocalProject: function(projectId = "") {
     
         try {
@@ -70,7 +81,7 @@ export default {
 
         }
         catch(error) {
-            console.error("L/F/SetLocalProject():", error);
+            console.error(error);
             throw error;
         };
 

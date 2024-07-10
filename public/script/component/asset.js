@@ -1,8 +1,9 @@
 import "@style/main.css";
 import H12 from "@library/h12";
-import Item from "./asset/item";
+import Config from "@library/config";
 import Dispatcher from "@library/h12.dispatcher";
-import Config from "@library/@config";
+
+import Item from "./asset/item";
 
 @Component
 export default class Asset extends H12 {

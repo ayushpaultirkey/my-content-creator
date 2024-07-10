@@ -1,8 +1,9 @@
 import "@style/main.css";
 import H12 from "@library/h12";
+import Config from "@library/config";
 import Dispatcher from "@library/h12.dispatcher";
 import ServerEvent from "@library/serverevent.p";
-import Config from "@library/@config";
+
 import Asset from "@component/asset";
 
 @Component

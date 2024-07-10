@@ -1,13 +1,14 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Misc from "@library/misc";
-import Config from "@library/@config";
+import Config from "@library/config";
 import Dispatcher from "@library/h12.dispatcher";
+
 import Slide from "@component/frame/editor/slide";
 import Prompt from "@component/frame/editor/prompt";
-import Viewport from "@component/frame/editor/viewport";
-import Project from "@component/frame/editor/project";
 import Export from "@component/frame/editor/export";
+import Project from "@component/frame/editor/project";
+import Viewport from "@component/frame/editor/viewport";
 import DragNDrop from "@component/frame/function/drag-n-drop";
 import DynImport from "@component/frame/function/dynamic-import";
 

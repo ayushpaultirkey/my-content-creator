@@ -1,8 +1,9 @@
 import "@style/main.css";
 import H12 from "@library/h12";
+import Config from "@library/config";
 import Dispatcher from "@library/h12.dispatcher";
+
 import Authenticate from "@component/google/authenticate";
-import Config from "@library/@config";
 
 @Component
 export default class Viewport extends H12 {

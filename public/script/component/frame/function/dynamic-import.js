@@ -1,6 +1,7 @@
-import Config from "@library/@config";
+import Config from "@library/config";
 import Dispatcher from "@library/h12.dispatcher";
 import ServerEvent from "@library/serverevent.p";
+
 import DViewer from "@component/google/drive/viewer";
 import YTUploader from "@component/google/youtube/uploader";
 

@@ -1,25 +1,25 @@
 import "@style/main.css";
 import H12 from "@library/h12";
-import Dispatcher from "@library/h12.dispatcher";
 import Lazy from "@library/h12.lazy";
-import Config from "@library/@config";
+import Config from "@library/config";
+import Dispatcher from "@library/h12.dispatcher";
 
 @Component
 export default class Graph extends H12 {
-    
     constructor() {
         super();
         this.Report = null;
         this.ResizeRegistered = false;
     }
-
     async init() {
 
+        // Register the dispatcher event
+        // This will be called when the Google Chart library is loaded,
+        // and when the report is updated
         Dispatcher.On("GChart", this.Load.bind(this));
         Dispatcher.On(Config.ON_ANALYTICS_REPORT, this.OnAnalyticReport.bind(this));
 
     }
-
     async render() {
         return <>
             <div class="w-full h-full pt-12">
@@ -27,10 +27,12 @@ export default class Graph extends H12 {
             </div>
         </>;
     }
-
     async Load() {
+
         try {
 
+            // Check if the report is valid and then
+            // load the graph
             if(!this.Report) {
                 throw new Error("Invalid report data");
             };
@@ -40,8 +42,8 @@ export default class Graph extends H12 {
         catch(error) {
             console.error(error);
         };
-    }
 
+    }
     LoadGraph(data) {
 
         google.charts.load("current", { "packages": [ "corechart" ]});
@@ -102,14 +104,17 @@ export default class Graph extends H12 {
         });
 
     }
-
     async OnAnalyticReport(event, report) {
+
+        // Called from dispatcher event to update the report data
+        // The dispatcher event can be called across the app
+        // Registered in init()
         if(report) {
             this.Report = report;
             if(Lazy.Status("GChart")) {
                 this.Load();
             };
         };
+        
     }
-    
 };

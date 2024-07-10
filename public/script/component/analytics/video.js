@@ -1,24 +1,25 @@
 import "@style/main.css";
 import H12 from "@library/h12";
+import Config from "@library/config";
 import Dispatcher from "@library/h12.dispatcher";
-import Config from "@library/@config";
 
 @Component
 export default class Video extends H12 {
-
     constructor() {
         super();
         this.Report = null;
     }
-
     async init(args) {
 
-        //
+        // Set the default values for key for
+        // the template fields
         this.Set("{c.video}", "");
+
+        // Register the dispatcher event
+        // The dispatcher event can be called across the app
         Dispatcher.On(Config.ON_ANALYTICS_REPORT, this.OnAnalyticReport.bind(this));
 
     }
-
     async render() {
         return <>
             <div class="w-full h-full overflow-hidden hidden">
@@ -43,17 +44,21 @@ export default class Video extends H12 {
             </div>
         </>;
     }
-
-
     async Load() {
+
         try {
 
+            // Clear the previous video's list
+            // before loading
             this.Set("{c.video}", "");
 
+            // Check if report is valid before loading
             if(!this.Report) {
                 throw new Error("Unable to load videos");
             };
 
+            // Get the video from the report and check
+            // if its valid and then render those videos
             const { videos } = this.Report;
             if(videos) {
 
@@ -73,7 +78,11 @@ export default class Video extends H12 {
 
             }
             else {
+
+                // If there are no videos then fetch the
+                // videos for the report
                 await this.Fetch();
+
             };
 
         }
@@ -82,30 +91,40 @@ export default class Video extends H12 {
         };
 
     }
-
     async Selected(params) {
         
+        // When a video is selected change the analytics
+        // tab and call the dispatcher event to load
+        // that video's data
         this.parent.TabViewport(1);
         Dispatcher.Call(Config.ON_VIDEO_SELECT, params);
 
     }
-
     async Reload() {
 
+        // Show loader while performing the task
         Dispatcher.Call(Config.ON_LOADER_SHOW);
         Dispatcher.Call(Config.ON_LOADER_UPDATE, "Reloading videos");
 
+        // Reload the videos by using the
+        // refresh query parameter
         await this.Fetch("?refresh=true");
 
+        // Hide loader after performing the task
         Dispatcher.Call(Config.ON_LOADER_HIDE);
 
     }
-
     async Fetch(param = "") {
+
         try {
 
+            // Clear the previous video's list
+            // before loading
             this.Set("{c.video}", "");
             
+            // Call the api request and check for the success
+            // and response status. The api will load all the video
+            // from the channel
             const _response = await fetch(`/api/analytics/videos${param}`);
             const { success, message, data } = await _response.json();
     
@@ -113,6 +132,8 @@ export default class Video extends H12 {
                 throw new Error(message);
             };
     
+            // Get the video from the data and 
+            // render those videos
             const { data: { videos } } = data;
             
             for(const id in videos) {
@@ -129,6 +150,8 @@ export default class Video extends H12 {
                 </>);
             };
 
+            // Call dispatcher event to update the report data
+            // with other components
             Dispatcher.Call(Config.ON_ANALYTICS_REPORT, data.data)
 
         }
@@ -136,13 +159,17 @@ export default class Video extends H12 {
             alert(error);
             console.log(error);
         };
-    }
 
+    }
     async OnAnalyticReport(event, report) {
+
+        // Called from dispatcher event to update the report data
+        // The dispatcher event can be called across the app
+        // Registered in init()
         if(report) {
             this.Report = report;
             this.Load();
         };
+        
     }
-
 };

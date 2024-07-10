@@ -1,4 +1,4 @@
-import Config from "@library/@config";
+import Config from "@library/config";
 import Dispatcher from "@library/h12.dispatcher";
 
 

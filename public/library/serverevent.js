@@ -7,7 +7,7 @@ const ServerEvent = {
         if(!!window.EventSource) {
 
             if(SEvent[id]) {
-                console.log("ServerEvent.Register(): id already exists");
+                console.log("Id already exists");
                 return false;
             };
 

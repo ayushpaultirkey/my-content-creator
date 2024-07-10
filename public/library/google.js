@@ -7,7 +7,7 @@ function Authenticate() {
         _window.focus();
     };
     
-}
+};
 
 export default {
     Authenticate

@@ -1,27 +1,26 @@
 import "@style/main.css";
 import H12 from "@library/h12";
+import Config from "@library/config";
 import Dispatcher from "@library/h12.dispatcher";
-import Config from "@library/@config";
 
 @Component
 export default class Channel extends H12 {
-
     constructor() {
         super();
         this.Report = null;
     }
-
     async init(args) {
 
-        //
+        // Set the default values for key for
+        // the template fields
         this.Set("{c.name}", "");
         this.Set("{c.description}", "");
 
-        //
+        // Register the dispatcher event
+        // The dispatcher event can be called across the app
         Dispatcher.On(Config.ON_ANALYTICS_REPORT, this.OnAnalyticReport.bind(this));
 
     }
-
     async render() {
         return <>
             <div class="w-full h-full overflow-hidden hidden">
@@ -75,17 +74,18 @@ export default class Channel extends H12 {
             </div>
         </>;
     }
-
     async Load() {
 
         try {
 
+            // Check if report is valid before loading
             if(!this.Report) {
                 throw new Error("Invalid report");
             };
 
+            // Break report object and get the channel's information
+            // Set the information using the key {c.name} etc.
             const { channel: { detail } } = this.Report;
-            
             this.Set("{c.name}", detail.name);
             this.Set("{c.description}", (detail.description) ? detail.description : "No Description");
             this.Set("{c.url}", detail.url);
@@ -93,22 +93,22 @@ export default class Channel extends H12 {
             this.Set("{c.view}", detail.count.view);
             this.Set("{c.video}", detail.count.video);
 
-
         }
         catch(error) {
-
             alert("Unable to get channel data");
             console.log(error);
-
-        }
+        };
 
     }
-
     async OnAnalyticReport(event, report) {
+
+        // Called from dispatcher event to update the report data
+        // The dispatcher event can be called across the app
+        // Registered in init()
         if(report) {
             this.Report = report;
             this.Load();
         };
-    }
 
+    }
 };

@@ -1,22 +1,21 @@
 import "@style/main.css";
 import H12 from "@library/h12";
+import Config from "@library/config";
 import Dispatcher from "@library/h12.dispatcher";
-import Config from "@library/@config";
 
 @Component
 export default class Comment extends H12 {
-    
     constructor() {
         super();
         this.VideoId = null;
     }
-
     async init() {
 
     }
-
     async render() {
 
+        // Break the youtube's comment data
+        // And assign it to the template
         const { snippet: { topLevelComment: { snippet: { authorDisplayName, textOriginal } } } } = this.args.data;
 
         return <>
@@ -36,9 +35,10 @@ export default class Comment extends H12 {
         </>;
 
     }
-
     async Send() {
 
+        // Disable component elements and
+        // show loader while performing the task
         const { CBox, CAi, CSend } = this.element;
 
         CAi.disabled = true;
@@ -48,12 +48,19 @@ export default class Comment extends H12 {
 
         try {
 
+            // Check if the comment data is valid and the
+            // comment is not empty
             if(!this.args.data || CBox.value.length < 3) {
                 throw new Error("Invalid comment data");
             };
 
+            // Get the video id and the comment id from the
+            // comment data
             const { snippet: { videoId }, id } = this.args.data;
 
+            // Call the api request and check for the success
+            // and response status. The api will add comment
+            // to the youtube video
             const _response = await fetch(`/api/analytics/video/comment/send?videoId=${videoId}&commentId=${id}&comment=${CBox.value}`);
             const { success, message, data } = await _response.json();
 
@@ -61,6 +68,8 @@ export default class Comment extends H12 {
                 throw new Error(message);
             };
 
+            // Call dispatcher event to update the report data
+            // with other components
             Dispatcher.Call(Config.ON_ANALYTICS_REPORT, data);
 
         }
@@ -69,6 +78,8 @@ export default class Comment extends H12 {
             console.error(error);
         };
 
+        // Enable the elements after the task is completed,
+        // and hide the loader panel
         CAi.disabled = false;
         CSend.disabled = false;
         Dispatcher.Call(Config.ON_LOADER_HIDE);
@@ -77,6 +88,8 @@ export default class Comment extends H12 {
 
     async Prompt() {
 
+        // Disable component elements and
+        // show loader while performing the task
         const { CBox, CAi, CSend } = this.element;
 
         CAi.disabled = true;
@@ -86,12 +99,18 @@ export default class Comment extends H12 {
 
         try {
 
+            // Check if the comment data is valid
             if(!this.args.data) {
                 throw new Error("Invalid comment data");
             };
 
+            // Get the video id and the comment id from the
+            // comment data
             const { snippet: { videoId }, id } = this.args.data;
 
+            // Call the api request and check for the success
+            // and response status. The api will create a response
+            // for the comment using AI
             const _response = await fetch(`/api/analytics/video/comment/prompt?videoId=${videoId}&commentId=${id}`);
             const { success, message, data } = await _response.json();
 
@@ -99,6 +118,9 @@ export default class Comment extends H12 {
                 throw new Error(message);
             };
 
+            // Set the comment value and call the dispatcher event
+            // to update the report data. The dispatcher event
+            // will be called across the app
             CBox.value = data.comment;
             Dispatcher.Call(Config.ON_ANALYTICS_CPROMPT, data.data);
 
@@ -108,10 +130,11 @@ export default class Comment extends H12 {
             console.error(error);
         };
 
+        // Enable the elements after the task is completed,
+        // and hide the loader panel
         CAi.disabled = false;
         CSend.disabled = false;
         Dispatcher.Call(Config.ON_LOADER_HIDE);
 
     }
-
 };

@@ -1,7 +1,8 @@
 import "@style/main.css";
 import H12 from "@library/h12";
+import Config from "@library/config";
 import Dispatcher from "@library/h12.dispatcher";
-import Config from "@library/@config";
+
 import Attachment from "@component/attachment";
 
 @Component

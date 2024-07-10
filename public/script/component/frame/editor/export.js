@@ -1,8 +1,8 @@
 import "@style/main.css";
 import H12 from "@library/h12";
-import Dispatcher from "@library/h12.dispatcher";
-import Config from "@library/@config";
+import Config from "@library/config";
 import ServerEvent from "@library/serverevent.p";
+import Dispatcher from "@library/h12.dispatcher";
 
 @Component
 export default class Export extends H12 {

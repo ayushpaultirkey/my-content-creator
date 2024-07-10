@@ -1,26 +1,24 @@
 import "@style/main.css";
 import H12 from "@library/h12";
+import Config from "@library/config";
 import Dispatcher from "@library/h12.dispatcher";
-import Config from "@library/@config";
 import Comment from "./comment";
 
 @Component
 export default class Detail extends H12 {
-    
     constructor() {
         super();
         this.Report = null;
         this.VideoId = null;
     }
-
     async init() {
 
-        //
+        // Register the dispatcher event
+        // The dispatcher event can be called across the app
         Dispatcher.On(Config.ON_VIDEO_SELECT, this.OnVideoSelect.bind(this));
         Dispatcher.On(Config.ON_ANALYTICS_REPORT, this.OnAnalyticReport.bind(this));
 
     }
-
     async render() {
         return <>
             <div class="w-full h-full flex flex-col space-y-2 hidden">
@@ -58,11 +56,12 @@ export default class Detail extends H12 {
             </div>
         </>;
     }
-
     Redirect() {
 
         const { VideoId, Report } = this;
 
+        // Check if the video data is valid and then
+        // redirect to the youtube video using its ID
         if(!VideoId || !Report || !Report.videos[VideoId]) {
             return false;
         };
@@ -70,20 +69,25 @@ export default class Detail extends H12 {
         window.open(`https://www.youtube.com/watch?v=${VideoId}`, "_blank").focus();
 
     }
-
     async Analyze() {
 
+        // Show loader while performing the task,
+        // using using dispatcher event
         Dispatcher.Call(Config.ON_LOADER_SHOW);
         Dispatcher.Call(Config.ON_LOADER_UPDATE, "AI is analyzing video");
 
         try {
 
+            // Check if the report is valid and the video
+            // is valid using videos' id
             const { VideoId, Report } = this;
-
             if(!VideoId || !Report || !Report.videos[VideoId]) {
                 throw new Error("Invalid video id or report");
             };
 
+            // Call the api request and check for the success
+            // and response status. The api will analyze video's
+            // data and generate a report
             const _response = await fetch(`/api/analytics/analyze/video?videoId=${VideoId}`);
             const { success, data, message } = await _response.json();
 
@@ -91,6 +95,8 @@ export default class Detail extends H12 {
                 throw new Error(message);
             };
 
+            // Call dispatcher event to update the report data
+            // with other components
             Dispatcher.Call(Config.ON_ANALYTICS_REPORT, data);
 
         }
@@ -99,6 +105,8 @@ export default class Detail extends H12 {
             console.error(error);
         };
 
+        // Hide loader after performing the task,
+        // using using dispatcher event
         Dispatcher.Call(Config.ON_LOADER_HIDE);
 
     }
@@ -108,11 +116,16 @@ export default class Detail extends H12 {
 
             try {
 
+                // Check if the report is valid and the video
+                // is valid using videos' id
                 const { Report, VideoId } = this;
                 if(!Report || !VideoId) {
                     throw new Error("Invalid video or report")
                 };
     
+                // Call the api request and check for the success
+                // and response status. The api will return the list
+                // of comments for the youtube video
                 const _response = await fetch(`/api/analytics/video/comment?videoId=${VideoId}&channelId=${Report.channel.detail.id}`);
                 const { success, message, data } = await _response.json();
 
@@ -120,6 +133,9 @@ export default class Detail extends H12 {
                     throw new Error(message);
                 };
     
+                // Clear the old comments and remove the comment
+                // component from this.child. Then add the new
+                // comments
                 this.Set("{c.comment}", "", Comment);
 
                 for(var commet in data) {
@@ -130,7 +146,7 @@ export default class Detail extends H12 {
             catch(error) {
                 alert(error);
                 console.error(error);
-            }
+            };
 
         }
     }
@@ -142,25 +158,36 @@ export default class Detail extends H12 {
             const { element, Report } = this;
             const { VThumbnail, VDescription } = element;
     
+            // Check if the report is valid and the video
+            // is valid using videos' id
             if(!id || !Report || !Report.videos[id]) {
                 throw new Error("Invalid video id or report");
             };
 
+            // Set the new video id
             this.VideoId = id;
     
+            // Get the all the video from report and get the video
+            // by its id, to fetch its properties
             const { videos } = Report;
             const { title, description, thumbnail, stat } = videos[id];
 
+            // Set the title and the desription for the video, along with
+            // the thumbanil
             this.Set("{v.title}", title);
             VDescription.innerText = description;
-    
             VThumbnail.style.backgroundImage = `url(${thumbnail})`;
     
+            // If the video doesnt have the status property then
+            // get the properties
             if(!stat) {
                 
+                // Show the loader
                 Dispatcher.Call(Config.ON_LOADER_SHOW);
                 Dispatcher.Call(Config.ON_LOADER_UPDATE, "Loading video statistics");
 
+                // Call the api request and check for the success
+                // and response status. The api will fetch the video's stat
                 const _response = await fetch(`/api/analytics/video?videoId=${id}`);
                 const { success, data, message } = await _response.json();
     
@@ -168,11 +195,14 @@ export default class Detail extends H12 {
                     throw new Error(message);
                 };
 
+                // Get the stat from the data by using video's
+                // id
                 const { stat: nStat } = data[id];
                 if(!nStat) {
                     throw new Error("Unable to load stat");
                 };
 
+                // Set the new values using the stat
                 const { count } = nStat;
                 this.Set("{v.view}", count.view);
                 this.Set("{v.like}", count.like);
@@ -182,6 +212,7 @@ export default class Detail extends H12 {
             }
             else {
                 
+                // Set the values using the stat
                 const { count } = stat;
                 this.Set("{v.view}", count.view);
                 this.Set("{v.like}", count.like);
@@ -190,6 +221,7 @@ export default class Detail extends H12 {
 
             };
 
+            // Load the comments for the current video
             await this.Comment.Load();
 
         }
@@ -197,14 +229,19 @@ export default class Detail extends H12 {
             console.error(error);
         };
 
+        // Hide the loader
         Dispatcher.Call(Config.ON_LOADER_HIDE);
 
     }
     async OnAnalyticReport(event, report) {
+
+        // Called from dispatcher event to update the report data
+        // The dispatcher event can be called across the app
+        // Registered in init()
         if(report) {
             this.Report = report;
             this.OnVideoSelect(null, this.VideoId)
         };
-    }
 
+    }
 };

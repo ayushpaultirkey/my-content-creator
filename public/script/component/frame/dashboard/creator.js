@@ -1,10 +1,11 @@
 import "@style/main.css";
 import H12 from "@library/h12";
+import Frame from "@library/frame";
+import Config from "@library/config";
 import Dispatcher from "@library/h12.dispatcher";
 import ServerEvent from "@library/serverevent.p";
-import Frame from "@library/frame";
+
 import Attachment from "@component/attachment";
-import Config from "@library/@config";
 
 @Component
 export default class Creator extends H12 {

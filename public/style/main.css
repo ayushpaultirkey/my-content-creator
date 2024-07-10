@@ -22,3 +22,11 @@ html, body {
     background: rgb(65, 65, 65);
     border-radius: 50px;
 }
+.gradient {
+    background: hsla(221, 83%, 53%, 1);
+    background: linear-gradient(180deg,
+        hsla(221, 83%, 53%, 1) -90%,
+        hsla(240, 6%, 10%, 1) 20%,
+        hsla(240, 6%, 10%, 1) 80%,
+        hsla(221, 83%, 53%, 1) 190%);
+}

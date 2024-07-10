@@ -1,7 +1,7 @@
 import "@style/main.css";
 import H12 from "@library/h12";
-import Dispatcher from "@library/h12.dispatcher";
 import Frame from "@library/frame";
+import Dispatcher from "@library/h12.dispatcher";
 
 import Card from "@component/frame/dashboard/card";
 import Creator from "@component/frame/dashboard/creator";

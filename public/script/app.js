@@ -1,9 +1,9 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Lazy from "@library/h12.lazy";
-import Dispatcher from "@library/h12.dispatcher";
+import Config from "@library/config";
 import ServerEvent from "@library/serverevent";
-import Config from "@library/@config";
+import Dispatcher from "@library/h12.dispatcher";
 
 import Home from "./page/home";
 import Editor from "./page/frame";
@@ -73,7 +73,7 @@ class App extends H12 {
     }
 
     Navigate = {
-        To: (event, args = { target: "DASHBOARD" }) => {
+        To: (event, args = { target: "HOME" }) => {
 
             switch(args.target) {
                 case "EDITOR":
