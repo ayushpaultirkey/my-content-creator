@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import Frame from "#service/frame.js";
 
 
@@ -46,7 +47,7 @@ export default async function Render(request, response) {
     catch(error) {
 
         // Log and set response
-        console.log("/project/export:", error);
+        console.log(chalk.red("/frame/project/render:"), error);
         _response.message = error.message || "An error occurred";
 
     }

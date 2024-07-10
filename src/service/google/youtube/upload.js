@@ -16,7 +16,7 @@ export default async function Upload({ request, filePath, title, description, ca
         }
 
         // Log
-        console.log(chalk.green("S/Google/Youtube.Upload():"), "Upload started");
+        console.log(chalk.green("S/Google/Youtube/Upload():"), "Upload started");
         callback("Youtube: Upload started");
 
         // Check file type
@@ -54,7 +54,7 @@ export default async function Upload({ request, filePath, title, description, ca
                 _bytesUploaded += chunk.length;
                 const _progress = Math.round((_bytesUploaded / _fileSize) * 100);
 
-                console.log(chalk.blue("S/Google/Youtube.Upload():"), `Uploaded ${_progress}%`);
+                console.log(chalk.yellow("S/Google/Youtube/Upload():"), `Uploaded ${_progress}%`);
                 callback(`Youtube: Upload progress: ${_progress}%`);
 
             })
@@ -68,13 +68,13 @@ export default async function Upload({ request, filePath, title, description, ca
         });
         
         // Log
-        console.log(chalk.green("S/Google/Youtube.Upload():"), "Upload finished");
+        console.log(chalk.green("S/Google/Youtube/Upload():"), "Upload finished");
         callback("Youtube: Upload finished");
 
     }
     catch(error) {
 
-        console.log(chalk.red("S/Google/Youtube.Upload():"), error);
+        console.log(chalk.red("S/Google/Youtube/Upload():"), error);
         throw new Error("Unable to upload video to youtube");
 
     };

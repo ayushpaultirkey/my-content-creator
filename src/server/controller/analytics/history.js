@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import Analytics from "#service/analytics.js";
 
 
@@ -17,7 +18,7 @@ export default async function History(request, response) {
         // Check for session uid and query
         const { uid } = request.cookies;
         if(!uid) {
-            throw new Error("Invalid session");
+            throw new Error("Invalid reference id");
         };
 
         // Read current chat history file
@@ -35,7 +36,7 @@ export default async function History(request, response) {
     catch(error) {
 
         // Log and set response for error
-        console.log("/analytics/history:", error);
+        console.log(chalk.red("/analytics/history:"), error);
         _response.message = error.message || "An error occurred";
 
     }

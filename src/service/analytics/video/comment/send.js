@@ -2,6 +2,7 @@ import chalk from "chalk";
 import Analytics from "#service/analytics.js";
 import Youtube from "#service/google/youtube.js";
 
+
 export default async function Send({ rid, videoId, commentId, comment, request, callback }) {
 
     try {
@@ -39,7 +40,7 @@ export default async function Send({ rid, videoId, commentId, comment, request, 
     }
     catch(error) {
         console.log(chalk.red("/S/Analytics/Video/Comment/Send():"), error);
-        throw error;
+        throw new Error("Unable to send comment");
     }
 
 };

@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import Google from "#service/google.js";
 
 
@@ -37,10 +38,8 @@ export default async function GetFile(request, response) {
     catch(error) {
 
         // Log error message
-        console.log("/google/drive/getfiles:", error);
-
-        // Set error message
         _response.message = error.message || "An error occurred";
+        console.log(chalk.red("/google/drive/getfiles:"), error);
 
     }
     finally {

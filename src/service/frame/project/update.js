@@ -13,7 +13,7 @@ import Save from "./save.js";
 export default async function Update({ projectId = "", prompt = "", file = null, callback }) {
 
     //
-    console.log(chalk.green("S/Frame/Project/Update(): Project update started"));
+    console.log(chalk.green("/S/Frame/Project/Update(): Project update started"));
 
     //
     try {
@@ -31,7 +31,7 @@ export default async function Update({ projectId = "", prompt = "", file = null,
         //
         if(file) {
 
-            console.log(chalk.green("S/Frame/Project/Update():"), "File found, adding multimodel prompt");
+            console.log(chalk.green("/S/Frame/Project/Update():"), "File found, adding multimodel prompt");
             await Gemini.PromptFile(Config.E_GEMINI, file, _history);
 
         };
@@ -51,7 +51,7 @@ export default async function Update({ projectId = "", prompt = "", file = null,
                 await Slide.ValidateAsset(projectId, _project.property.slides[0], _slide.added);
             }
             catch(error) {
-                console.log(chalk.red("S/Frame/Project/Update():"), error);
+                console.log(chalk.red("/S/Frame/Project/Update():"), error);
             };
 
         };
@@ -88,15 +88,15 @@ export default async function Update({ projectId = "", prompt = "", file = null,
         });
 
         // Log
-        console.log(chalk.green("S/Frame/Project/Update():"), "Project update ended");
+        console.log(chalk.green("/S/Frame/Project/Update():"), "Project update ended");
 
         // Return new project
         return _projectUpdated;
 
     }
     catch(error) {
-        console.log(chalk.red("S/Frame/Project/Update():"), error);
-        throw error;
+        console.log(chalk.red("/S/Frame/Project/Update():"), error);
+        throw new Error("Unable to update project");
     };
     
 };

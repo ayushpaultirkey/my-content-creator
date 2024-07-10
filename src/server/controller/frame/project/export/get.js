@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import Project from "#service/frame/project.js";
 
 
@@ -25,7 +26,7 @@ export default async function Get(request, response) {
     catch(error) {
 
         // Log and set response
-        console.log("/project/export/download:", error);
+        console.log(chalk.red("/frame/project/export/get:"), error);
         response.status(500);
         response.send("Failed to download file, check if the project is rendered");
 

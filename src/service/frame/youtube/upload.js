@@ -37,12 +37,12 @@ export default async function Upload({ projectId = "", request, title, category,
         })
 
         callback("Drive: Upload finished");
-        console.log(`${chalk.green("S/Frame/Youtube/UploadFile():")} File uploaded`);
+        console.log(chalk.green("/S/Frame/Youtube/Upload():"), "File uploaded");
 
     }
     catch(error) {
-        console.log(`${chalk.red("S/Frame/Youtube/UploadFile():")} ${error}`);
-        throw error;
+        console.log(chalk.red("/S/Frame/Youtube/Upload():"), error);
+        throw new Error("Unable to upload to youtube");
     };
 
 };

@@ -1,14 +1,15 @@
 import fs from "fs/promises";
 import path from "path";
 import chalk from "chalk";
-
 import directory from "#library/directory.js";
 
 const { __root } = directory();
 
+
 function Path(id) {
     return path.join(__root, `/project/.temp/${id}.json`);
 };
+
 
 async function Exist(id = "") {
     try {
@@ -19,6 +20,7 @@ async function Exist(id = "") {
         return false;
     }
 };
+
 
 async function Read(id = "") {
     try {
@@ -41,6 +43,7 @@ async function Read(id = "") {
         throw new Error("Unable to read analytics session");
     }
 };
+
 
 async function Save(id = "", data = {}) {
     try {

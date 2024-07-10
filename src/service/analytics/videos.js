@@ -2,6 +2,7 @@ import chalk from "chalk";
 import Youtube from "#service/google/youtube.js";
 import Analytics from "#service/analytics.js";
 
+
 export default async function Videos({ request, pageToken, rid, refresh, callback }) {
 
     try {
@@ -53,7 +54,7 @@ export default async function Videos({ request, pageToken, rid, refresh, callbac
     }
     catch(error) {
         console.log(chalk.red("/S/Analytics/Videos():"), error);
-        throw error;
+        throw new Error("Unable to get videos");
     }
 
 };

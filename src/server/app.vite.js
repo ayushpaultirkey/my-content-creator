@@ -14,6 +14,7 @@ import Cache from "../service/asset/cache.js";
 import Gemini from "./../service/google/gemini.js";
 import directory from "./../library/directory.js";
 import Config from "./../config/@config.js";
+import chalk from "chalk";
 
 //
 export default function init() {
@@ -49,13 +50,13 @@ export default function init() {
     // Serve files
     app.use("/", router);
     
-    //Create server
+    // Create server
     viteExpress.config({ mode: process.env.NODE_ENV || "development" });
     viteExpress.listen(app, 3000, () => {
 
         // Log the server starting
-        console.log("init(): Server started !")
-        console.log("init(): http://localhost:3000/");
+        console.log(chalk.green("init():"), "Server started !")
+        console.log(chalk.green("init():"), "http://localhost:3000/");
 
         // Open the default browser
         if(process.env.NODE_ENV !== "production") {

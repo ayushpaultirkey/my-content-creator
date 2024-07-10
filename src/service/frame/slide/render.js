@@ -1,6 +1,6 @@
 import path from "path";
 import { FFScene, FFCreator } from "ffcreator";
-
+import chalk from "chalk";
 import delay from "#library/wait.js";
 import Scene from "./scene.js";
 import Duration from "./duration.js";
@@ -30,8 +30,8 @@ export default async function Render({ slide = [], root, width, height, callback
 
                 //
                 callback("Rendering: Project pre-render completed");
-                console.log("S/Frame/Slide/Render(): Project pre-render completed");
-                _delay.resolve("S/Frame/Slide/Render(): Project pre-render completed");
+                console.log(chalk.green("/S/Frame/Slide/Render():"), "Project pre-render completed");
+                _delay.resolve("Project pre-render completed");
                 return;
 
             };
@@ -107,31 +107,29 @@ export default async function Render({ slide = [], root, width, height, callback
 
             //
             _creator.on("start", () => {
+
                 callback(`Rendering: Project pre-render ${_slide.id} started`);
-                console.log(`S/Frame/Slide/Render(): Project pre-render ${_slide.id} started`);
+                console.log(chalk.green(`/S/Frame/Slide/Render():`), `Project pre-render ${_slide.id} started`);
+
             });
             _creator.on("error", () => {
+
                 callback(`Rendering: Unable to pre-render project: ${_slide.id}`);
-                console.log(`S/Frame/Slide/Render(): Unable to pre-render project: ${_slide.id}`);
-                _delay.reject("S/Frame/Slide/Render(): Unable to pre-render project: ${_slide.id}");
+                console.log(chalk.red(`S/Frame/Slide/Render():`), `Unable to pre-render project: ${_slide.id}`);
+                _delay.reject(`Unable to pre-render project: ${_slide.id}`);
+
             });
             _creator.on("progress", (e) => {
+
                 callback(`Rendering: Project ${_slide.id} pre-render: ${(e.percent * 100) >> 0}%`);
-                console.log(`S/Frame/Slide/Render(): Project ${_slide.id} pre-render: ${(e.percent * 100) >> 0}%`);
+                console.log(chalk.yellow(`/S/Frame/Slide/Render():`), `Project ${_slide.id} pre-render: ${(e.percent * 100) >> 0}%`);
+            
             });
             _creator.on("complete", async() => {
 
                 //
                 callback(`Rendering: Project pre-render ${_slide.id} completed`);
-
-                //
-                try {
-                    //
-                    console.log(`S/Frame/Slide/Render(): Project pre-render ${_slide.id} completed`);
-                }
-                catch(error) {
-                    console.log(`S/Frame/Slide/Render(): Project pre-render ${_slide.id} completed but no thumbnail`);
-                };
+                console.log(chalk.green(`S/Frame/Slide/Render():`), `Project pre-render ${_slide.id} completed`);
 
                 _index++;
                 await _render();
@@ -147,7 +145,7 @@ export default async function Render({ slide = [], root, width, height, callback
     catch(error) {
 
         //
-        console.log("S/Frame/Slide/Render():", error);
+        console.log(chalk.red("/S/Frame/Slide/Render():"), error);
         _delay.reject(error);
 
     };

@@ -1,4 +1,6 @@
+import chalk from "chalk";
 import GAuth from "#service/google/auth.js";
+
 
 /**
     * 
@@ -21,7 +23,7 @@ export default async function Auth(request, response) {
     catch(error) {
 
         //
-        console.log("/google/auth:", error);
+        console.log(chalk.red("/google/auth:"), error);
         response.send("Unable to authenticate");
 
     };

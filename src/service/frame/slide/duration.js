@@ -1,7 +1,8 @@
+import chalk from "chalk";
 import * as mm from "music-metadata";
 
-async function ByAudio(audioPath = "") 
-{
+
+async function ByAudio(audioPath = "") {
     try {
 
         //
@@ -9,7 +10,7 @@ async function ByAudio(audioPath = "")
         const _duration = Math.ceil(_metadata.format.duration);
 
         //
-        console.log("Service/Slide/Duration/ByAudio(): Time calculated using audio:", _duration);
+        console.log(chalk.green("/S/Slide/Duration/ByAudio():"), "Time calculated using audio:", _duration);
 
         //
         return _duration;
@@ -17,7 +18,7 @@ async function ByAudio(audioPath = "")
     }
     catch(error) {
 
-        console.log("Service/Slide/Duration/ByAudio():", error);
+        console.log(chalk.red("/S/Slide/Duration/ByAudio():"), error);
         throw error;
 
     };
@@ -32,7 +33,7 @@ function ByContent(content = "", wpm = 140) {
     const _duration = Math.ceil((_totalWords / wpm) * 60);
   
     //
-    console.log("Service/Slide/Duration/ByContent(): Time calculated using content:", _duration);
+    console.log(chalk.green("/s/Slide/Duration/ByContent():"), "Time calculated using content:", _duration);
 
     //
     return _duration;
@@ -51,7 +52,7 @@ export default async function Duration({ filePath = "", content = "" }) {
     catch(error) {
 
         // Log
-        console.log("Service/Slide/Duration(): Audio file not found, using content for time");
+        console.log(chalk.yellow("/S/Slide/Duration():"), "Audio file not found, using content for time");
 
         // Get duration by content
         _duration = ByContent(content);

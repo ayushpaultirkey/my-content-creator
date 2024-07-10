@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import Project from "#service/frame/project.js";
 
 
@@ -65,10 +66,8 @@ export default async function Update(request, response) {
     catch(error) {
 
         // Set error message
+        console.log(chalk.red("/frame/project/update:"), error);
         _response.message = error.message || "An error occurred";
-
-        // Log error message
-        console.log("/project/update:", error);
 
     }
     finally {

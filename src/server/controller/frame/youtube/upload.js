@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import Auth from "#service/google/auth.js";
 import Youtube from "#service/frame/youtube.js";
 
@@ -57,7 +58,7 @@ export default async function Upload(request, response) {
     catch(error) {
 
         // Log and set response for error
-        console.log("/project/export/youtube:", error);
+        console.log(chalk.red("/frame/project/youtube/upload:"), error);
         _response.message = error.message || "An error occurred";
 
     }

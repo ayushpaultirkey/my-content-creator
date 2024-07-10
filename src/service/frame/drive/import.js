@@ -51,11 +51,11 @@ export default async function ImportFiles({ projectId = "", fileId = [], request
 
         }
         
-        console.log(`${chalk.green("S/Frame/Drive/Import():")} Files imported`);
+        console.log(chalk.green("/S/Frame/Drive/Import():"), "Files imported");
 
     }
     catch(error) {
-        console.log(chalk.red("S/Frame/Drive/Import():"), error);
+        console.log(chalk.red("/S/Frame/Drive/Import():"), error);
         throw new Error("Unable to import file");
     };
 

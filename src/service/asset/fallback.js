@@ -1,14 +1,14 @@
-import "dotenv/config";
 import path from "path";
 
 import directory from "#library/directory.js";
 const { __root } = directory();
 
+
 /**
- * 
- * @param {"IMAGE" | "VIDEO" | "AUDIO"} type 
- * @returns 
- */
+    * 
+    * @param {"IMAGE" | "VIDEO" | "AUDIO"} type 
+    * @returns 
+*/
 export default function Fallback(type = "") {
 
     let _path = `/project/.cache/`;

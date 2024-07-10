@@ -12,7 +12,7 @@ export default async function Channel({ request, callback }) {
         let _data = {};
 
         // Log and callback
-        console.log(chalk.green("/S/Google/Youtube.Channel():"), "Channel read started");
+        console.log(chalk.green("/S/Google/Youtube/Channel():"), "Channel read started");
         callback("Youtube: Channel read started");
 
         // Get auth and load channel data
@@ -48,7 +48,7 @@ export default async function Channel({ request, callback }) {
         };
         
         // Log and callback
-        console.log(chalk.green("/S/Google/Youtube.Channel():"), "Channel read ended");
+        console.log(chalk.green("/S/Google/Youtube/Channel():"), "Channel read ended");
         callback("Youtube: Channel read ended");
 
         //
@@ -57,7 +57,7 @@ export default async function Channel({ request, callback }) {
     }
     catch(error) {
 
-        console.log(chalk.red("/S/Google/Youtube.Channel():"), error);
+        console.log(chalk.red("/S/Google/Youtube/Channel():"), error);
         throw new Error("Unable to read channel data");
 
     };

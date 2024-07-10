@@ -1,5 +1,6 @@
 import path from "path";
 import fs from "fs/promises";
+import chalk from "chalk";
 import directory from "#library/directory.js"
 
 let CACHE = {};
@@ -59,7 +60,7 @@ async function Initialize() {
 
     }
     catch(error) {
-        console.log("Initialize():", error);
+        console.log(chalk.red("/S/Asset.Initialize():"), error);
         return false;
     }
 
@@ -117,7 +118,7 @@ async function Save() {
         return true;
     }
     catch(error) {
-        console.log("Save():", error);
+        console.log(chalk.red("/S/Asset.Save():"), error);
         return false;
     };
 }

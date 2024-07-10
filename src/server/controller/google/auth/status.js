@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import Auth from "#service/google/auth.js";
 
 
@@ -45,7 +46,7 @@ export default async function AuthStatus(request, response) {
     catch(error) {
 
         //
-        console.log("/google/auth/status:", error);
+        console.log(chalk.red("/google/auth/status:"), error);
 
     };
 

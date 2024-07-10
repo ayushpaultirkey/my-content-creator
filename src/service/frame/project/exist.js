@@ -1,4 +1,5 @@
 import fs from "fs/promises";
+import chalk from "chalk";
 import Path from "./path.js";
 
 
@@ -10,6 +11,7 @@ export default async function Exist(projectId = "") {
         const _projectPath = Path(projectId, "/project.json");
         await fs.access(_projectPath);
 
+        //
         return true;
         
     }
@@ -18,7 +20,7 @@ export default async function Exist(projectId = "") {
             return false;
         }
         else {
-            console.log("Service/Project.Exist():", error);
+            console.log(chalk.red("/S/Frame/Project/Exist():"), error);
             throw new Error("Project file not found");
         };
     };

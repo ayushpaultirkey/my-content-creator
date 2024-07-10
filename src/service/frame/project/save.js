@@ -1,4 +1,5 @@
 import fs from "fs/promises";
+import chalk from "chalk";
 import Path from "./path.js";
 
 
@@ -19,11 +20,11 @@ export default async function Save(projectId, data) {
         await fs.writeFile(_projectPath, _content);
 
         //
-        console.log("Service/Project.Save(): Project data saved");
+        console.log(chalk.green("/S/Frame/Project/Save():"), "Project data saved");
 
     }
     catch(error) {
-        console.log("Service/Project.Save():", error);
+        console.log(chalk.red("/S/Frame/Project/Save():"), error);
         throw new Error("Unable to save project file");
     };
 

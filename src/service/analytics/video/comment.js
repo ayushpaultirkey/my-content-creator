@@ -2,6 +2,7 @@ import chalk from "chalk";
 import Youtube from "#service/google/youtube.js";
 import Analytics from "#service/analytics.js";
 
+
 export default async function Comment({ refresh, rid, videoId, channelId, request, callback }) {
 
     try {
@@ -53,7 +54,7 @@ export default async function Comment({ refresh, rid, videoId, channelId, reques
     }
     catch(error) {
         console.log(chalk.red("/S/Analytics/Video/Comment():"), error);
-        throw error;
+        throw new Error("Unable to get video's comments");
     }
 
 };

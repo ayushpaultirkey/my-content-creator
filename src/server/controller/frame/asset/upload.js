@@ -1,6 +1,7 @@
 import path from "path";
 import sharp from "sharp";
 import fs from "fs/promises";
+import chalk from "chalk";
 
 import Asset from "#service/asset.js";
 import Project from "#service/frame/project.js";
@@ -83,7 +84,7 @@ export default async function Upload(request, response) {
                         
                 // Set error message
                 _response.message = error.message || "Unable to upload asset";
-                console.log("/asset/upload: Upload error", error);
+                console.log(chalk.red("/frame/asset/upload:"), "Upload error", error);
 
             }
             finally {
@@ -99,7 +100,7 @@ export default async function Upload(request, response) {
 
         // Set error message
         _response.message = error.message || "Unable to upload asset";
-        console.log("/asset/upload: General error", error);
+        console.log(chalk.red("/frame/asset/upload:"), error);
 
     };
 

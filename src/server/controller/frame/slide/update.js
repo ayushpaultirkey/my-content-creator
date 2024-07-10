@@ -1,20 +1,5 @@
-import Slide from "#service/frame/slide.js";
+import chalk from "chalk";
 import Project from "#service/frame/project.js";
-
-
-/**
-    * 
-    * @param {*} value 
-    * @returns 
-*/
-function IsValid(value = []) {
-    for(var i = 0, l = value.length; i < l; i++) {
-        if((typeof(value[i]) !== "string" || value[i].length < 2)) {
-            return false;
-        };
-    };
-    return true;
-};
 
 
 /**
@@ -74,9 +59,7 @@ export default async function Update(request, response) {
 
         // Set error message
         _response.message = error.message || "An error occurred";
-
-        // Log error message
-        console.log("/slide/update:", error);
+        console.log(chalk.red("/frame/slide/update:"), error);
 
     }
     finally {

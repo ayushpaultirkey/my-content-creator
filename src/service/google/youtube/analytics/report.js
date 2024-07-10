@@ -1,4 +1,5 @@
 import "dotenv/config";
+import chalk from "chalk";
 import { google } from "googleapis";
 
 import GAuth from "../../auth.js";
@@ -42,8 +43,8 @@ export default async function Report() {
 
     }
     catch(error) {
-        console.error("Service/Google/Youtube/Analytics/Report():", error);
-        throw error;
+        console.error(chalk.red("/S/Google/Youtube/Analytics/Report():"), error);
+        throw new Error("Unable to get analytics report");
     };
 
 };

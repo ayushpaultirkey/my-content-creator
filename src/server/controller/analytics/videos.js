@@ -1,11 +1,7 @@
 import chalk from "chalk";
-
 import Auth from "#service/google/auth.js";
-import Gemini from "#service/google/gemini.js";
-import Youtube from "#service/google/youtube.js";
 import Analytics from "#service/analytics.js";
 
-import Sample from "#service/google/youtube/analytics/@sample.js";
 
 /**
     *
@@ -24,7 +20,7 @@ export default async function Videos(request, response) {
         const { uid } = request.cookies;
         const { refresh } = request.query;
         if(!uid) {
-            throw new Error("Invalid session");
+            throw new Error("Invalid reference id");
         };
 
         // Check if there is user

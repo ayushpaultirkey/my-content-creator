@@ -1,5 +1,6 @@
 import "dotenv/config";
 import path from "path";
+import chalk from "chalk";
 import axios from "axios";
 import crypto from "crypto";
 
@@ -28,7 +29,7 @@ export default async function FetchExternalImage({ keyword, count = 5, callback 
         if(!_cache) {
 
             //
-            console.log("S/Asset/FetchExternalImage(): NO CACHE FOUND");
+            console.log(chalk.yellow("/S/Asset/FetchExternalImage():"), "NO CACHE FOUND");
 
             //
             const { headers, data } = await axios.get("https://pixabay.com/api/", {
@@ -40,13 +41,13 @@ export default async function FetchExternalImage({ keyword, count = 5, callback 
             });
 
             //
-            console.log(`S/Asset/FetchExternalImage(): Rate Limit: ${headers["x-ratelimit-limit"]}`);
-            console.log(`S/Asset/FetchExternalImage(): Rate Limit Remaining: ${headers["x-ratelimit-reset"]}`);
-            console.log(`S/Asset/FetchExternalImage(): Rate Limit Resets in: ${headers["x-ratelimit-remaining"]} seconds`);
+            console.log(chalk.yellow(`/S/Asset/FetchExternalImage():`), `Rate Limit: ${headers["x-ratelimit-limit"]}`);
+            console.log(chalk.yellow(`/S/Asset/FetchExternalImage():`), `Rate Limit Remaining: ${headers["x-ratelimit-reset"]}`);
+            console.log(chalk.yellow(`/S/Asset/FetchExternalImage():`), `Rate Limit Resets in: ${headers["x-ratelimit-remaining"]} seconds`);
 
             //
             if(data.hits.length < count) {
-                console.log("S/Asset/FetchExternalImage(): Mismatch slides and default images");
+                console.log(chalk.yellow("/S/Asset/FetchExternalImage():"), "Mismatch slides and default images");
             };
 
             //
@@ -62,11 +63,11 @@ export default async function FetchExternalImage({ keyword, count = 5, callback 
                         url: "https://picsum.photos/512",
                         destination: path.join(_cachePath, _name)
                     })
-                    console.log("S/Asset/FetchExternalImage(): Invalid response hit at index", i);
+                    console.log(chalk.red("/S/Asset/FetchExternalImage():"), "Invalid response hit at index", i);
                     continue;
                 };
 
-                console.log(`S/Asset/FetchExternalImage(): ${_path} qued for download`);
+                console.log(chalk.yellow(`/S/Asset/FetchExternalImage():`), `${_path} qued for download`);
 
                 _image.push({
                     name: _name,
@@ -78,11 +79,11 @@ export default async function FetchExternalImage({ keyword, count = 5, callback 
 
             // 
             Cache.Update(_query, "image", _image);
-            console.log("S/Asset/FetchExternalImage(): CACHE UPDATED");
+            console.log(chalk.yellow("/S/Asset/FetchExternalImage():"), "CACHE UPDATED");
 
             //
             await Cache.Save();
-            console.log("S/Asset/FetchExternalImage(): CACHE SAVED");
+            console.log(chalk.green("/S/Asset/FetchExternalImage():"), "CACHE SAVED");
 
             //
             _collection = await DownloadFiles(_image);
@@ -91,11 +92,11 @@ export default async function FetchExternalImage({ keyword, count = 5, callback 
         else {
 
             //
-            console.log("S/Asset/GetLocalAsset(): CACHE FOUND");
+            console.log(chalk.green("/S/Asset/FetchExternalImage():"), "CACHE FOUND");
 
             //
             if(_cache.length < count) {
-                console.log("S/Asset/GetLocalAsset(): Mismatch slides and default images");
+                console.log(chalk.yellow("/S/Asset/FetchExternalImage():"), "Mismatch slides and default images");
             };
 
             for(var i = 0, len = count; i < len; i++) {
@@ -105,7 +106,7 @@ export default async function FetchExternalImage({ keyword, count = 5, callback 
 
                     _collection.push((_cache[0]) ? _cache[0].destination : path.join(Fallback("IMAGE")));
 
-                    console.log("S/Asset/GetLocalAsset(): Invalid cache hit at index", i, "using random index", 0);
+                    console.log(chalk.yellow("/S/Asset/FetchExternalImage():"), "Invalid cache hit at index", i, "using random index", 0);
                     continue;
 
                 };
@@ -120,8 +121,8 @@ export default async function FetchExternalImage({ keyword, count = 5, callback 
 
     }
     catch(error) {
-        console.log("S/Asset/FetchExternalImage():", error);
-        throw error;
+        console.log(chalk.red("/S/Asset/FetchExternalImage():"), error);
+        throw new Error("Unable to download images");
     }
     
     return _collection;

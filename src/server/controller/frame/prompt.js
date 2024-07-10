@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import Project from "#service/frame/project.js";
 import Asset from "#service/asset.js";
 
@@ -56,7 +57,7 @@ export default async function Prompt(request, response) {
                         
                 // Log and set error message
                 _response.message = error.message || "Unable to upload asset";
-                console.log("/google/gemini: Upload error", error);
+                console.log(chalk.red("/frame/prompt:"), error);
 
             }
             finally {
@@ -72,7 +73,7 @@ export default async function Prompt(request, response) {
 
         // Log ad set error message
         _response.message = error.message || "An error occurred";
-        console.log("/google/gemini:", error);
+        console.log(chalk.red("/frame/prompt:"), error);
         response.send(_response);
 
     };

@@ -48,7 +48,7 @@ export default async function GetAssets(searchIn) {
 
     }
     catch(error) {
-        console.log(chalk.red("S/Asset.GetAssets():"), error);
+        console.log(chalk.red("/S/Asset/GetAssets():"), error);
         throw new Error("Unable to get assets");
     };
 

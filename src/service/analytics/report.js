@@ -1,5 +1,4 @@
 import chalk from "chalk";
-
 import Gemini from "#service/google/gemini.js";
 import Youtube from "#service/google/youtube.js";
 import Analytics from "#service/analytics.js";
@@ -55,7 +54,7 @@ export default async function Report({ request, rid, refresh, callback }) {
     }
     catch(error) {
         console.log(chalk.red("/S/Analytics/Report():"), error);
-        throw error;
+        throw new Error("Unable to generate video report");
     }
 
 };

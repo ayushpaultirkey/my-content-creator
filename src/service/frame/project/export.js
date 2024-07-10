@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import chalk from "chalk";
 import Path from "./path.js";
 
+
 async function GetFile(projectId = "") {
 
     try {
@@ -17,7 +18,7 @@ async function GetFile(projectId = "") {
 
     }
     catch(error) {
-        console.log(chalk.red("Service/Project/Export.GetFile():"), error);
+        console.log(chalk.red("/S/Frame/Project/Export.GetFile():"), error);
         throw new Error("No files to export");
     };
 

@@ -1,7 +1,7 @@
 import chalk from "chalk";
-
 import Asset from "#service/asset.js";
 import Analytics from "#service/analytics.js";
+
 
 /**
     *
@@ -43,7 +43,6 @@ export default async function Prompt(request, response) {
                     file: _file,
                     prompt: q,
                     rid: uid,
-                    request: request,
                     callback: () => {}
                 });
 

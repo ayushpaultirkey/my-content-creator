@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import Auth from "#service/google/auth.js";
 
 /**
@@ -28,7 +29,7 @@ export default async function AuthCallback(request, response) {
         _authEvent.emit("login", { success: false });
 
         //
-        console.log("/google/auth/callback:", error);
+        console.log(chalk.red("/google/auth/callback:"), error);
         response.send("Unable to get token");
 
     };

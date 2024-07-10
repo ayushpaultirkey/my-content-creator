@@ -1,5 +1,7 @@
+import chalk from "chalk";
 import Asset from "#service/asset.js";
 import Project from "#service/frame/project.js";
+
 
 /**
     * 
@@ -24,8 +26,6 @@ export default async function Fetch(request, response) {
         const _asset = await Asset.GetAssets(Project.Path(pid, "/asset/"));
 
         //
-
-        //
         _response.success = true;
         _response.data = _asset.map(x => {
             return {
@@ -39,9 +39,7 @@ export default async function Fetch(request, response) {
 
         // Set error message
         _response.message = error.message || "Unable to get asset list";
-        
-        // Log error message
-        console.log("/asset/fetch:", error);
+        console.log(chalk.red("/frame/asset/fetch:"), error);
 
     }
     finally {

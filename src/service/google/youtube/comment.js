@@ -9,7 +9,7 @@ export default async function Comment({ videoId, channelId, request, callback })
     try {
 
         // Log and callback
-        console.log(chalk.green("/S/Google/Youtube.Comment():"), "Comment read started");
+        console.log(chalk.green("/S/Google/Youtube/Comment():"), "Comment read started");
         callback("Youtube: Comment read started");
 
         // Get auth and load channel data
@@ -57,7 +57,7 @@ export default async function Comment({ videoId, channelId, request, callback })
 
 
         // Log and callback
-        console.log(chalk.green("/S/Google/Youtube.Comment():"), "Comment read ended");
+        console.log(chalk.green("/S/Google/Youtube/Comment():"), "Comment read ended");
         callback("Comment: Comment read ended");
 
         //
@@ -66,8 +66,8 @@ export default async function Comment({ videoId, channelId, request, callback })
     }
     catch(error) {
 
-        console.log(chalk.red("/S/Google/Youtube.Comment():"), error);
-        throw new Error("Unable to read comments");
+        console.log(chalk.red("/S/Google/Youtube/Comment():"), error);
+        throw new Error("Unable to get comments");
 
     };
 

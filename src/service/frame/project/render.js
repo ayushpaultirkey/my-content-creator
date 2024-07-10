@@ -1,16 +1,16 @@
 import fs from "fs/promises";
 import path from "path";
+import chalk from "chalk";
 import crypto from "crypto";
 import { FFScene, FFCreator } from "ffcreator";
 
-import delay from "../../../library/wait.js";
-
+import delay from "#library/wait.js";
+import Asset from "#service/asset.js";
 import Read from "./read.js";
 import Path from "./path.js";
 import Scene from "../slide/scene.js";
 import Duration from "../slide/duration.js";
-import Asset from "#service/asset.js";
-import chalk from "chalk";
+
 
 export default async function Render({ projectId = "", callback = null }) {
 
@@ -119,9 +119,7 @@ export default async function Render({ projectId = "", callback = null }) {
             });
             
             // Log
-            console.log(`Service/Project/Render(): scene ${slide.id} builded`);
-
-            // Send SSE
+            console.log(chalk.green(`/S/Frame/Project/Render():`), `Scene ${slide.id} builded`);
             callback(`Rendering: Scene ${slide.id} builded`);
 
         };
@@ -136,26 +134,23 @@ export default async function Render({ projectId = "", callback = null }) {
 
             // Send SSE
             callback(`Rendering: Project rendering warming up`);
-            console.log(`Service/Project/Render(): Project render ${projectId} started`);
+            console.log(chalk.green(`/S/Frame/Project/Render():`), `Project render ${projectId} started`);
             
         });
         _creator.on("error", e => {
             
             // Send SSE
-            callback(`Rendering: Error while rendering project`);
+            console.log(chalk.red(`/S/Frame/Project/Render():`), `Unable to render project: ${projectId}`);
 
-            // Log and reject
-            console.log(`Service/Project/Render(): Unable to render project: ${projectId}`);
-            _delay.reject(`Service/Project/Render(): Unable to render project: ${projectId}`);
+            callback(`Rendering: Error while rendering project`);
+            _delay.reject(`Unable to render project: ${projectId}`);
 
         });
         _creator.on("progress", e => {
 
             // Send SSE
+            console.log(chalk.yellow(`/S/Frame/Project/Render():`), `Project render: ${(e.percent * 100) >> 0}%`);
             callback(`Rendering: Project render status: ${(e.percent * 100) >> 0}%`);
-
-            // Log
-            console.log(`Service/Project/Render(): Project render: ${(e.percent * 100) >> 0}%`);
 
         });
         _creator.on("complete", async(e) => {
@@ -165,19 +160,19 @@ export default async function Render({ projectId = "", callback = null }) {
                 // Copy rendered file to project's export directory
                 await fs.copyFile(_exportPath, path.join(_projectPath, "/render.mp4"));
 
-                // Send SSE
+                //
+                console.log(chalk.green(`/S/Frame/Project/Render():`), `Project render ${projectId} completed`);
+
+                //
                 callback(`Rendering: Project render completed`);
-    
-                // Log and resolve
-                console.log(`Service/Project/Render(): Project render ${projectId} completed`);
                 _delay.resolve(_exportName);
 
             }
             catch(error) {
 
-                // Log and reject
-                console.log("Service/Project/Render(): Failed to move video to project", error);
-                _delay.reject("Service/Project/Render(): Error while moving file to project");
+                //
+                console.log(chalk.red("/S/Frame/Project/Render():"), "Failed to move video to project", error);
+                _delay.reject("Error while moving file to project");
 
             };
             
@@ -190,10 +185,10 @@ export default async function Render({ projectId = "", callback = null }) {
         callback(`Rendering: Error while rendering project`);
 
         // Log and reject
-        console.log("Service/Project/Render():", error);
+        console.log("/S/Frame/Project/Render():", error);
         _delay.reject(error);
         
-    }
+    };
 
     return _delay.promise;
 

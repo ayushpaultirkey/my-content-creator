@@ -1,7 +1,7 @@
-import "dotenv/config";
 import fs from "fs";
 import say from "say";
 import util from "util";
+import chalk from "chalk";
 import googlecloud from "@google-cloud/text-to-speech";
 
 
@@ -32,10 +32,10 @@ async function ByLocalTTS(content = [{ text, destination }]) {
         //
         try {
             await _export(content[i].text, content[i].destination);
-            console.log(`S/Asset/ByLocalTTS(): voice-${i} created`);
+            console.log(chalk.green(`/S/Asset/ByLocalTTS():`), `voice-${i} created`);
         }
         catch(error) {
-            console.log(`S/Asset/ByLocalTTS(): Error creating voice-${i}:`, error);
+            console.log(chalk.red(`/S/Asset/ByLocalTTS():`), `Error creating voice-${i}:`, error);
         };
         
     };
@@ -58,7 +58,7 @@ async function ByExternalTTS(content = [{ text, destination }]) {
         try {
 
             //
-            console.log("S/Asset/Voice/ByExternalTTS(): Audio narration creation started");
+            console.log(chalk.green("/S/Asset/Voice/ByExternalTTS():"), "Audio narration creation started");
 
             //
             const [ _response ] = await _client.synthesizeSpeech({
@@ -72,12 +72,12 @@ async function ByExternalTTS(content = [{ text, destination }]) {
             await _writer(destination, _response.audioContent, "binary");
 
             //
-            console.log("S/Asset/Voice/ByExternalTTS(): Audio narration creation completed");
+            console.log(chalk.green("/S/Asset/Voice/ByExternalTTS():"), "Audio narration creation completed");
 
         }
         catch(error) {
 
-            console.log("S/Asset/Voice/ByExternalTTS(): Failed to create audio", error);
+            console.log(chalk.red("/S/Asset/Voice/ByExternalTTS():"), "Failed to create audio", error);
             
         };
     };
@@ -92,7 +92,7 @@ async function ByExternalTTS(content = [{ text, destination }]) {
 
     }
     catch(error) {
-        console.log("S/Asset/Voice/ByExternalTTS(): Error while creating voice for slides", error);
+        console.log(chalk.red("/S/Asset/Voice/ByExternalTTS():"), "Error while creating voice for slides", error);
     };
 
 };
@@ -116,8 +116,8 @@ export default async function CreateVoiceAsset({ content, useLocalTTS, callback 
 
     }
     catch(error) {
-        console.log("Service/Asset.CreateVoiceAsset(): General error", error);
-        throw error;
+        console.log(chalk.red("/S/Asset/CreateVoiceAsset():"), error);
+        throw new Error("Unable to create voice asset");
     };
 
 };

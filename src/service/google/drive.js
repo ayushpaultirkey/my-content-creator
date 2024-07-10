@@ -43,7 +43,7 @@ async function GetFiles({ nextPage = null, request, callback }) {
 
     }
     catch(error) {
-        console.log(chalk.red("Service/Google/Drive.GetFiles():"), error)
+        console.log(chalk.red("/S/Google/Drive.GetFiles():"), error)
         throw new Error("Unable to get files");
     };
 
@@ -112,7 +112,7 @@ async function ImportFiles({ request, id = [], callback }) {
 
     }
     catch(error) {
-        console.log(chalk.red("S/Google/Drive.ImportFile():"), error);
+        console.log(chalk.red("/S/Google/Drive.ImportFile():"), error);
         throw new Error("Unable to import files from drive");
     };
 
@@ -124,7 +124,7 @@ async function UploadFile({ filePath, request, callback }) {
     try {
 
         //
-        console.log(chalk.green("S/Google/Drive.UploadFile():"), "Upload started");
+        console.log(chalk.green("/S/Google/Drive.UploadFile():"), "Upload started");
         callback("Drive: Upload started");
 
         // Get auth cient and define google drive
@@ -150,7 +150,7 @@ async function UploadFile({ filePath, request, callback }) {
                 _bytesUploaded += chunk.length;
 
                 const _progress = Math.round((_bytesUploaded / _fileSize) * 100);
-                console.log(chalk.blue("S/Google/Drive.UploadFile():"), `Uploaded ${_progress}%`);
+                console.log(chalk.yellow("/S/Google/Drive.UploadFile():"), `Uploaded ${_progress}%`);
                 callback(`Drive: Upload progress: ${_progress}%`);
 
             })
@@ -164,12 +164,12 @@ async function UploadFile({ filePath, request, callback }) {
         });
         
         // Log
-        console.log(chalk.green("S/Google/Drive.UploadFile():"), "Upload finished");
+        console.log(chalk.green("/S/Google/Drive.UploadFile():"), "Upload finished");
         callback("Drive: Upload finished");
 
     }
     catch(error) {
-        console.log(chalk.red("S/Google/Drive.UploadFile():"), error);
+        console.log(chalk.red("/S/Google/Drive.UploadFile():"), error);
         throw new Error("Unable to upload file to drive");
     };
 

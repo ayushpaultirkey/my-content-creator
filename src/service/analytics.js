@@ -5,7 +5,7 @@ import Prompt from "./analytics/prompt.js";
 import Comment from "./analytics/video/comment.js";
 import Report from "./analytics/report.js";
 import Analyze from "./analytics/analyze.js";
-import Config from "./google/youtube/analytics/@config.js";
+import Config from "./analytics/@config.js";
 import CPrompt from "./analytics/video/comment/prompt.js";
 import Send from "./analytics/video/comment/send.js";
 

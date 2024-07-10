@@ -34,7 +34,7 @@ function Initialize(id, systemInstruction, responseMimeType = "text/plain") {
                 model: _model
             });
 
-            console.log(chalk.green("/S/Google/Gemini.Initialize():"), `${id} gemini instance added to container.`);
+            console.log(chalk.green("/S/Google/Gemini.Initialize():"), `${id} gemini instance added to container`);
     
         };
 
@@ -59,7 +59,7 @@ async function PromptFile(id, file = {}, history = [], validate = true) {
     try {
 
         // Log
-        console.log(chalk.green("Service/Gemini.PromptFile():"), "Multimodel prompt started");
+        console.log(chalk.green("/S/Google/Gemini.PromptFile():"), "Multimodel prompt started");
 
         //
         const { filemanager } = Container.Get(id);
@@ -80,7 +80,7 @@ async function PromptFile(id, file = {}, history = [], validate = true) {
                 catch(error) {
                     delete history[i].parts[0].fileData;
                     history[i].parts[0].text = "Cannot view asset since it was expired after 48 hours.";
-                    console.log(chalk.yellow("/S/Gemini.PromptFile()"), "File not exists, it will be removed from history");
+                    console.log(chalk.yellow("/S/Google/Gemini.PromptFile()"), "File not exists, it will be removed from history");
                 };
             };
         };

@@ -1,20 +1,20 @@
 import fs from "fs/promises";
 import path from "path";
+import chalk from "chalk";
 import crypto from "crypto";
-
-import Gemini from "../../google/gemini.js";
 
 import Path from "./path.js";
 import Exist from "./exist.js";
 import Slide from "../slide.js";
 import Asset from "../../asset.js";
 import Config from "./../@config.js";
+import Gemini from "../../google/gemini.js";
 
 
 export default async function Create({ prompt, file, width = 128, height = 128, callback }) {
 
     //
-    console.log("S/Frame/Project/Create(): Project creation started");
+    console.log(chalk.green("/S/Frame/Project/Create():"), "Project creation started");
 
     try {
 
@@ -31,7 +31,7 @@ export default async function Create({ prompt, file, width = 128, height = 128, 
         if(file) {
 
             //
-            console.log("S/Frame/Project/Create(): File found, adding multimodel prompt");
+            console.log(chalk.yellow("/S/Frame/Project/Create():"), "File found, adding multimodel prompt");
             callback("Project: Creating multi model prompt");
 
             //
@@ -40,7 +40,7 @@ export default async function Create({ prompt, file, width = 128, height = 128, 
         };
 
         //
-        console.log("S/Frame/Project/Create(): Prompt started");
+        console.log(chalk.green("/S/Frame/Project/Create():"), "Prompt started");
         callback("Project: Generating response");
 
         //
@@ -56,7 +56,7 @@ export default async function Create({ prompt, file, width = 128, height = 128, 
         };
 
         //
-        console.log("S/Frame/Project/Create(): Prompt ended");
+        console.log(chalk.green("/S/Frame/Project/Create():"), "Prompt ended");
         callback("Project: Creating project");
 
         //
@@ -89,8 +89,8 @@ export default async function Create({ prompt, file, width = 128, height = 128, 
         });
 
         //
-        console.log("S/Frame/Project/Create(): INPUT IMAGE", _inImage);
-        console.log("S/Frame/Project/Create(): OUTPUT IMAGE", _outImage);
+        console.log(chalk.yellow("/S/Frame/Project/Create():"), "INPUT IMAGE", _inImage);
+        console.log(chalk.yellow("/S/Frame/Project/Create():"), "OUTPUT IMAGE", _outImage);
 
         //
         await Asset.CropImages({
@@ -110,7 +110,7 @@ export default async function Create({ prompt, file, width = 128, height = 128, 
         });
 
         //
-        console.log("S/Frame/Project/Create(): Project created", _projectId);
+        console.log(chalk.green("/S/Frame/Project/Create():"), "Project created", _projectId);
         callback("Project: Project created");
 
         //
@@ -118,8 +118,8 @@ export default async function Create({ prompt, file, width = 128, height = 128, 
 
     }
     catch(error) {
-        console.log("S/Frame/Project/Create():", error);
-        throw error;
+        console.log(chalk.red("/S/Frame/Project/Create():"), error);
+        throw new Error("Unable to create project");
     };
 
 }

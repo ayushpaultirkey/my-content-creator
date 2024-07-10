@@ -1,7 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
 import { FFText, FFAlbum, FFVideo } from "ffcreator";
-
 import directory from "#library/directory.js";
 import Validate from "./scene/validate.js";
 import chalk from "chalk";
@@ -51,7 +50,7 @@ async function AddVideo({ projectPath, scene, video, totalTime, showAt, width, h
 
         }
         catch(error) {
-            console.log("Service/Scene.AddVideo(): Unable to add video", error);
+            console.log(chalk.red("/S/Frame/Scene/AddVideo():"), error);
         };
 
     };
@@ -61,33 +60,40 @@ async function AddVideo({ projectPath, scene, video, totalTime, showAt, width, h
 
 async function AddImage({ projectPath, scene, image, totalTime, showAt, hideAt, width, height }) {
 
-    // Add image if avaiable
-    if(typeof(image) !== "undefined" && image.length > 0) {
+    try {
 
-        // Check if the images are valid
-        const _asset = await Validate(projectPath, image);
+        // Add image if avaiable
+        if(typeof(image) !== "undefined" && image.length > 0) {
+    
+            // Check if the images are valid
+            const _asset = await Validate(projectPath, image);
+    
+            // Create new album using images
+            /** @type {import("ffcreator").FFAlbum} */
+            const _album = new FFAlbum({
+                list: _asset.map(x => x.name),
+                x: width / 2,
+                y: height / 2,
+                width: width,
+                height: height,
+                scale: 1.25
+            });
+            _album.setTransition();
+            _album.setDuration(totalTime / _asset.length);
+            _album.setTransTime(1);
+            _album.addEffect("fadeIn", 1, showAt);
+            _album.addEffect("fadeOut", 1, hideAt);
+            scene.addChild(_album);
+            
+            //
+            console.log(chalk.green("/S/Frame/Scene/AddImage():"), "Image added");
+    
+        };
 
-        // Create new album using images
-        /** @type {import("ffcreator").FFAlbum} */
-        const _album = new FFAlbum({
-            list: _asset.map(x => x.name),
-            x: width / 2,
-            y: height / 2,
-            width: width,
-            height: height,
-            scale: 1.25
-        });
-        _album.setTransition();
-        _album.setDuration(totalTime / _asset.length);
-        _album.setTransTime(1);
-        _album.addEffect("fadeIn", 1, showAt);
-        _album.addEffect("fadeOut", 1, hideAt);
-        scene.addChild(_album);
-        
-        //
-        console.log(chalk.green("/S/Frame/Scene/AddImage(): Image added"));
-
-    };
+    }
+    catch(error) {
+        console.log(chalk.red(`/S/Frame/Scene/AddImage():`), error);
+    }
 
 };
 
@@ -104,11 +110,11 @@ async function AddBGM({ projectPath, creator, audio, volume }) {
         creator.addAudio({ path: _audioPath, start: 0, volume: volume });
 
         //
-        console.log(chalk.green("/S/Frame/Scene/AddBGM(): Background audio added"));
+        console.log(chalk.green("/S/Frame/Scene/AddBGM():"), "Background audio added");
 
     }
     catch(error) {
-        console.log(`/S/Frame/Scene.AddBGM(): Cannot find audio`, error);
+        console.log(chalk.red(`/S/Frame/Scene/AddBGM():`), error);
     };
 
 }
@@ -127,11 +133,11 @@ async function AddAudio({ projectPath, scene, audio, volume, showAt }) {
         scene.addAudio({ path: _audioPath, start: showAt, volume: volume });
 
         //
-        console.log(chalk.green("/S/Frame/Scene/AddAudio(): Audio added"));
+        console.log(chalk.green("/S/Frame/Scene/AddAudio():"), "Audio added");
 
     }
     catch(error) {
-        console.log(`Service/Scene.AddAudio(): Cannot find audio`, error);
+        console.log(chalk.red(`/S/Frame/Scene/AddAudio():`), error);
     };
 
 };
@@ -157,11 +163,11 @@ async function AddText({ projectPath, scene, content, showAt, hideAt, width, hei
         scene.addChild(_text);
 
         //
-        console.log(chalk.green("/S/Frame/Scene/AddText(): Text added"));
+        console.log(chalk.green("/S/Frame/Scene/AddText():"), "Text added");
 
     }
     catch(error) {
-        console.log(`Service/Scene.AddText(): Cannot add text`, error);
+        console.log(chalk.red(`/S/Frame/Scene/AddText():`), error);
     };
 
 };

@@ -1,5 +1,4 @@
 import chalk from "chalk";
-
 import Auth from "#service/google/auth.js";
 import Analytics from "#service/analytics.js";
 
@@ -9,7 +8,7 @@ import Analytics from "#service/analytics.js";
     * @param {import("express").Request} request 
     * @param {import("express").Response} response 
 */
-export default async function Prompt(request, response) {
+export default async function Send(request, response) {
 
     // Create response object
     const _response = { message: "", success: false, data: null };
@@ -49,7 +48,7 @@ export default async function Prompt(request, response) {
     catch(error) {
 
         // Log and set response for error
-        console.log(chalk.red("/analytics/video/comment/prompt:"), error);
+        console.log(chalk.red("/analytics/video/comment/send:"), error);
         _response.message = error.message || "An error occurred";
 
     }

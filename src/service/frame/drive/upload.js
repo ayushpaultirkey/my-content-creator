@@ -22,12 +22,12 @@ export default async function UploadFile({ projectId = "", request, callback }) 
         });
 
         callback("Drive: Upload finished");
-        console.log(`${chalk.green("S/Frame/Drive/UploadFile():")} File uploaded`);
+        console.log(chalk.green("/S/Frame/Drive/UploadFile():"), "File uploaded");
 
     }
     catch(error) {
-        console.log(`${chalk.red("S/Frame/Drive/UploadFile():")} ${error}`);
-        throw error;
+        console.log(chalk.green("/S/Frame/Drive/UploadFile():"), error);
+        throw new Error("Unable to upload file");
     };
 
 };

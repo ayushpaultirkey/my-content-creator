@@ -1,5 +1,4 @@
 import chalk from "chalk";
-
 import Auth from "#service/google/auth.js";
 import Analytics from "#service/analytics.js";
 

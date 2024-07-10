@@ -31,14 +31,14 @@ async function UseFallback(assetPath) {
         await fs.copyFile(_fallbackPath, assetPath);
 
         // Log
-        console.log(chalk.yellow("S/Frame/Scene/Validate/UseFallback():"), "Using fallback asset in project");
+        console.log(chalk.yellow("/S/Frame/Slide/Scene/Validate.UseFallback():"), "Using fallback asset in project");
 
         //
         return true;
 
     }
     catch(error) {
-        console.log(chalk.red("S/Frame/Scene/Validate/UseFallback():"), "Unable to use fallback asset", error);
+        console.log(chalk.red("/S/Frame/Slide/Scene/Validate.UseFallback():"), "Unable to use fallback asset", error);
     };
 
 };
@@ -64,7 +64,7 @@ export default async function Validate(projectPath, asset) {
         }
         catch(error) {
 
-            console.log(chalk.red("S/Frame/Scene/Validate():"), `Cannot find ${x} asset file`, error);
+            console.log(chalk.red("/S/Frame/Slide/Scene/Validate():"), `Cannot find ${x} asset file`, error);
 
             // Try to use fallback asset
             if(await UseFallback(_assetPath)) {

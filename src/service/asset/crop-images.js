@@ -1,4 +1,3 @@
-import "dotenv/config";
 import sharp from "sharp";
 import chalk from "chalk";
 
@@ -28,7 +27,7 @@ export default async function CropImages({ input = [], output = [], width = 512,
                     })
                     .toFile(destination);
 
-                    console.log(chalk.green("S/Asset/CropImages():"), `Image cropped ${destination}`);
+                    console.log(chalk.green("/S/Asset/CropImages():"), `Image cropped ${destination}`);
                     resolve();
 
                 }
@@ -42,7 +41,7 @@ export default async function CropImages({ input = [], output = [], width = 512,
         // All images and crop it
         for(var i = 0, l = input.length; i < l; i++) {
             if(!input[i] || !output[i]) {
-                console.log(chalk.red("S/Asset/CropImages():"), "Invalid input or output at index", i)
+                console.log(chalk.red("/S/Asset/CropImages():"), "Invalid input or output at index", i)
                 continue;
             };
             _promise.push(_crop(input[i], output[i]));
@@ -52,11 +51,11 @@ export default async function CropImages({ input = [], output = [], width = 512,
         await Promise.all(_promise);
 
         //
-        console.log(chalk.green("S/Asset/CropImages():"), "All images cropped");
+        console.log(chalk.green("/S/Asset/CropImages():"), "All images cropped");
 
     }
     catch(error) {
-        console.log(chalk.red("S/Asset/CropImages():"), error);
+        console.log(chalk.red("/S/Asset/CropImages():"), error);
         throw new Error("Unable to crop images");
     };
 

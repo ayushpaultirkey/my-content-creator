@@ -9,7 +9,7 @@ export default async function Videos({ pageToken, request, callback }) {
     try {
 
         // Log and callback
-        console.log(chalk.green("/S/Google/Youtube.Videos():"), "Video listing started");
+        console.log(chalk.green("/S/Google/Youtube/Videos():"), "Video listing started");
         callback("Youtube: Video listing started");
 
         // Get auth and load channel data
@@ -53,7 +53,7 @@ export default async function Videos({ pageToken, request, callback }) {
         };
         
         // Log and callback
-        console.log(chalk.green("/S/Google/Youtube.Videos():"), "Video listing ended");
+        console.log(chalk.green("/S/Google/Youtube/Videos():"), "Video listing ended");
         callback("Youtube: Video listing ended");
 
         //
@@ -62,7 +62,7 @@ export default async function Videos({ pageToken, request, callback }) {
     }
     catch(error) {
 
-        console.log(chalk.red("/S/Google/Youtube.Videos():"), error);
+        console.log(chalk.red("/S/Google/Youtube/Videos():"), error);
         throw new Error("Unable to read videos");
 
     };

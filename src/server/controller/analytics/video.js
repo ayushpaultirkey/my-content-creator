@@ -1,11 +1,7 @@
 import chalk from "chalk";
-
 import Auth from "#service/google/auth.js";
-import Gemini from "#service/google/gemini.js";
-import Youtube from "#service/google/youtube.js";
 import Analytics from "#service/analytics.js";
 
-import Sample from "#service/google/youtube/analytics/@sample.js";
 
 /**
     *
@@ -24,7 +20,7 @@ export default async function Video(request, response) {
         const { uid } = request.cookies;
         const { videoId, refresh } = request.query;
         if(!uid || !videoId) {
-            throw new Error("Invalid video id or session id");
+            throw new Error("Invalid video id or reference id");
         };
 
         // Check if there is user
@@ -51,7 +47,7 @@ export default async function Video(request, response) {
     catch(error) {
 
         // Log and set response for error
-        console.log(chalk.red("/analytics/videos:"), error);
+        console.log(chalk.red("/analytics/video:"), error);
         _response.message = error.message || "An error occurred";
 
     }

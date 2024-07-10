@@ -1,12 +1,9 @@
 import chalk from "chalk";
-
 import Gemini from "#service/google/gemini.js";
-import Youtube from "#service/google/youtube.js";
 import Analytics from "#service/analytics.js";
-import Sample from "#service/google/youtube/analytics/@sample.js";
 
 
-export default async function Prompt({ request, rid, prompt, file, callback }) {
+export default async function Prompt({ rid, prompt, file, callback }) {
 
     try {
 
@@ -21,7 +18,7 @@ export default async function Prompt({ request, rid, prompt, file, callback }) {
 
         //
         if(file) {
-            console.log(chalk.green("/S/Analytics/Prompt():"), "File found, adding multimodel prompt");
+            console.log(chalk.green("/S/Analytics/Prompt():"), "File found, using multimodel prompt");
             await Gemini.PromptFile(Analytics.Config.E_GEMINI, file, _history);
         };
 
@@ -37,8 +34,8 @@ export default async function Prompt({ request, rid, prompt, file, callback }) {
 
     }
     catch(error) {
-        console.log(chalk.red("/S/Analytics/Report():"), error);
-        throw error;
+        console.log(chalk.red("/S/Analytics/Prompt():"), error);
+        throw new Error("Unable to generate answer");
     }
 
 };

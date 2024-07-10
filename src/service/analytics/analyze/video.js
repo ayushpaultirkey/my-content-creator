@@ -23,11 +23,11 @@ export default async function Video({ refresh, rid, videoId, request, callback }
             //
             if(!_data.videos) {
                 _data.videos = {};
-                console.log(chalk.green("/S/Analytics/Videos():"), "Video entry added");
+                console.log(chalk.green("/S/Analytics/Analyze/Video():"), "Video entry added");
             };
             if(!_data.videos[videoId]) {
                 _data.videos[videoId] = {};
-                console.log(chalk.green("/S/Analytics/Videos():"), "Video entry added by id");
+                console.log(chalk.green("/S/Analytics/Analyze/Video():"), "Video entry added by id");
             };
 
             //
@@ -65,7 +65,7 @@ export default async function Video({ refresh, rid, videoId, request, callback }
     }
     catch(error) {
         console.log(chalk.red("/S/Analytics/Analyze/Video():"), error);
-        throw error;
+        throw new Error("Unable to analyze video");
     }
 
 };

@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import ServerEvent from "#library/event.js";
 import Asset from "#service/asset.js";
 import Frame from "#service/frame.js";
@@ -85,7 +86,7 @@ async function POSTCreate(request, response) {
                         
                 //
                 _response.message = error.message || "Unable to upload asset";
-                console.log("/project/create: Upload error", error);
+                console.log(chalk.red("/frame/project/create:"), "Upload error", error);
 
             }
             finally {
@@ -100,7 +101,7 @@ async function POSTCreate(request, response) {
     catch(error) {
 
         //
-        console.log("/project/create:", error);
+        console.log(chalk.red("/frame/project/create:"), error);
         response.sendStatus(500);
 
     };

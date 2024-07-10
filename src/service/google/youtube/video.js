@@ -9,7 +9,7 @@ export default async function Video({ videoId, request, callback }) {
     try {
 
         // Log and callback
-        console.log(chalk.green("/S/Google/Youtube.Video():"), "Video read started");
+        console.log(chalk.green("/S/Google/Youtube/Video():"), "Video read started");
         callback("Youtube: Video read started");
 
         // Get auth and load channel data
@@ -51,7 +51,7 @@ export default async function Video({ videoId, request, callback }) {
         };
         
         // Log and callback
-        console.log(chalk.green("/S/Google/Youtube.Videos():"), "Video read ended");
+        console.log(chalk.green("/S/Google/Youtube/Video():"), "Video read ended");
         callback("Youtube: Video read ended");
 
         //
@@ -60,8 +60,8 @@ export default async function Video({ videoId, request, callback }) {
     }
     catch(error) {
 
-        console.log(chalk.red("/S/Google/Youtube.Videos():"), error);
-        throw new Error("Unable to read videos");
+        console.log(chalk.red("/S/Google/Youtube/Video():"), error);
+        throw new Error("Unable to read video data");
 
     };
 

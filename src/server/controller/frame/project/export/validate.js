@@ -1,8 +1,6 @@
-import fs from "fs/promises";
-import path from "path";
-
-import Project from "#service/frame/project.js";
+import chalk from "chalk";
 import Export from "#service/frame/project/export.js";
+
 
 /**
     *
@@ -34,7 +32,7 @@ export default async function Validate(request, response) {
     catch(error) {
 
         // Log and set response
-        console.log("/project/export/validate:", error);
+        console.log(chalk.red("/frame/project/export/validate:"), error);
         _response.message = "Export file not found, or error occured.";
 
     }

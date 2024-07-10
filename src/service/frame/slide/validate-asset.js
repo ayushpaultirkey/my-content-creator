@@ -26,12 +26,12 @@ export default async function ValidateAsset(projectId, firstSlide, newSlide = []
             await fs.copyFile(_oPath, _nPath);
 
             //
-            console.log(chalk.green("S/Frame/Slide/ValidateAsset():"), `New asset created for slide ${newSlide[i].id}`);
+            console.log(chalk.green("/S/Frame/Slide/ValidateAsset():"), `New asset created for slide ${newSlide[i].id}`);
             
         };
     }
     catch(error) {
-        console.log(chalk.red("S/Frame/Project/ValidateAsset():"), error);
+        console.log(chalk.red("/S/Frame/Project/ValidateAsset():"), error);
     };
 
 };

@@ -2,6 +2,7 @@ import chalk from "chalk";
 import Analytics from "#service/analytics.js";
 import Gemini from "#service/google/gemini.js";
 
+
 export default async function Prompt({ rid, videoId, commentId, callback }) {
 
     try {
@@ -42,7 +43,7 @@ export default async function Prompt({ rid, videoId, commentId, callback }) {
     }
     catch(error) {
         console.log(chalk.red("/S/Analytics/Video/Comment/Prompt():"), error);
-        throw error;
+        throw new Error("Unable to generate comment");
     }
 
 };
