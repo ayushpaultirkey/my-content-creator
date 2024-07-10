@@ -25,8 +25,6 @@ export default class Home extends H12 {
         </>;
     }
     OpenDashboard() {
-        
         Dispatcher.Call("OnNavigate", { target: "DASHBOARD" });
-
     }
 };

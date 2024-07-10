@@ -7,23 +7,22 @@ import Asset from "@component/asset";
 
 @Component
 export default class Slide extends H12 {
-
     constructor() {
         super();
         this.Index = 0;
         this.Project = null;
     }
-
     async init(args = { project }) {
 
         // Check if the project is valid and load it
         if(args.project) {
 
-            // Set project and load
             this.Project = args.project;
             this.Load();
 
-            // Register on dispatcher event
+            // Register the dispatcher event
+            // The dispacther event when the project and asset are udapted
+            // and the slide is selected
             Dispatcher.On(Config.ON_FASSET_LOAD, this.OnAssetLoad.bind(this));
             Dispatcher.On(Config.ON_FSLIDE_SELECT, this.OnSlideSelect.bind(this));
             Dispatcher.On(Config.ON_FPROJECT_UPDATE, this.OnProjectUpdate.bind(this));
@@ -31,9 +30,9 @@ export default class Slide extends H12 {
         };
 
     }
-
     async render() {
 
+        // Check if the project is valid
         const { project } = this.args;
         if(!project) {
             return <><label>Invalid project</label></>;
@@ -91,7 +90,6 @@ export default class Slide extends H12 {
             </div>
         </>;
     }
-
     async Load() {
 
         const { Project, element, child } = this;
@@ -99,11 +97,13 @@ export default class Slide extends H12 {
         const { SlideContent } = element;
 
         // Check if the project is valid
+        // along with the slide
         if(!Project || !Project.property.slides[this.Index] || !ImageAsset || !VideoAsset) {
             return false;
         };
 
-        // Get working slide
+        // Get slide's data from the project
+        // using the slide id
         let { content, image, video } = Project.property.slides[this.Index];
 
         // Set slid'es content
@@ -114,7 +114,6 @@ export default class Slide extends H12 {
         VideoAsset.SetSelected(video);
 
     }
-
     async Update() {
 
         // Call dispather show loader
@@ -123,7 +122,6 @@ export default class Slide extends H12 {
 
         try {
 
-            //
             const { Project, element, child } = this;
             const { ImageAsset, VideoAsset } = child;
             const { SlideContent } = element;
@@ -147,16 +145,17 @@ export default class Slide extends H12 {
             const _image = ImageAsset.GenerateQueryString("pimage");
             const _video = VideoAsset.GenerateQueryString("pvideo");
 
-            // Perform the update request
+            // Call the api request and check for the success
+            // and response status. The api will update the slide
+            // data and respond with new project data
             const _response = await fetch(`/api/frame/slide/update?pid=${id}&sid=${_slideId}&scontent=${_content}&${_image}&${_video}`);
             const { success, message, data } = await _response.json();
 
-            // Check if the data is updated successfully
             if(!success || !_response.ok) {
                 throw new Error(message);
             };
 
-            // Update project data
+            // Call dispacther event to update data
             Dispatcher.Call(Config.ON_FPROJECT_UPDATE, data);
 
         }
@@ -169,7 +168,6 @@ export default class Slide extends H12 {
         Dispatcher.Call(Config.ON_LOADER_HIDE);
 
     }
-
     SetExample(index = 0) {
 
         const _example = [
@@ -178,7 +176,6 @@ export default class Slide extends H12 {
             "Add a new outro slide."
         ];
 
-        // Try and set the example text
         try {
             this.element.SlideContent.value = _example[index];
         }
@@ -187,15 +184,14 @@ export default class Slide extends H12 {
         };
 
     }
-
     async OnAssetLoad(event, asset) {
         
-        //
+        // Called from dispatcher event when tge
+        // asset is loaded
         const { Project, child } = this;
         const { ImageAsset, VideoAsset } = child;
         const { property: { slides } } = Project;
 
-        //
         if(!Project || !ImageAsset || !VideoAsset) {
             return false;
         };
@@ -212,21 +208,22 @@ export default class Slide extends H12 {
         VideoAsset.SetSelected(video);
 
     }
-
     OnSlideSelect(event, { index }) {
 
+        // Called from dispatcher event when the
+        // slide is selected
         this.Index = index;
         this.Load();
 
     }
-
     OnProjectUpdate(event, project) {
 
+        // Called from dispatcher event when the
+        // project data is updated
         if(project) {
             this.Project = project;
             this.Load();
         };
 
     }
-
 };

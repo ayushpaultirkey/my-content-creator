@@ -5,11 +5,9 @@ import ServerEvent from "@library/serverevent";
 
 @Component
 export default class Authenticate extends H12 {
-
     constructor() {
         super();
     }
-
     async init(args) {
 
         this.Set("{g.auth.visible}", "")
@@ -17,7 +15,6 @@ export default class Authenticate extends H12 {
         this.Status();
 
     }
-
     async render() {
 
         const { style } = this.args;
@@ -29,16 +26,19 @@ export default class Authenticate extends H12 {
             </button>
         </>;
     }
-
     CheckHistory() {
 
         try {
+
+            // Get the response history from the server event and
+            // check if its valid
             const _history = ServerEvent.HistoryLast("AuthStatus");
             
             if(!_history) {
                 return false;
             };
             
+            // Set the message if the account is logged-in or not
             const _data = JSON.parse(_history);
             this.Set("{g.auth}", ((_data.success) ? "Connected to Google" : "Connect to Google"));
 
@@ -48,20 +48,21 @@ export default class Authenticate extends H12 {
         };
 
     }
-
     Status() {
 
+        // Check for the history
         this.CheckHistory();
+
         const _id = "AuthStatus";
         const { Bind, Destroy } = ServerEvent;
 
+        // Bind events for the server side event
         Bind(_id, "open", () => {
             
             console.warn("C/G/A.Authenticate(): opened");
             this.Set("{g.auth.visible}", "");
 
         });
-
         Bind(_id, "message", (event) => {
 
             try {
@@ -79,7 +80,6 @@ export default class Authenticate extends H12 {
             };
 
         });
-
         Bind(_id, "error", () => {
 
             this.Set("{g.auth.visible}", "hidden");
@@ -89,5 +89,4 @@ export default class Authenticate extends H12 {
         });
 
     }
-
 };

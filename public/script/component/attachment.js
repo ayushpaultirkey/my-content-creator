@@ -3,23 +3,18 @@ import H12 from "@library/h12";
 
 @Component
 export default class Attachment extends H12 {
-
     constructor() {
         super();
         this.File = null;
     }
-
     async init(args = { project }) {
 
-        // Set default value
         this.Set("{u.name}", "");
         this.Set("{u.visible}", "hidden");
 
-        // Register on input file
         this.element.FileUpload.addEventListener("change", this.AttachFile.bind(this));
 
     }
-
     async render() {
         return <>
             <div>
@@ -33,11 +28,9 @@ export default class Attachment extends H12 {
             </div>
         </>;
     }
-
     Open() {
         this.element.FileUpload.click();
     }
-
     AttachFile(event) {
         
         const _file = event.target.files[0];
@@ -58,11 +51,9 @@ export default class Attachment extends H12 {
         };
 
     }
-
     AttachRemove() {
         this.File = null;
         this.Set("{u.name}", "");
         this.Set("{u.visible}", "hidden");
     }
-
 };

@@ -13,18 +13,15 @@ import Authenticate from "@component/google/authenticate";
 
 @Component
 export default class Analytics extends H12 {
-    
     constructor() {
         super();
         this.Report = null;
     }
-
     async init() {
 
         this.Load();
 
     }
-
     async render() {
         return <>
             <div class="w-full h-full relative">
@@ -70,14 +67,12 @@ export default class Analytics extends H12 {
             </div>
         </>;
     }
-
     Navigate(index = 0) {
 
         const { NavigationTab, ViewportTab, PropertyTab } = this.element;
         Misc.TabNavigate(index, [NavigationTab, PropertyTab, ViewportTab]);
 
     }
-
     Tab(index = 0) {
 
         const _children = Array.from(this.element.AnalyticNav.children);
@@ -92,7 +87,6 @@ export default class Analytics extends H12 {
         this.Navigate(1);
 
     }
-    
     TabViewport(index = 0) {
         
         const _children = Array.from(this.element.Viewport.children);
@@ -105,14 +99,17 @@ export default class Analytics extends H12 {
         };
 
     }
-
     async Load(param = "") {
 
+        // Show loader
         Dispatcher.Call(Config.ON_LOADER_SHOW);
         Dispatcher.Call(Config.ON_LOADER_UPDATE, "Loading analytics report");
 
         try {
 
+            // Call the api request and check for the success
+            // and response status. The api will load analytics
+            // report
             const _response = await fetch(`/api/analytics/report${param}`);
             const { success, message, data } = await _response.json();
     
@@ -120,6 +117,7 @@ export default class Analytics extends H12 {
                 throw new Error(message);
             };
 
+            // Set new report data and call dispatcher evnet to update data
             this.Report = data;
             Dispatcher.Call(Config.ON_ANALYTICS_REPORT, data);
 
@@ -129,9 +127,8 @@ export default class Analytics extends H12 {
             console.log(error);
         };
 
+        // Hide loader
         Dispatcher.Call(Config.ON_LOADER_HIDE);
 
     }
-
-    
 };

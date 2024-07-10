@@ -6,32 +6,30 @@ import Dispatcher from "@library/h12.dispatcher";
 
 @Component
 export default class Export extends H12 {
-
     constructor() {
         super();
         this.Project = null;
     }
-
     async init(args = { project }) {
 
-        // Set data
+        // Set the default values for the
+        // template fields
         this.Set("{em.visible}", "hidden");
         this.Set("{ev.visible}", "hidden");
 
         // Check if the project is valid and load it
         if(args.project) {
 
-            // Set project and load
             this.Project = args.project;
             this.Load();
 
-            // Bind dispatcher event
+            // Register the dispatcher event
+            // The dispacther event when the project is rendered
             Dispatcher.On(Config.ON_FRENDER_UPDATE, this.OnRenderUpdate.bind(this));
 
         };
 
     }
-
     async render() {
         return <>
             <div class="w-full h-full overflow-hidden hidden">
@@ -60,51 +58,50 @@ export default class Export extends H12 {
             </div>
         </>;
     }
-
     async Load() {
 
-        // Check if the project is valid
-        if(!this.Project) {
-            return false;
-        };
-
-        // Try to check for files to export
         try {
 
             const { EVideoSource, EVideo } = this.element;
 
-            // Check for files to export
+            // Check if the project is valid
+            // before loading
+            if(!this.Project) {
+                return false;
+            };
+
+            // Call the api request and check for the success
+            // and response status. The api will check if the
+            // project have any rendered file
             const _response = await fetch(`/api/frame/project/export/validate?pid=${this.Project.id}`);
             const { success, message, url } = await _response.json();
     
-            // Throw error on false success
             if(!success || !_response.ok) {
                 throw new Error(message);
             };
 
-            // Set video url
+            // Set video url and load
+            // the rendered video
             EVideoSource.src = url;
             EVideo.load();
 
-            // If success then hide the message
+            // Hide the error message if the file
+            // is present
             this.Set("{ev.visible}", "");
             this.Set("{em.visible}", "hidden");
 
         }
         catch(error) {
-            
-            // Log and show message
             this.Set("{em.visible}", "");
             this.Set("{ev.visible}", "hidden");
             console.error(error);
-
         };
         
     }
-
     Download() {
 
         // Check if the project is valid
+        // before downloading
         if(!this.Project) {
             return false;
         };
@@ -125,7 +122,7 @@ export default class Export extends H12 {
                     throw new Error("Invalid project");
                 };
 
-                // Disable button
+                // Disable input elements
                 ExportDrive.disabled = true;
                 
                 // Upload file to google drive by the id
@@ -161,26 +158,27 @@ export default class Export extends H12 {
 
             }
             catch(error) {
-
-                // Alert and log
                 alert("Unable to upload project, try again later");
-                console.error(error);
                 ExportDrive.disabled = false;
-                
+                console.error(error);
             };
 
         },
         Youtube: async() => {
 
+            // Open the youtube uploader panek
+            // from the parent
             if(this.parent) {
                 this.parent.OpenYTUploader();
             };
 
         }
     }
-
     OnRenderUpdate() {
-        this.Load();
-    }
 
+        // Called from dispatcher event when tge
+        // project is rendered
+        this.Load();
+
+    }
 };

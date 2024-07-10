@@ -14,16 +14,15 @@ import DynImport from "@component/frame/function/dynamic-import";
 
 @Component
 export default class Frame extends H12 {
-    
     constructor() {
         super();
         this.Project = null;
         this.ProjectAsset = null;
         this.SlideIndex = 0;
     }
-
     async init(args) {
 
+        // Set default template value
         this.Set("{e.gdrive}", "G");
         this.Set("{e.ytupload}", "Y")
 
@@ -37,28 +36,24 @@ export default class Frame extends H12 {
             Dispatcher.On(Config.ON_FPROJECT_UPDATE, this.OnProjectUpdate.bind(this));
             Dispatcher.On(Config.ON_FASSET_UPDATE, this.LoadAsset.bind(this));
 
-            //
+            // Bind new event
             this.OpenYTUploader = DynImport.OpenYTUploader.bind(this);
             this.OpenGDriveViewer = DynImport.OpenGDriveViewer.bind(this);
 
-            //
             this.BindDrag = DragNDrop.BindDrag.bind(this);
             this.HandleDrop = DragNDrop.HandleDrop.bind(this);
             this.UploadFile = DragNDrop.UploadFile.bind(this);
             this.PreventDefault = DragNDrop.PreventDefault.bind(this);
 
-            //
+            // Load prject
             await this.Load();
 
         }
         else {
-            
             alert("Unable to get project");
-
         };
 
     }
-
     async render() {
         return <>
             <div class="w-full h-full relative GGH">
@@ -144,12 +139,12 @@ export default class Frame extends H12 {
 
     async LoadAsset() {
 
-        // Try and load project assets
         try {
             
             const { id: pid } = this.Project;
 
-            // Load project assets
+            // Call the api request and check for the success
+            // and response status. The api will load assets
             const _response = await fetch(`/api/frame/asset/fetch?pid=${pid}`);
             const { message, success, data } = await _response.json();
             
@@ -170,14 +165,12 @@ export default class Frame extends H12 {
         };
 
     }
-
     Navigate(index = 0) {
 
         const { NavigationTab, ViewportTab, PropertyTab } = this.element;
         Misc.TabNavigate(index, [NavigationTab, ViewportTab, PropertyTab]);
 
     }
-
     TabSwitch(index = 0) {
 
         const _children = Array.from(this.element.EditorTab.children);
@@ -192,9 +185,10 @@ export default class Frame extends H12 {
         this.Navigate(1);
 
     }
-    
     OnProjectUpdate(event, project) {
 
+        // Called from dispatcher event when the
+        // project data is updated
         if(project) {
             this.Project = project;
             this.Load();
@@ -202,5 +196,4 @@ export default class Frame extends H12 {
         this.LoadAsset.bind(this);
 
     };
-
 };

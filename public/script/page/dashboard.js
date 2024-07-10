@@ -9,17 +9,18 @@ import Authenticate from "@component/google/authenticate";
 
 @Component
 export default class Dashboard extends H12 {
-
     constructor() {
         super();
     }
-
     async init() {
 
         try {
+
+            // Set default template value and load
             this.Set("{d.frame}", "")
             this.Set("{d.creator}", "");
             this.Load();
+
         }
         catch(error) {
             alert("Unable to load dashbaord");
@@ -27,7 +28,6 @@ export default class Dashboard extends H12 {
         };
 
     }
-
     async render() {
         return <>
             <div class="w-full h-full p-10">
@@ -77,7 +77,6 @@ export default class Dashboard extends H12 {
             </div>
         </>;
     }
-
     async Load() {
 
         try {
@@ -103,7 +102,6 @@ export default class Dashboard extends H12 {
         };
 
     }
-
     async OpenCreator() {
 
         if(!this.child["DCreator"]) {
@@ -113,5 +111,4 @@ export default class Dashboard extends H12 {
         this.child["DCreator"].Toggle();
 
     }
-
 };

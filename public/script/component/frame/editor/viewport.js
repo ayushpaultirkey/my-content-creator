@@ -7,29 +7,26 @@ import Authenticate from "@component/google/authenticate";
 
 @Component
 export default class Viewport extends H12 {
-
     constructor() {
         super();
         this.Project = null;
         this.SlideIndex = 0;
     }
-
     async init(args = { project }) {
 
         // Check if the project is valid and load it
         if(args.project) {
 
-            // Set project and load
             this.Project = args.project;
             this.Load();
 
-            // Register on dispatcher event
+            // Register the dispatcher event
+            // The dispacther event when the project is udapted
             Dispatcher.On(Config.ON_FPROJECT_UPDATE, this.OnProjectUpdated.bind(this));
 
         };
 
     }
-
     async render() {
         return <>
             <div class="w-full h-full flex flex-col overflow-hidden">
@@ -52,7 +49,6 @@ export default class Viewport extends H12 {
             </div>
         </>;
     }
-
     Load() {
 
         try {
@@ -62,10 +58,10 @@ export default class Viewport extends H12 {
                 throw new Error("Invalid project")
             };
 
-            // Get slides from the project
+            // Get all the slides from the project
             const { id, property: { slides } } = this.Project;
 
-            // Clear the default slides
+            // Clear the previous slides
             this.Set("{e.slide}", "");
 
             // Render all slides and assign event
@@ -86,7 +82,8 @@ export default class Viewport extends H12 {
     
             };
 
-            //
+            // Update the current viewport video
+            // and load it
             const { Viewport, ViewportVideo } = this.element;
             Viewport.src = `./project/${id}/cache/${slides[0].id}.mp4?r=${crypto.randomUUID()}`;
             ViewportVideo.load();
@@ -97,40 +94,38 @@ export default class Viewport extends H12 {
         };
 
     }
-
     SlideSelected(index) {
 
-        //
         const { Project, element } = this;
         const { Viewport, ViewportVideo } = element;
 
-        //
+        // Check if the project is valid
         if(!Project) {
             return false;
         };
 
-        //
+        // Get the slide and check if the slide exists
         const { id, property: { slides } } = Project;
         if(!slides[index]) {
             return false;
         };
 
+        // Load the video
         Viewport.src = `./project/${id}/cache/${slides[index].id}.mp4?r=${crypto.randomUUID()}`;
         ViewportVideo.load();
 
-        //
+        // Call dispatcher to update the selected slide
         Dispatcher.Call(Config.ON_FSLIDE_SELECT, { index: index });
 
     }
-
     OnProjectUpdated(event, project) {
 
-        // Check if the project is valid and reload it
+        // Called from dispatcher event when the
+        // project data is updated
         if(project) {
             this.Project = project;
             this.Load();
         };
 
     }
-    
 };

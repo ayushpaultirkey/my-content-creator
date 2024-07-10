@@ -41,10 +41,8 @@ export default class Uploader extends H12 {
             { id: "44", value: "Trailers" }
         ];
     }
-
     async init(args = { project }) {
 
-        // Create video category
         this.Set("{y.option}", "");
         for(var x in this.Categories) {
             this.Set("{y.option}++", <>
@@ -54,7 +52,6 @@ export default class Uploader extends H12 {
         this.element.YTCategory.value = 24;
 
     }
-
     async render() {
         return <>
             <div class="absolute top-0 left-0 w-full h-full bg-zinc-900 text-zinc-800 bg-opacity-90 flex justify-center items-center collapse">
@@ -85,16 +82,13 @@ export default class Uploader extends H12 {
             </div>
         </>;
     }
-
     Show({ title, description }) {
         this.root.classList.remove("collapse");
         this.Load({ title, description });
     }
-
     Hide() {
         this.root.classList.add("collapse");
     }
-
     Load({ title, description }) {
 
         const { YTTitle, YTDescription } = this.element;
@@ -102,11 +96,9 @@ export default class Uploader extends H12 {
         YTDescription.value = description;
 
     }
-
     async OnUpload({ title, description, category, onStart, onEnd }) {}
     async Upload() {
 
-        //
         const { YTTitle, YTDescription, YTCategory, YTUpload } = this.element;
 
         this.OnUpload({

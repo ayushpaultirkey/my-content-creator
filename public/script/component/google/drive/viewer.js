@@ -3,20 +3,17 @@ import H12 from "@library/h12";
 
 @Component
 export default class Viewer extends H12 {
-
     constructor() {
         super();
         this.Selected = [];
         this.NextPage = null;
     }
-
     async init() {
 
         this.Set("{d.list}", "");
         this.Set("{d.spin}", "");
 
     }
-
     async render() {
         return <>
             <div class="absolute top-0 left-0 w-full h-full bg-zinc-900 text-zinc-800 bg-opacity-90 flex justify-center items-center collapse">
@@ -39,16 +36,13 @@ export default class Viewer extends H12 {
             </div>
         </>;
     }
-
     Show() {
         this.root.classList.remove("collapse");
         this.Load();
     }
-
     Hide() {
         this.root.classList.add("collapse");
     }
-
     Select(id = "") {
         if(!this.Selected.includes(id)) {
             this.Selected.push(id);
@@ -57,33 +51,31 @@ export default class Viewer extends H12 {
             this.Selected.splice(this.Selected.indexOf(id), 1);
         };
     }
-
     async Load() {
 
-        // Try and get google drive files
         try {
 
-            // Reset values before loading
             this.Selected = [];
             this.Set("{d.list}", "");
             this.Set("{d.spin}", "fa-spin");
 
-            // Fetch google drive files
+            // Call the api request and check for the success
+            // and response status. The api will load files
+            // from google drive
             const _response = await fetch(`/api/google/drive/getfile${(this.NextPage) ? `?next=${this.NextPage}` : ""}`);
             const { success, message, data } = await _response.json();
             
-            // Check if the request was successfull
             if(!success || !_response.ok) {
                 throw new Error(message);
             };
 
-            // Iterate over files and render them
             const _file = data.files;
             this.NextPage = data.nextPage;
 
+            // Iterate over files and render them
             for(var i = 0, len = _file.length; i < len; i++) {
 
-                // Get id, mime
+                // Get id and mime
                 let { id, mimeType } = _file[i];
                 let _icon = "";
 
@@ -125,10 +117,8 @@ export default class Viewer extends H12 {
         this.Set("{d.spin}", "");
 
     }
-
     async OnImport() {}
     async #Import() {
         this.OnImport();
     }
-
 };

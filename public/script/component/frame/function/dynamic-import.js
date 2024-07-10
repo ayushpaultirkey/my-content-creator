@@ -5,12 +5,14 @@ import ServerEvent from "@library/serverevent.p";
 import DViewer from "@component/google/drive/viewer";
 import YTUploader from "@component/google/youtube/uploader";
 
-//@Component
+// @Component
+// Componenet used to tell the h12.transformer
+// to convert the elements into funtions
+
 async function OpenGDriveViewer() {
         
     if(!this.child["GDrive"]) {
         
-        //
         this.Set("{e.gdrive}", <><DViewer args ref="DViewer" id="GDrive"></DViewer></>);
         this.child["GDrive"].OnImport = async function() {
 
@@ -48,7 +50,6 @@ async function OpenGDriveViewer() {
 
         };
         
-        //
         console.warn("DViewer imported");
 
     };
@@ -78,7 +79,6 @@ async function OpenYTUploader() {
                     throw new Error("Please enter title and description");
                 };
     
-                //
                 ServerEvent(`/api/frame/youtube/upload?pid=${Project.id}&t=${title}&d=${description}&c=${category}`, {
                     onOpen: () => {
 
@@ -110,12 +110,9 @@ async function OpenYTUploader() {
     
             }
             catch(error) {
-    
-                // Alert and log
                 alert(error);
                 console.error(error);
                 onEnd();
-                
             };
 
         };

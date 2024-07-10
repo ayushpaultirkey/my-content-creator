@@ -9,19 +9,18 @@ import Attachment from "@component/attachment";
 
 @Component
 export default class Creator extends H12 {
-
     constructor() {
         super();
     }
-
     async init() {
 
+        // Set the default values for key for
+        // the template fields
         this.Set("{u.name}", "");
         this.Set("{u.visible}", "hidden");
         this.Set("{d.visible}", "hidden");
 
     }
-
     async render() {
         return <>
             <div class="absolute top-0 left-0 w-full h-full bg-zinc-900 text-zinc-800 bg-opacity-90 flex justify-center items-center {d.visible}">
@@ -66,45 +65,48 @@ export default class Creator extends H12 {
 
     async Create() {
 
-        // Get elements
         const { CWidth, CHeight, CPrompt, DCreate } = this.element;
         const { CUploader } = this.child;
 
-        // Try and create project using prompt
         try {
 
-            // Set the loader and disable button
+            // Show loader while performing the task
+            // and disable the input elements
             Dispatcher.Call(Config.ON_LOADER_SHOW);
             Dispatcher.Call(Config.ON_LOADER_UPDATE, "Creating Project");
             DCreate.disabled = true;
 
-            // Get prompt, width, height
+            // Get the width, heght and prompt value
+            // from the elements
             const _width = CWidth.value;
             const _height = CHeight.value;
             const _prompt = CPrompt.value;
 
-            // Check for project description
+            // Check if the prompt is not emprt and the
+            // file is valie
             if(_prompt.length < 5 && !CUploader.File) {
                 throw new Error("Project description or attachment is required");
             };
 
-            // Check video dimension
+            // Check for the video dimentsion
             if(_width < 128 || _height < 128) {
                 throw new Error("Dimension should be greater than 128");
             };
 
-            // Prepare data to create project
-            // And check for response
+            // Call the api request and check for the success
+            // and response status. The api will start the creation
+            // of the new project
+            const _url = `/api/frame/project/create?prompt=${_prompt}&width=${_width}&height=${_height}`;
             const _form = new FormData();
             _form.append("files", CUploader.File);
 
-            const _response = await fetch(`/api/frame/project/create?prompt=${_prompt}&width=${_width}&height=${_height}`, { method: "POST", body: _form });
+            const _response = await fetch(_url, { method: "POST", body: _form });
             if(!_response.ok) {
                 throw new Error("Error while creating project");
             };
 
             // Register a server side event to view
-            // The project creation process
+            // the project creation process
             ServerEvent(`/api/frame/project/create`, {
                 onMessage: (data) => {
 
@@ -113,6 +115,8 @@ export default class Creator extends H12 {
                 },
                 onFinish: (data) => {
 
+                    // After the process is finishesd update
+                    // and perform other task
                     Frame.SetLocalProject(data.data.id);
                     Dispatcher.Call(Config.ON_LOADER_HIDE);
                     DCreate.disabled = false;
@@ -135,19 +139,17 @@ export default class Creator extends H12 {
         }
         catch(error) {
             alert(error);
+            console.error(error);
             this.Toggle(false);
             Dispatcher.Call(Config.ON_LOADER_HIDE);
-            console.error(error);
         };
 
     }
-
     Toggle(visible = true) {
 
         this.Set("{d.visible}", ((visible) ? "" : "hidden"));
 
     }
-
     AddPrompt(index = 0) {
 
         const _prompt = [
@@ -158,5 +160,4 @@ export default class Creator extends H12 {
         this.element.CPrompt.value = _prompt[index];
 
     }
-
 };

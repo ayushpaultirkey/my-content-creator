@@ -7,19 +7,15 @@ import Item from "./asset/item";
 
 @Component
 export default class Asset extends H12 {
-
     constructor() {
         super();
         this.Selected = [];
     }
-
     async init() {
 
-        // Register on input file
         this.element.AssetUpload.addEventListener("change", this.#Upload.bind(this));
 
     }
-
     async render() {
         return <>
             <div>
@@ -30,7 +26,6 @@ export default class Asset extends H12 {
             </div>
         </>;
     }
-
     async Load(asset = [], filter = "image") {
 
         this.Set("{p.asset}", <>
@@ -49,7 +44,6 @@ export default class Asset extends H12 {
         };
 
     }
-
     SetSelected(asset = [{ name }]) {
 
         if(!asset) {
@@ -63,7 +57,6 @@ export default class Asset extends H12 {
         };
 
     }
-
     OnSelectItem(id) {
 
         if(!id) {
@@ -85,22 +78,20 @@ export default class Asset extends H12 {
         };
         
     }
-
     GenerateQueryString(name = "asset") {
         return this.Selected.map((item, index) => `${name}[]=${encodeURIComponent(item)}`).join('&');
     }
-
     async #Upload(event) {
         
         try {
 
+            // Check if the project is valid
             if(!this.args.projectid) {
                 throw new Error("Invalid project");
             };
 
+            // Check if the file type is valid
             const _file = event.target.files[0];
-
-            //
             if(_file.type.startsWith("image/") || _file.type.startsWith("video/") || _file.type.startsWith("audio/")) {
 
                 // Check for file
@@ -109,41 +100,35 @@ export default class Asset extends H12 {
                     return false;
                 };
 
-                // Build request body
+                // Call the api request and check for the success
+                // and response status. The api will upload file
+                // to the project
                 const _url = `/api/frame/asset/upload?pid=${this.args.projectid}`;
                 const _form = new FormData();
                 _form.append("files", _file);
     
-                // Send request
                 const _request = await fetch(_url, { method: "POST", body: _form });
                 const _response = await _request.json();
     
-                // Check or request
                 if(!_response.success) {
                     throw new Error(_response.message);
                 };
     
-                // Call dispatcher event
+                // Call dispatcher event to update assets
                 Dispatcher.Call(Config.ON_FASSET_UPDATE);
                 
 
             }
             else {
-
                 console.warn("Invalid file type");
                 throw new Error("File format not supported");
-
             };
             
-
         }
         catch(error) {
             alert(error);
             console.error(error);
         };
         
-
-
     }
-
 };

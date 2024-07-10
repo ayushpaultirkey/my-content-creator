@@ -15,7 +15,8 @@ export default class Prompt extends H12 {
 
     async init(args = { project }) {
 
-        // Set default value
+        // Set the default values for the
+        // template fields
         this.Set("{c.fname}", "");
         this.Set("{c.fvisible}", "hidden");
         this.Set("{p.loader}", "hidden");
@@ -23,17 +24,16 @@ export default class Prompt extends H12 {
         // Check if the project is valid and load it
         if(args.project) {
 
-            // Set project and load
             this.Project = args.project;
             this.Load();
 
-            // Register on dispatcher event
+            // Register the dispatcher event
+            // The dispacther event when the project is udapted
             Dispatcher.On(Config.ON_FPROJECT_UPDATE, this.OnProjectUpdate.bind(this));
 
         };
 
     }
-
     async render() {
         return <>
             <div class="w-full h-full overflow-hidden">
@@ -70,19 +70,19 @@ export default class Prompt extends H12 {
     async Load() {
 
         try {
-            
-            //
+                
+            // Check if the project is valid
             if(!this.Project) {
                 throw new Error("Invalid project");
             };
 
-            //
+            // Clear the previous messages
             this.Set("{e.message}", "");
     
-            //
+            // Get the messages from the project
+            // and render them
             const { history } = this.Project;
 
-            // Iterate over all project messages
             for(var i = 0, len = history.length; i < len; i++) {
 
                 // Check type of message
@@ -129,7 +129,7 @@ export default class Prompt extends H12 {
                     _text = "(JSON Data Error)";
                 };
 
-                // Add chat bubble
+                // Append the new chat bubble
                 this.Set("{e.message}++", <>
                     <div class={ `flex ${(history[i].role == "user") ? "justify-end mr-1" : ""}` }>
                         <div class={ `w-2/3 bg-zinc-500 text-xs font-semibold p-2 rounded-md ${history[i].role == "user" ? "rounded-br-none" : "rounded-bl-none"} shadow-md` }>
@@ -141,7 +141,8 @@ export default class Prompt extends H12 {
     
             };
 
-            //
+            // Scroll to bottom after loading new chat
+            // messages
             const { PromptHistory } = this.element;
             setTimeout(() => { PromptHistory.scrollTo(0, PromptHistory.scrollHeight); }, 10);
 
@@ -151,22 +152,24 @@ export default class Prompt extends H12 {
         };
 
     }
-
     async Update() {
 
         const { Project, element, child } = this;
         const { PromptHistory, PromptBox, PromptButton } = element;
+
+        // Disable input element while performing task
+        // and display the loader
         PromptButton.disabled = true;
         PromptBox.disabled = true;
-        this.Set("{p.loader}", "");
-
-        //
         Dispatcher.Call(Config.ON_LOADER_SHOW);
         Dispatcher.Call(Config.ON_LOADER_UPDATE, "AI is updating slide...");
 
+        // Show the loader
+        this.Set("{p.loader}", "");
+
         try {
 
-            //
+            // Check if the project is valid
             if(!Project) {
                 throw new Error("Invalid project");
             };
@@ -174,16 +177,18 @@ export default class Prompt extends H12 {
             const { id: pid } = Project;
             const { FUploader } = child;
 
+            // Get the prompt value and the file
             const _file = FUploader.File;
             const _prompt = PromptBox.value;
 
-            //
+            // Check if the prompt is not empty and
+            // the file is valid
             if(_prompt.length < 3 && _file == null) {
                 alert("Please enter the prompt or attach file");
                 throw new Error("Project prompt or attachment is required");
             };
 
-            //
+            // Append the new message send by the user
             this.Set("{e.message}++", <>
                 <div class="flex justify-end">
                     <div class="w-2/3 bg-zinc-500 text-xs font-semibold p-2 rounded-md shadow-md">
@@ -191,24 +196,27 @@ export default class Prompt extends H12 {
                     </div>
                 </div>
             </>);
+
+            // Clear the prompt value and scroll
+            // to bottom
             PromptBox.value = "";
             PromptHistory.scrollTo(0, PromptHistory.scrollHeight);
 
-            // Prepare data
+            // Call the api request and check for the success
+            // and response status. The api will generate answer
+            // and might update the project
             const _url = `/api/frame/prompt?pid=${pid}&prompt=${_prompt}`;
             const _form = new FormData();
             _form.append("files", _file);
 
-            // Send request
             const _response = await fetch(_url, { method: "POST", body: _form });
             const { success, message, data } = await _response.json();
 
-            // Check for the error
             if(!success || !_response.ok) {
                 throw new Error(message);
             };
 
-            // Update project data
+            // Call dispatcher event to update the project
             Dispatcher.Call(Config.ON_FPROJECT_UPDATE, data);
 
         }
@@ -216,22 +224,22 @@ export default class Prompt extends H12 {
             console.error(error);
         };
 
-        //
+        // Enable input element after performing task
+        // and hide the loader
         this.Set("{p.loader}", "hidden");
         Dispatcher.Call(Config.ON_LOADER_HIDE);
         PromptButton.disabled = false;
         PromptBox.disabled = false;
 
     }
-
     OnProjectUpdate(event, project) {
 
-        //
+        // Called from dispatcher event when the
+        // project data is updated
         if(project) {
             this.Project = project;
             this.Load();
         };
 
     };
-
 };

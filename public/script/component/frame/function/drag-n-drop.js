@@ -52,6 +52,7 @@ async function HandleDrop(event) {
 
         await Promise.all(_filesToUpload.map(file => this.UploadFile(file)));
 
+        // Call dispatcher after all assets are uploaded
         Dispatcher.Call(Config.ON_FASSET_UPDATE);
 
     }
@@ -65,20 +66,19 @@ async function UploadFile(file) {
 
     try {
 
-        //
+        // Call the api request and check for the success
+        // and response status. The api will uplaod files
+        // to project
         const _url = `/api/frame/asset/upload?pid=${this.Project.id}`;
         const _form = new FormData();
         _form.append("files", file);
 
-        //
         const _response = await fetch(_url, { method: "POST", body: _form });
         const { success, message } = await _response.json();
 
-        //
         if(!success || !_response.ok) {
             throw new Error(message);
         };
-
 
     }
     catch(error) {

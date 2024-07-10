@@ -12,11 +12,9 @@ import Analytics from "./page/analytics";
 
 @Component
 class App extends H12 {
-
     constructor() {
         super();
     }
-
     async init() {
 
         // Navigate to dashboard
@@ -28,18 +26,16 @@ class App extends H12 {
         Dispatcher.On(Config.ON_LOADER_SHOW, this.Loader.Show.bind(this));
         Dispatcher.On(Config.ON_LOADER_HIDE, this.Loader.Hide.bind(this));
         Dispatcher.On(Config.ON_LOADER_UPDATE, this.Loader.Update.bind(this));
-        
         Dispatcher.On("OnNavigate", this.Navigate.To.bind(this));
 
         // Register server side event
         ServerEvent.Register("AuthStatus", "/api/google/auth/status");
 
-        // Lazy load
+        // Lazy load library
         Lazy.Script("DOMPurify", "https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js");
         Lazy.Style("FAIcon", "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
     }
-
     async render() {
         return <>
             <div class="w-full h-full relative">
@@ -55,11 +51,9 @@ class App extends H12 {
             </div>
         </>;
     }
-
     finally() {
         Dispatcher.Call("Loaded");
     }
-
     Loader = {
         Show: (event, args) => {
             this.Set("{a.loader}", "");
@@ -71,7 +65,6 @@ class App extends H12 {
             this.Set("{a.loader}", "hidden");
         }
     }
-
     Navigate = {
         To: (event, args = { target: "HOME" }) => {
 
@@ -127,5 +120,5 @@ class App extends H12 {
     }
 };
 
-//
+// Render application
 H12.Render(App, ".app");

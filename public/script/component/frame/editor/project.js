@@ -8,29 +8,26 @@ import Asset from "@component/asset";
 
 @Component
 export default class Project extends H12 {
-
     constructor() {
         super();
         this.Project = null;
     }
-
     async init(args) {
 
         // Check if the project is valid and load it
         if(args.project) {
 
-            // Set project and load
             this.Project = args.project;
             this.Load();
 
-            // Register on dispatcher event
+            // Register the dispatcher event
+            // The dispacther event when the project and asset are udapted
             Dispatcher.On(Config.ON_FASSET_LOAD, this.OnAssetLoad.bind(this));
             Dispatcher.On(Config.ON_FPROJECT_UPDATE, this.OnProjectUpdate.bind(this));
 
         };
 
     }
-
     async render() {
         return <>
             <div class="w-full h-full overflow-hidden hidden">
@@ -78,17 +75,16 @@ export default class Project extends H12 {
             </div>
         </>;
     }
-    
     async Load() {
 
         const { Project, element, child } = this;
 
-        // Check if the project is valid
+        // Check if the project and the project's 
+        // property is valid
         if(!Project || !Project.property) {
             return false;
         };
 
-        //
         const { AudioAsset } = child;
         const { ProjectTitle, ProjectDescription } = element;
         const { title, description, backgroundAudio } = Project.property;
@@ -97,48 +93,50 @@ export default class Project extends H12 {
         ProjectTitle.value = title;
         ProjectDescription.value = description;
 
-        // Assign selected assets
+        // Assign the selected assets
         AudioAsset.SetSelected(backgroundAudio);
         
     }
-
     async Update() {
         
+        // Show loader while performing task
         Dispatcher.Call(Config.ON_LOADER_SHOW);
         Dispatcher.Call(Config.ON_LOADER_UPDATE, "AI is updating slide...");
 
         try {
 
-            //
             const { Project, element, child } = this;
             const { ProjectTitle, ProjectDescription } = element;
             const { AudioAsset } = child;
 
-            //
+            // Check if the project data is valid
             if(!Project) {
                 throw new Error("Invalid project");
             };
 
-            //
+            // Get the project title and description along
+            // with the selected audio files from asset
             const _title = ProjectTitle.value;
             const _detail = ProjectDescription.value;
             const _audio = AudioAsset.GenerateQueryString("paudio");
 
-            //
+            // Check if the title and descriptoin are valid
             if(!_title || !_detail) {
                 throw new Error("Please enter title and description");
             };
 
-            //
+            // Call the api request and check for the success
+            // and response status. The api will update the project
+            // and respond with new project data
             const _response = await fetch(`/api/frame/project/update?pid=${Project.id}&${_audio}&ptitle=${_title}&pdetail=${_detail}`);
             const { success, message, data } = await _response.json();
 
-            //
             if(!success || !_response.ok) {
                 throw new Error(message);
             };
 
-            //
+            // Call teh dispatcher to update the project data
+            // across the app
             Dispatcher.Call(Config.ON_FPROJECT_UPDATE, data);
 
         }
@@ -147,29 +145,27 @@ export default class Project extends H12 {
             console.error(error);
         };
 
-        //
+        // Hide loader after performing task
         Dispatcher.Call(Config.ON_LOADER_HIDE);
 
     }
-
     async Render() {
-
 
         const { Project, element } = this;
         const { PRender } = element;
 
-        //
         try {
 
-            //
+            // Check if the project data is valid
             if(!Project) {
                 throw new Error("Invalid project, try reloading");
             };
 
-            //
+            // Disable the input
             PRender.disabled = true;
 
-            //
+            // Call the api request. The api will start the 
+            // project rendering.
             ServerEvent(`/api/frame/project/render?pid=${Project.id}`, {
                 onOpen: () => {
                     Dispatcher.Call(Config.ON_LOADER_SHOW);
@@ -197,41 +193,36 @@ export default class Project extends H12 {
 
         }
         catch(error) {
-
-            //
+            console.error(error);
             PRender.disabled = false;
             alert("Unable to render project");
-            console.error(error);
-            
         };
 
     }
-
     async OnAssetLoad(event, asset) {
         
-        //
+        // Called from dispatcher event when tge
+        // asset is loaded
         if(!this.Project) {
             return false;
         };
 
-        //
         const { AudioAsset } = this.child;
         const { audio } = this.Project.property;
 
-        //
+        // Updathe the asset data
         await AudioAsset.Load(asset, "audio");
         AudioAsset.SetSelected(audio);
 
     }
-
     OnProjectUpdate(event, project) {
 
-        //
+        // Called from dispatcher event when the
+        // project data is updated
         if(project) {
             this.Project = project;
             this.Load();
         };
 
     }
-
 };
