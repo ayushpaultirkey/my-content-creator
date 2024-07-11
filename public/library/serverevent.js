@@ -1,8 +1,10 @@
+import Misc from "@library/misc";
+
 const SEvent = {};
 const SData = {};
 
 const ServerEvent = {
-    Register: function(id = crypto.randomUUID(), url) {
+    Register: function(id = Misc.uuid(), url) {
 
         if(!!window.EventSource) {
 
@@ -30,7 +32,7 @@ const ServerEvent = {
         * 
         * @param {*} id 
     */
-    Destroy: function(id = crypto.randomUUID()) {
+    Destroy: function(id = Misc.uuid()) {
 
         
         if(typeof(SEvent[id]) === "undefined") {
@@ -50,7 +52,7 @@ const ServerEvent = {
         * @param {*} callback 
         * @returns 
     */
-    Bind: function(id = crypto.randomUUID(), name, callback) {
+    Bind: function(id = Misc.uuid(), name, callback) {
 
         if(typeof(SEvent[id]) === "undefined" || typeof(callback) !== "function") {
             return false;

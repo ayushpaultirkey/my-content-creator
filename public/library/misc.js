@@ -11,4 +11,11 @@ const TabNavigate = (index = 0, element = []) => {
 
 };
 
-export default { TabNavigate }
+const uuid = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = (crypto.getRandomValues(new Uint8Array(1))[0] & 0x0f) >> (c === 'x' ? 0 : 4);
+        return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+    });
+};
+
+export default { TabNavigate, uuid }

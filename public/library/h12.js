@@ -1,5 +1,12 @@
 window.$fx = {};
 
+const uuid = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = (crypto.getRandomValues(new Uint8Array(1))[0] & 0x0f) >> (c === 'x' ? 0 : 4);
+        return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+    });
+};
+
 /**
     * H12 component class
     * @description
@@ -10,7 +17,7 @@ export default class H12 {
     constructor() {
         
         /** @type {string} */
-        this.id = crypto.randomUUID();
+        this.id = uuid();
 
         /** @type {Element} */
         this.root = null;
@@ -271,7 +278,7 @@ export default class H12 {
         * @returns {string}
     */
     #event(event = null) {
-        let _id = crypto.randomUUID();
+        let _id = uuid();
         $fx[_id] = event.bind(this);
         return `$fx['${_id}'](event, this);`;
     }

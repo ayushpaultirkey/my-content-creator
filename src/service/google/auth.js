@@ -4,11 +4,9 @@ import chalk from "chalk";
 import crypto from "crypto";
 import { google } from "googleapis";
 import { EventEmitter } from "events";
-import directory from "#library/directory.js";
-import path from "path";
+
 
 let OAUTH_EVENT = new EventEmitter();
-
 
 function HasToken(request) {
     if(request.session && request.session.gclient && request.cookies.atk) {
@@ -126,7 +124,7 @@ function OAuth2GenerateURL(oauth2 = null) {
         };
 
         //
-        console.log(chalk.green("/S/Google/Auth/OAuth2Callback():"), "OAuth2 url created");
+        console.log(chalk.green("/S/Google/Auth/OAuth2GenerateURL():"), "OAuth2 url created");
 
         return oauth2.generateAuthUrl({
             access_type: "offline",

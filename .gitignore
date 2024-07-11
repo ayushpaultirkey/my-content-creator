@@ -29,6 +29,7 @@ node_modules/*
 dist-ssr
 asset/*
 *.local
+dist/
 library/*
 !library/.gitkeep
 !library/README.md

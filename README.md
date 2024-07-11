@@ -14,33 +14,46 @@ In `GOOGLE_OAUTH2_CLIENT` make sure to the callback value is set to `web.redirec
 
 More detail can be found in `/src/secret/README.md`, on how to get the credential and client json files.
 
-Below are the steps to run on different operating systems. 
+Below are the steps to run on different operating systems.
 ### *Windows*
-Run the `npm run download` command to download the ffmpeg builds. The files will be downloaded in the `/library/` folder. If the download fails, you can manually download the ffmpeg build and place it in the folder:
-- `/library/ffmpeg.exe`
-- `/library/ffprobe.exe`
+- Run the `npm run download` command to download the ffmpeg builds. The files will be downloaded in the `/library/` folder. If the download fails, you can manually download the ffmpeg build and place it in the folder:
+    - `/library/ffmpeg.exe`
+    - `/library/ffprobe.exe`
 
-After that, run the install command to install the latest package of sharp.
+- After that, run the install command to install the latest package of sharp.
 ```
 npm install sharp@latest
 npm install
 ```
 
+- Now you can start the application by using `npm start` command.
+```
+npm start
+```
+
 ### *Linux*
-In Debain, install ffmpeg.
+- In Debain, install the ffmpeg.
 ```
 sudo apt-get update
 sudo apt-get install ffmpeg
 ```
 
-After that run the install command to install the modules.
+- If the environment have a display device or graphic card then you can skip this installation.
+```
+sudo apt-get install libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev build-essential g++
+sudo apt-get install libgl1-mesa-dev xvfb libxi-dev libx11-dev
+```
+
+- After that run the install command to install the node modules.
 ```
 npm install sharp@0.32.6
 npm install
 ```
 
-### *Starting*
-After installing all the necessary files, use the `start` command start the application.
+- If the environment have a display device or graphic card then you can start the application by using `npm start` command, else you have to run the `xvfb-run` command.
 ```
 npm start
+```
+```
+xvfb-run -s "-ac -screen 0 1280x1024x24" npm start
 ```

@@ -1,5 +1,6 @@
 import "@style/main.css";
 import H12 from "@library/h12";
+import Misc from "@library/misc";
 import Config from "@library/config";
 import Dispatcher from "@library/h12.dispatcher";
 
@@ -85,7 +86,7 @@ export default class Viewport extends H12 {
             // Update the current viewport video
             // and load it
             const { Viewport, ViewportVideo } = this.element;
-            Viewport.src = `./project/${id}/cache/${slides[0].id}.mp4?r=${crypto.randomUUID()}`;
+            Viewport.src = `./project/${id}/cache/${slides[0].id}.mp4?r=${Misc.uuid}`;
             ViewportVideo.load();
 
         }
@@ -111,7 +112,7 @@ export default class Viewport extends H12 {
         };
 
         // Load the video
-        Viewport.src = `./project/${id}/cache/${slides[index].id}.mp4?r=${crypto.randomUUID()}`;
+        Viewport.src = `./project/${id}/cache/${slides[index].id}.mp4?r=${window.uuid}`;
         ViewportVideo.load();
 
         // Call dispatcher to update the selected slide
