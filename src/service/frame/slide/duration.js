@@ -5,6 +5,7 @@ import * as mm from "music-metadata";
 async function ByAudio(audioPath = "") {
     try {
 
+        // Get the duration of the audio file
         const _metadata = await mm.parseFile(audioPath);
         const _duration = Math.ceil(_metadata.format.duration);
 
@@ -22,7 +23,8 @@ async function ByAudio(audioPath = "") {
 
 function ByContent(content = "", wpm = 140) {
 
-    // Split the sentence into words
+    // Split the sentence into words and try to
+    // get the total time to read the text
     const _words = content.trim().split(/\s+/);
     const _totalWords = _words.length;
     const _duration = Math.ceil((_totalWords / wpm) * 60);
@@ -39,15 +41,15 @@ export default async function Duration({ filePath = "", content = "" }) {
 
     let _duration = 10;
 
+    // If the audio file is not found then the content will be
+    // used to calculate the audio length
     try {
         _duration = await ByAudio(filePath);
     }
     catch(error) {
 
-        // Log
         console.log(chalk.yellow("/S/Slide/Duration():"), "Audio file not found, using content for time");
 
-        // Get duration by content
         _duration = ByContent(content);
 
     };

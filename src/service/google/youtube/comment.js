@@ -16,14 +16,15 @@ export default async function Comment({ videoId, channelId, request, callback })
         const _auth = Auth.OAuth2Client(request);
         const _youtube = google.youtube({ version: "v3", auth: _auth });
 
-        //
+        // Get the comments from the video
         const _response = await _youtube.commentThreads.list({
             part: "snippet",
             videoId: videoId,
             maxResults: 100,
         });
         
-        //
+        // Try to iterate over all comment and check if the channel
+        // owner is replied to it
         const _comment = {};
         const { items: pItems } = _response.data;
         if(pItems) {
@@ -60,7 +61,6 @@ export default async function Comment({ videoId, channelId, request, callback })
         console.log(chalk.green("/S/Google/Youtube/Comment():"), "Comment read ended");
         callback("Comment: Comment read ended");
 
-        //
         return _comment;
 
     }

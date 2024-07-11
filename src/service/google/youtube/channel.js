@@ -8,7 +8,6 @@ export default async function Channel({ request, callback }) {
 
     try {
 
-        // For return
         let _data = {};
 
         // Log and callback
@@ -33,7 +32,7 @@ export default async function Channel({ request, callback }) {
         const { title, description, customUrl } = _channel.snippet;
         const { commentCount, subscriberCount, videoCount, viewCount } = _channel.statistics;
 
-        //
+        // Set channel data
         _data = {
             id: _channel.id,
             name: title,
@@ -51,7 +50,6 @@ export default async function Channel({ request, callback }) {
         console.log(chalk.green("/S/Google/Youtube/Channel():"), "Channel read ended");
         callback("Youtube: Channel read ended");
 
-        //
         return _data;
 
     }
@@ -59,7 +57,7 @@ export default async function Channel({ request, callback }) {
 
         console.log(chalk.red("/S/Google/Youtube/Channel():"), error);
         throw new Error("Unable to read channel data");
-
+        
     };
 
 };

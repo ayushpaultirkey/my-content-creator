@@ -10,7 +10,6 @@ async function UseFallback(assetPath) {
 
     try {
 
-
         let _fallbackPath = "";
         let _mimetype = mime.getType(assetPath);
 
@@ -27,6 +26,7 @@ async function UseFallback(assetPath) {
             throw new Error("Invalid fallback asset type")
         };
 
+        // Copy the fllback asset to the directory
         await fs.copyFile(_fallbackPath, assetPath);
 
         console.log(chalk.yellow("/S/Frame/Slide/Scene/Validate.UseFallback():"), "Using fallback asset in project");
@@ -44,12 +44,17 @@ async function UseFallback(assetPath) {
 export default async function Validate(projectPath, asset) {
     
     const _asset = [];
+
+    // Iterate over project asset ad check if its
+    // valid and then return validated asset
     for(const x of asset) {
 
         const _assetPath = path.join(projectPath, "/asset/", x.name);
 
         try {
 
+            // Check if asset exists and then add it to
+            // validated asset
             await fs.access(_assetPath);
 
             _asset.push({
@@ -62,6 +67,8 @@ export default async function Validate(projectPath, asset) {
 
             console.log(chalk.red("/S/Frame/Slide/Scene/Validate():"), `Cannot find ${x} asset file`, error);
 
+            // If asset is invalid then use the fallback asset
+            // and then add it to validated asset
             if(await UseFallback(_assetPath)) {
                 _asset.push({
                     name: _assetPath,

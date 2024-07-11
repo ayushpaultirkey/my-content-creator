@@ -32,7 +32,6 @@ class App extends H12 {
         ServerEvent.Register("AuthStatus", "/api/google/auth/status");
 
         // Lazy load library
-        Lazy.Script("DOMPurify", "https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js");
         Lazy.Style("FAIcon", "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
     }
@@ -97,6 +96,7 @@ class App extends H12 {
 
             try {
                 
+                Lazy.Script("DOMPurify", "https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js");
                 Lazy.Script("Marked", "https://cdn.jsdelivr.net/npm/marked/marked.min.js");
                 Lazy.Script("GChart", "https://www.gstatic.com/charts/loader.js");
 

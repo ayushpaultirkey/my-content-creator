@@ -22,10 +22,12 @@ export default async function Video({ refresh, rid, videoId, request, callback }
             if(!_data.videos) {
                 _data.videos = {};
                 console.log(chalk.green("/S/Analytics/Analyze/Video():"), "Video entry added");
+                callback("Analytics: Video entry added");
             };
             if(!_data.videos[videoId]) {
                 _data.videos[videoId] = {};
                 console.log(chalk.green("/S/Analytics/Analyze/Video():"), "Video entry added by id");
+                callback("Analytics: Video entry added by id");
             };
 
             // Get video detail
@@ -46,6 +48,9 @@ export default async function Video({ refresh, rid, videoId, request, callback }
             _video = _data.videos[videoId];
         };
 
+        // Callback
+        callback("Analytics: AI is analyzing video detail");
+
         // Create prompt
         let _prompt = `Analyze this video data: ${JSON.stringify(_video)}`;
 
@@ -56,6 +61,9 @@ export default async function Video({ refresh, rid, videoId, request, callback }
 
         // Save report and return it
         await Analytics.Save(rid, _data);
+
+        // Callback
+        callback("Analytics: Finishing");
 
         return _data;
 

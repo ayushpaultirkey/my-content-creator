@@ -13,7 +13,7 @@ export default async function Videos(request, response) {
     // Create response body
     const _response = { message: "", success: false, data: {} };
 
-    //
+    
     try {
 
         // Check for cookies and query strings

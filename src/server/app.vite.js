@@ -58,7 +58,7 @@ export default function init() {
 
         // Log the server starting
         console.log(chalk.green("init():"), "Server started !")
-        console.log(chalk.green("init():"), `http://localhost:${port}/`);
+        console.log(chalk.green("init():"), chalk.blue(`http://localhost:${port}/`));
 
         // Open the default browser
         if(mode !== "production") {

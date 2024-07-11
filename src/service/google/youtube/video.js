@@ -10,13 +10,13 @@ export default async function Video({ videoId, request, callback }) {
 
         // Log and callback
         console.log(chalk.green("/S/Google/Youtube/Video():"), "Video read started");
-        callback("Youtube: Video read started");
+        callback("Youtube: Video detail read started");
 
         // Get auth and load channel data
         const _auth = Auth.OAuth2Client(request);
         const _youtube = google.youtube({ version: "v3", auth: _auth });
 
-        //
+        // Get the video detail
         const _response = await _youtube.videos.list({
             id: videoId,
             part: "snippet,statistics",
@@ -28,7 +28,7 @@ export default async function Video({ videoId, request, callback }) {
             throw new Error("Videos not found");
         };
 
-        //
+        // Set the video data
         const _video = {};
         const { kind, snippet, statistics } = items[0];
         if(kind.includes("video")) {
@@ -52,14 +52,13 @@ export default async function Video({ videoId, request, callback }) {
         
         // Log and callback
         console.log(chalk.green("/S/Google/Youtube/Video():"), "Video read ended");
-        callback("Youtube: Video read ended");
+        callback("Youtube: Video detail read ended");
 
-        //
         return _video;
 
     }
     catch(error) {
-
+        
         console.log(chalk.red("/S/Google/Youtube/Video():"), error);
         throw new Error("Unable to read video data");
 

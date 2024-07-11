@@ -21,10 +21,12 @@ export default async function Video({ refresh, rid, videoId, request, callback }
             if(!_data.videos) {
                 _data.videos = {};
                 console.log(chalk.green("/S/Analytics/Video():"), "Video entry added");
+                callback("Analytics: Video entry added");
             };
             if(!_data.videos[videoId]) {
                 _data.videos[videoId] = {};
                 console.log(chalk.green("/S/Analytics/Video():"), "Video entry added by id");
+                callback("Analytics: Video entry added by id");
             };
 
             // Read video data and append it

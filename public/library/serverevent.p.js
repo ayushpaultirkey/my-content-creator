@@ -6,7 +6,7 @@ export default function ServerEvent(url, { onOpen, onMessage, onFinish, onError 
         if(onOpen) { onOpen() };
 
     };
-    _source.onmessage = (event) => {
+    _source.onmessage = async (event) => {
 
         try {
 
@@ -17,10 +17,10 @@ export default function ServerEvent(url, { onOpen, onMessage, onFinish, onError 
             };
 
             if(_data.finished) {
-                if(onFinish) { onFinish(_data) };
+                if(onFinish) { await onFinish(_data) };
             };
             
-            if(onMessage) { onMessage(_data); };
+            if(onMessage) { await onMessage(_data); };
 
         }
         catch(error) {

@@ -50,7 +50,6 @@ export default class Analytics extends H12 {
                     </div>
 
                     <div class="w-full h-full absolute left-0 md:static md:left-auto overflow-hidden" id="ViewportTab">
-                        <Authenticate args style="absolute right-5 top-5 md:top-10 md:right-10"></Authenticate>
                         <div class="absolute left-5 top-7 flex space-x-6 md:hidden z-10">
                             <button class="fa-solid fa-bars text-blue-500" onclick={ () => { this.Navigate(0); } }></button>
                             <button class="fa-solid fa-pen-to-square text-blue-500" onclick={ () => { this.Navigate(1); } }></button>

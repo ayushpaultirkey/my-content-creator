@@ -21,19 +21,20 @@ export default async function Videos({ request, pageToken, rid, refresh, callbac
             if(!_data["videos"]) {
                 _data["videos"] = {};
                 console.log(chalk.green("/S/Analytics/Videos():"), "Video entry addded");
+                callback("Analytics: Video list entry added");
             };
 
             // Read all list of videos append it
-            const _ytVideos = await Youtube.Videos({
+            const _videos = await Youtube.Videos({
                 pageToken: pageToken,
                 callback: callback,
                 request: request
             });
-            _pageToken = _ytVideos.pageToken;
+            _pageToken = _videos.pageToken;
 
             _data["videos"] = {
                 ... _data["videos"],
-                ... _ytVideos.videos
+                ... _videos.videos
             };
 
             console.log(chalk.green("/S/Analytics/Videos():"), "New video data fetched");

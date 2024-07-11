@@ -54,7 +54,6 @@ async function ImportFiles({ request, id = [], callback }) {
 
     try {
 
-        // const _project = await Project.GetActive(projectId);
         const _auth = GAuth.OAuth2Client(request);
         const _drive = google.drive({ version: "v3", auth: _auth });
 

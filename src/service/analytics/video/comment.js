@@ -21,6 +21,7 @@ export default async function Comment({ refresh, rid, videoId, channelId, reques
             if(!_data.videos[videoId].comment) {
                 _data.videos[videoId].comment = {};
                 console.log(chalk.green("/S/Analytics/Video/Comment():"), "Video comment entry added");
+                callback("Analytics: Video comment entry added");
             };
 
             // Get commnet data
@@ -37,7 +38,7 @@ export default async function Comment({ refresh, rid, videoId, channelId, reques
                 ... _comment
             };
 
-            // Save report
+            // Save report and callback
             await Analytics.Save(rid, _data);
 
         }

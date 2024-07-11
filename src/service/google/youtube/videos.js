@@ -16,7 +16,7 @@ export default async function Videos({ pageToken, request, callback }) {
         const _auth = Auth.OAuth2Client(request);
         const _youtube = google.youtube({ version: "v3" });
 
-        //
+        // Get all videos from channel
         const _response = await _youtube.search.list({
             auth: _auth,
             part: "snippet",
@@ -32,7 +32,7 @@ export default async function Videos({ pageToken, request, callback }) {
             throw new Error("Videos not found");
         };
 
-        //
+        // Set the videos
         const _videos = {};
         for(var i = 0, ilen = items.length; i < ilen; i++) {
 
@@ -56,7 +56,6 @@ export default async function Videos({ pageToken, request, callback }) {
         console.log(chalk.green("/S/Google/Youtube/Videos():"), "Video listing ended");
         callback("Youtube: Video listing ended");
 
-        //
         return { videos: _videos, pageToken: _response.data.nextPageToken };
 
     }

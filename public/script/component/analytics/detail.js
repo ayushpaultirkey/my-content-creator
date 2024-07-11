@@ -2,6 +2,7 @@ import "@style/main.css";
 import H12 from "@library/h12";
 import Config from "@library/config";
 import Dispatcher from "@library/h12.dispatcher";
+import ServerEvent from "@library/serverevent.p";
 import Comment from "./comment";
 
 @Component
@@ -105,8 +106,7 @@ export default class Detail extends H12 {
             console.error(error);
         };
 
-        // Hide loader after performing the task,
-        // using using dispatcher event
+        // Hide loader
         Dispatcher.Call(Config.ON_LOADER_HIDE);
 
     }
@@ -120,9 +120,9 @@ export default class Detail extends H12 {
                 // is valid using videos' id
                 const { Report, VideoId } = this;
                 if(!Report || !VideoId) {
-                    throw new Error("Invalid video or report")
+                    throw new Error("Invalid video or report");
                 };
-    
+
                 // Call the api request and check for the success
                 // and response status. The api will return the list
                 // of comments for the youtube video
@@ -152,7 +152,11 @@ export default class Detail extends H12 {
     }
 
     async OnVideoSelect(event, id) {
-        
+    
+            // Show the loader
+            Dispatcher.Call(Config.ON_LOADER_SHOW);
+            Dispatcher.Call(Config.ON_LOADER_UPDATE, "Loading video statistics");
+
         try {
 
             const { element, Report } = this;
@@ -182,10 +186,6 @@ export default class Detail extends H12 {
             // get the properties
             if(!stat) {
                 
-                // Show the loader
-                Dispatcher.Call(Config.ON_LOADER_SHOW);
-                Dispatcher.Call(Config.ON_LOADER_UPDATE, "Loading video statistics");
-
                 // Call the api request and check for the success
                 // and response status. The api will fetch the video's stat
                 const _response = await fetch(`/api/analytics/video?videoId=${id}`);
@@ -229,7 +229,7 @@ export default class Detail extends H12 {
             console.error(error);
         };
 
-        // Hide the loader
+        // Hide loader
         Dispatcher.Call(Config.ON_LOADER_HIDE);
 
     }
