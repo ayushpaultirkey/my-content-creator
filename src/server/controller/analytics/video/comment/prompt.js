@@ -10,25 +10,25 @@ import Analytics from "#service/analytics.js";
 */
 export default async function Prompt(request, response) {
 
-    // Create response object
+    // Create response body
     const _response = { message: "", success: false, data: null };
 
-    //
     try {
 
-        // Check for session uid and query
+        // Check for cookies and query strings
         const { uid } = request.cookies;
         const { videoId, commentId } = request.query;
         if(!uid || !videoId || !commentId) {
             throw new Error("Invalid video, comment or reference id");
         };
 
-        // Check if there is user
+        // Check if the user is logged-in
+        // with their google account
         if(!Auth.HasToken(request)) {
             throw new Error("Google account not authenticated");
         };
 
-        //
+        // Generate comment by using the AI
         const _data = await Analytics.Video.Comment.Prompt({
             videoId: videoId,
             commentId: commentId,
@@ -38,7 +38,7 @@ export default async function Prompt(request, response) {
             }
         });
 
-        //
+        // Set new response
         _response.data = _data;
         _response.success = true;
 
@@ -52,7 +52,7 @@ export default async function Prompt(request, response) {
     }
     finally {
 
-        // send response
+        // Send response
         response.send(_response);
 
     };

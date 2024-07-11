@@ -4,14 +4,11 @@ import Path from "./path.js";
 
 
 export default async function Exist(projectId = "") {
-
     try {
 
-        // Check if the project file exists ?
         const _projectPath = Path(projectId, "/project.json");
         await fs.access(_projectPath);
 
-        //
         return true;
         
     }
@@ -24,5 +21,4 @@ export default async function Exist(projectId = "") {
             throw new Error("Project file not found");
         };
     };
-
 }

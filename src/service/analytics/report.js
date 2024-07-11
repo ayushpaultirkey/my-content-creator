@@ -2,8 +2,6 @@ import chalk from "chalk";
 import Gemini from "#service/google/gemini.js";
 import Youtube from "#service/google/youtube.js";
 import Analytics from "#service/analytics.js";
-import Sample from "#service/google/youtube/analytics/@sample.js";
-
 
 export default async function Report({ request, rid, refresh, callback }) {
 
@@ -27,6 +25,12 @@ export default async function Report({ request, rid, refresh, callback }) {
             };
 
             //
+            const _analytics = await Youtube.Analytics.Report({
+                request: request,
+                callback: () => {}
+            });
+
+            //
             const _channel = await Youtube.Channel({
                 request: request,
                 callback: () => {}
@@ -35,7 +39,7 @@ export default async function Report({ request, rid, refresh, callback }) {
             //
             _data.channel = {
                 detail: _channel,
-                analytic: Sample.data
+                analytic: _analytics.data
             };
             
             //

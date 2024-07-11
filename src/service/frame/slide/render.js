@@ -8,27 +8,26 @@ import Duration from "./duration.js";
 
 export default async function Render({ slide = [], root, width, height, callback = null }) {
 
-    //
+    // Create new promise
     const _delay = new delay();
 
     //
     try {
 
-        //
+        // Set video dimension
         const W = width * 1;
         const H = height * 1;
 
-        //
+        // The index and total number of the slides
         let _index = 0;
         let _length = slide.length;
 
-        //
+        // Render the slides
         const _render = async () => {
         
-            //
+            // Finish rendering
             if(_index > _length - 1) {
 
-                //
                 callback("Rendering: Project pre-render completed");
                 console.log(chalk.green("/S/Frame/Slide/Render():"), "Project pre-render completed");
                 _delay.resolve("Project pre-render completed");
@@ -36,28 +35,27 @@ export default async function Render({ slide = [], root, width, height, callback
 
             };
 
-            //
+            // Get slide and the total duration
             const _slide = slide[_index];
 
-            //
             const _duration = await Duration({
                 path: path.join(root, `/asset/${_slide.id}.wav`),
                 content: _slide.content
             });
 
-            //
+            // Create new creator
             const _creator = new FFCreator({
                 width: W,
                 height: H
             });
             
-            //
+            // Create new scene
             const _scene = new FFScene();
             _scene.setBgColor("#000000");
             _scene.setDuration(_duration);
             _creator.addChild(_scene);
 
-            //
+            // Add narration to scene
             await Scene.AddAudio({
                 projectPath: root,
                 scene: _scene,
@@ -66,7 +64,7 @@ export default async function Render({ slide = [], root, width, height, callback
                 showAt: 0
             });
             
-            //
+            // Add image to scene
             await Scene.AddImage({
                 projectPath: root,
                 scene: _scene,
@@ -78,7 +76,7 @@ export default async function Render({ slide = [], root, width, height, callback
                 hideAt: _duration
             });
 
-            //
+            // Add video to scene
             await Scene.AddVideo({
                 projectPath: root,
                 scene: _scene,
@@ -89,7 +87,7 @@ export default async function Render({ slide = [], root, width, height, callback
                 showAt: 0
             });
 
-            //
+            // Add main content to scene
             await Scene.AddText({
                 projectPath: root,
                 scene: _scene,
@@ -100,12 +98,12 @@ export default async function Render({ slide = [], root, width, height, callback
                 hideAt: _duration
             });
 
-            //
+            // Start rendering    
             _creator.output(path.join(root, `/cache/${_slide.id}.mp4`));
             _creator.start();
             _creator.closeLog();
 
-            //
+             // Register events
             _creator.on("start", () => {
 
                 callback(`Rendering: Project pre-render ${_slide.id} started`);
@@ -127,7 +125,6 @@ export default async function Render({ slide = [], root, width, height, callback
             });
             _creator.on("complete", async() => {
 
-                //
                 callback(`Rendering: Project pre-render ${_slide.id} completed`);
                 console.log(chalk.green(`S/Frame/Slide/Render():`), `Project pre-render ${_slide.id} completed`);
 
@@ -138,16 +135,13 @@ export default async function Render({ slide = [], root, width, height, callback
 
         };
     
-        //
+        // Start the rendering
         await _render();
 
     }
     catch(error) {
-
-        //
         console.log(chalk.red("/S/Frame/Slide/Render():"), error);
         _delay.reject(error);
-
     };
 
     return _delay.promise;

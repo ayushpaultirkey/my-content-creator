@@ -16,7 +16,6 @@ import Cache from "#service/asset/cache.js";
 import Gemini from "#service/google/gemini.js";
 import directory from "#library/directory.js";
 
-//
 export default function init() {
 
     // Initialize Cache
@@ -47,20 +46,23 @@ export default function init() {
     const { __root } = directory();
     app.use("/project", express.static(path.join(__root, "/project/")));
     
-    // Serve files
+    // Add router
     app.use("/", router);
     
     // Create server
-    viteExpress.config({ mode: process.env.NODE_ENV || "development" });
-    viteExpress.listen(app, 3000, () => {
+    const mode = process.env.NODE_ENV;
+    const port = (mode === "production") ? 3000 : 3000;
+
+    viteExpress.config({ mode: mode || "development" });
+    viteExpress.listen(app, port, () => {
 
         // Log the server starting
         console.log(chalk.green("init():"), "Server started !")
-        console.log(chalk.green("init():"), "http://localhost:3000/");
+        console.log(chalk.green("init():"), `http://localhost:${port}/`);
 
         // Open the default browser
-        if(process.env.NODE_ENV !== "production") {
-            open("http://localhost:3000/");
+        if(mode !== "production") {
+            open(`http://localhost:${port}/`);
         };
         
     });

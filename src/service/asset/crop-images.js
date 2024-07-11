@@ -6,10 +6,8 @@ export default async function CropImages({ input = [], output = [], width = 512,
 
     try {
 
-        //
         const _promise = [];
 
-        //
         const _crop = async(source, destination) => {
             return new Promise(async(resolve, reject) => {
 
@@ -38,7 +36,8 @@ export default async function CropImages({ input = [], output = [], width = 512,
             });
         };
 
-        // All images and crop it
+        // Check if the input and output array index is
+        // valid and then crop it
         for(var i = 0, l = input.length; i < l; i++) {
             if(!input[i] || !output[i]) {
                 console.log(chalk.red("/S/Asset/CropImages():"), "Invalid input or output at index", i)
@@ -47,10 +46,8 @@ export default async function CropImages({ input = [], output = [], width = 512,
             _promise.push(_crop(input[i], output[i]));
         };
 
-        //
         await Promise.all(_promise);
 
-        //
         console.log(chalk.green("/S/Asset/CropImages():"), "All images cropped");
 
     }

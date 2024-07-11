@@ -10,24 +10,26 @@ import Analytics from "#service/analytics.js";
 */
 export default async function Videos(request, response) {
 
-    // Create response object
+    // Create response body
     const _response = { message: "", success: false, data: {} };
 
     //
     try {
 
-        // Check for session uid and query
+        // Check for cookies and query strings
         const { uid } = request.cookies;
         const { refresh } = request.query;
         if(!uid) {
             throw new Error("Invalid reference id");
         };
 
-        // Check if there is user
+        // Check if the user is logged-in
+        // with their google account
         if(!Auth.HasToken(request)) {
             throw new Error("Google account not authenticated");
         };
 
+        // Get list of videos from the youtube channel
         let _data = await Analytics.Videos({
             request: request,
             refresh: refresh,
@@ -37,6 +39,7 @@ export default async function Videos(request, response) {
             }
         });
 
+        // Set new response
         _response.data = _data;
         _response.success = true;
 
@@ -50,7 +53,7 @@ export default async function Videos(request, response) {
     }
     finally {
 
-        // send response
+        // Send response
         response.send(_response);
 
     };

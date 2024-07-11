@@ -21,14 +21,14 @@ export default async function Upload(request, response) {
 
     try {
 
-        // Check if there is user
+        // Check if the user is logged-in
+        // with their google account
         if(!Auth.HasToken(request)) {
             throw new Error("Google account not authenticated");
         };
 
+        // Check for query strings
         const { pid } = request.query;
-
-        // Check if the query parameter are valid
         if(!pid) {
             throw new Error("Invalid project id");
         };
@@ -45,7 +45,7 @@ export default async function Upload(request, response) {
             }
         });
 
-        // Set response
+        // Set final response data
         _response.message = "File uploaded to google drive";
         _response.finished = true;
         _response.success = true;
@@ -60,6 +60,7 @@ export default async function Upload(request, response) {
     }
     finally {
 
+        // End response
         response.write(`data: ${JSON.stringify(_response)}\n\n`);
         response.end();
 

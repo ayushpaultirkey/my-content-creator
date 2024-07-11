@@ -17,7 +17,6 @@ export default async function Render({ projectId = "", callback = null }) {
     // Create new promise
     const _delay = new delay();
 
-    //
     try {
 
         // Export name for file
@@ -160,20 +159,16 @@ export default async function Render({ projectId = "", callback = null }) {
                 // Copy rendered file to project's export directory
                 await fs.copyFile(_exportPath, path.join(_projectPath, "/render.mp4"));
 
-                //
                 console.log(chalk.green(`/S/Frame/Project/Render():`), `Project render ${projectId} completed`);
 
-                //
+                // Send SSE and resolve
                 callback(`Rendering: Project render completed`);
                 _delay.resolve(_exportName);
 
             }
             catch(error) {
-
-                //
                 console.log(chalk.red("/S/Frame/Project/Render():"), "Failed to move video to project", error);
                 _delay.reject("Error while moving file to project");
-
             };
             
         });

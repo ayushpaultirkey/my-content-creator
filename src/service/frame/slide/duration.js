@@ -5,22 +5,17 @@ import * as mm from "music-metadata";
 async function ByAudio(audioPath = "") {
     try {
 
-        //
         const _metadata = await mm.parseFile(audioPath);
         const _duration = Math.ceil(_metadata.format.duration);
 
-        //
         console.log(chalk.green("/S/Slide/Duration/ByAudio():"), "Time calculated using audio:", _duration);
 
-        //
         return _duration;
 
     }
     catch(error) {
-
         console.log(chalk.red("/S/Slide/Duration/ByAudio():"), error);
         throw error;
-
     };
 
 };
@@ -32,10 +27,8 @@ function ByContent(content = "", wpm = 140) {
     const _totalWords = _words.length;
     const _duration = Math.ceil((_totalWords / wpm) * 60);
   
-    //
     console.log(chalk.green("/s/Slide/Duration/ByContent():"), "Time calculated using content:", _duration);
 
-    //
     return _duration;
 
 };

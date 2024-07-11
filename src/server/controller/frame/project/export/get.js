@@ -9,10 +9,9 @@ import Project from "#service/frame/project.js";
 */
 export default async function Get(request, response) {
     
-    //Create project
     try {
 
-        // Check if the query parameter are valid
+        // Check for query stringsd
         const { pid } = request.query;
         if(!pid) {
             throw new Error("Invalid project id");

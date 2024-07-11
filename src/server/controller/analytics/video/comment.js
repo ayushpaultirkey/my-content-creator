@@ -10,25 +10,25 @@ import Analytics from "#service/analytics.js";
 */
 export default async function Comment(request, response) {
 
-    // Create response object
+    // Create response body
     const _response = { message: "", success: false, data: null };
 
-    //
     try {
 
-        // Check for session uid and query
+        // Check for cookies and query strings
         const { uid } = request.cookies;
         const { videoId, channelId } = request.query;
         if(!uid || !videoId || !channelId) {
             throw new Error("Invalid video, channel or reference id");
         };
 
-        // Check if there is user
+        // Check if the user is logged-in
+        // with their google account
         if(!Auth.HasToken(request)) {
             throw new Error("Google account not authenticated");
         };
 
-        //
+        // Get all list of video's comment
         const _data = await Analytics.Video.Comment({
             request: request,
             rid: uid,
@@ -39,7 +39,7 @@ export default async function Comment(request, response) {
             }
         });
 
-        //
+        // Set new response data
         _response.data = _data;
         _response.success = true;
 
@@ -53,7 +53,7 @@ export default async function Comment(request, response) {
     }
     finally {
 
-        // send response
+        // Send response
         response.send(_response);
 
     };

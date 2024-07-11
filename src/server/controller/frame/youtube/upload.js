@@ -9,10 +9,10 @@ import Youtube from "#service/frame/youtube.js";
 */
 export default async function Upload(request, response) {
     
-    // Create response object
+    // Create response body
     const _response = { message: "", success: false, finished: false };
 
-    //Set response header for server send event
+    // Set response header for server send event
     response.setHeader("Content-Type", "text/event-stream");
     response.setHeader("Cache-Control", "no-cache");
     response.setHeader("Connection", "keep-alive");
@@ -21,7 +21,8 @@ export default async function Upload(request, response) {
 
     try {
 
-        // Check if there is user
+        // Check if the user is logged-in
+        // with their google account
         if(!Auth.HasToken(request)) {
             throw new Error("Google account not authenticated");
         };

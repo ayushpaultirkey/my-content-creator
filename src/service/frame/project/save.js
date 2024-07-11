@@ -7,19 +7,17 @@ export default async function Save(projectId, data) {
 
     try {
 
-        //
+        // Check if the project is valid and get the content
+        // and its path
         if(!projectId || !data) {
             throw new Error("Invalid project id or data");
         };
         
-        //
         const _projectPath = Path(projectId, "/project.json");
         const _content = JSON.stringify(data);
 
-        //
         await fs.writeFile(_projectPath, _content);
 
-        //
         console.log(chalk.green("/S/Frame/Project/Save():"), "Project data saved");
 
     }

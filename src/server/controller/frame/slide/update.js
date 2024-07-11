@@ -3,26 +3,24 @@ import Project from "#service/frame/project.js";
 
 
 /**
-    * Validates project IDs from request query
+    * 
     * @param {import("express").Request} request 
     * @param {import("express").Response} response 
 */
 export default async function Update(request, response) {
 
-    //
+    // Create response body
     const _response = { message: "", success: false, data: {} };
     
-    //
     try {
         
-        //
+        // Check for query strings
         const { pid, sid, scontent, pimage, pvideo } = request.query;
-
         if(!pid || !sid) {
             throw new Error("Invalid project id or slide id");
         };
 
-        //
+        // Read project data and it's slides
         const _project = await Project.Read(pid);
         const _slide = _project.property.slides.find(x => x.id === sid);
         

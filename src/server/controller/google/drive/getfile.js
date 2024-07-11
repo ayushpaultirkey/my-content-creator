@@ -9,18 +9,18 @@ import Google from "#service/google.js";
 */
 export default async function GetFile(request, response) {
     
-
+    // Create response body
     const _response = { message: "", success: false, data: null };
 
-    
     try {
 
-        // Check if there is user
+        // Check if the user is logged-in
+        // with their google account
         if(!Google.Auth.HasToken(request)) {
             throw new Error("Google account not authenticated");
         };
 
-        //
+        // Get next page token for the google drive
         const { next } = request.query;
 
         // Get files from drive

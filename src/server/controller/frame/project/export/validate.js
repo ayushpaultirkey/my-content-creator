@@ -9,13 +9,12 @@ import Export from "#service/frame/project/export.js";
 */
 export default async function Validate(request, response) {
     
-    // Create response object
+    // Create response body
     const _response = { message: "", success: false, url: "" };
 
-    //Check if render.mp4 exists
     try {
 
-        // Check if the query parameter are valid
+        // Check for query strings
         const { pid } = request.query;
         if(!pid) {
             throw new Error("Invalid project id");
@@ -24,7 +23,7 @@ export default async function Validate(request, response) {
         // Get the export file path of the project
         const _exportPath = await Export.GetFile(pid);
 
-        // Set response
+        // Set new response data
         _response.success = true;
         _response.url = _exportPath.url;
 

@@ -3,31 +3,30 @@ import Frame from "#service/frame.js";
 
 
 /**
-    * Validates project IDs from request query
+    *
     * @param {import("express").Request} request 
     * @param {import("express").Response} response 
 */
 export default async function Render(request, response) {
 
-    //
+    // Create response body
     const _response = { message: "", success: false, finished: false, url: "" };
     
-    //
+    // Set header for SSE
     response.setHeader("Content-Type", "text/event-stream");
     response.setHeader("Cache-Control", "no-cache");
     response.setHeader("Connection", "keep-alive");
     response.setHeader("Content-Encoding", "none");
 
-    //
     try {
 
-        //
+        // Check for query strings
         const { pid } = request.query;
         if(!pid) {
             throw new Error("Invalid project id");
         };
 
-        //
+        // Start the render of the project and send response
         const _fileName = await Frame.Project.Render({
             projectId: pid,
             callback: (text) => {
@@ -37,7 +36,7 @@ export default async function Render(request, response) {
             }
         });
 
-        //
+        // Set final response data
         _response.message = "Rendering finished";
         _response.url = `/project/${pid}/export/${_fileName}`;
         _response.success = true;

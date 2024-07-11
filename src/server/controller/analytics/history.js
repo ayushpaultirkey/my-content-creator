@@ -9,13 +9,12 @@ import Analytics from "#service/analytics.js";
 */
 export default async function History(request, response) {
 
-    // Create response object
+    // Create response body
     const _response = { message: "", success: false, data: {} };
 
-    //
     try {
 
-        // Check for session uid and query
+        // Check for cookies
         const { uid } = request.cookies;
         if(!uid) {
             throw new Error("Invalid reference id");
@@ -28,7 +27,7 @@ export default async function History(request, response) {
             throw new Error("Invalid chat history data");
         };
 
-        // Send response
+        // Set new response data
         _response.data = _data;
         _response.success = true;
 
@@ -42,7 +41,7 @@ export default async function History(request, response) {
     }
     finally {
 
-        // send response
+        // Send response
         response.send(_response);
 
     };

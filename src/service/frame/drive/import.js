@@ -10,28 +10,32 @@ export default async function ImportFiles({ projectId = "", fileId = [], request
 
     try {
 
+        // Check if the project is valid
         if(!projectId || !fileId) {
             throw new Error("No project or file id is not defined");
         };
 
-        //
         callback("Project: Importing file");
 
-        //
+        // Get project data and its path
         const _project = await Project.Read(projectId);
         const _projectAsset = Project.Path(projectId, "/asset/");
 
+        // Import the file to google drive
         const _files = await Drive.ImportFiles({
             id: fileId,
             request: request,
             callback: callback
         });
 
+        // After importing copy the file to project folder
         for(var i = 0, len = _files.length; i < len; i++) {
 
             const { name, path: fpath, mime } = _files[i];
             const _destination = path.join(_projectAsset, name);
 
+            // If the file is image then crop it according
+            // to video resolution
             if(mime.startsWith("image/")) {
 
                 await sharp(fpath)
@@ -49,7 +53,7 @@ export default async function ImportFiles({ projectId = "", fileId = [], request
 
             };
 
-        }
+        };
         
         console.log(chalk.green("/S/Frame/Drive/Import():"), "Files imported");
 

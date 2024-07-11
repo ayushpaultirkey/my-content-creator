@@ -7,21 +7,15 @@ import directory from "#library/directory.js";
 // Get directory
 const { __root } = directory();
 
-
-/**
-    * 
-*/
 export default multer({
     storage: multer.diskStorage({
         destination: async(request, file, callback) => {
 
             try {
 
-                // Set upload path
                 const _path = path.join(path.join(__root, `/project/.temp/`));
                 await fsp.mkdir(_path, { recursive: true });
                 
-                //
                 callback(null, _path);
 
             }

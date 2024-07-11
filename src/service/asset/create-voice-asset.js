@@ -7,12 +7,11 @@ import googlecloud from "@google-cloud/text-to-speech";
 
 async function ByLocalTTS(content = [{ text, destination }]) {
 
-    //
+    // Check if the content is valid
     if(!content) {
         throw new Error("Invalid content");
     };
     
-    //
     function _export(text, destination) {
         return new Promise((resolve, reject) => {
             say.export(text, undefined, 1, destination, (error) => {
@@ -26,10 +25,9 @@ async function ByLocalTTS(content = [{ text, destination }]) {
         });
     };
 
-    //
+    // Create voice by local TSS
     for(var i = 0, l = content.length; i < l; i++) {
 
-        //
         try {
             await _export(content[i].text, content[i].destination);
             console.log(chalk.green(`/S/Asset/ByLocalTTS():`), `voice-${i} created`);
@@ -45,33 +43,28 @@ async function ByLocalTTS(content = [{ text, destination }]) {
 
 async function ByExternalTTS(content = [{ text, destination }]) {
 
-    //
+    // Check if the content is valid
     if(!content) {
         throw new Error("Invalid content");
     };
 
-    //
+    // Create new client for tts
     const _client = new googlecloud.TextToSpeechClient();
 
-    //
     async function _export(text, destination) {
         try {
 
-            //
             console.log(chalk.green("/S/Asset/Voice/ByExternalTTS():"), "Audio narration creation started");
 
-            //
             const [ _response ] = await _client.synthesizeSpeech({
                 input: { text: text },
                 voice: { languageCode: "en-US", ssmlGender: "NEUTRAL" },
                 audioConfig: { audioEncoding: "LINEAR16" },
             });
 
-            //
             const _writer = util.promisify(fs.writeFile);
             await _writer(destination, _response.audioContent, "binary");
 
-            //
             console.log(chalk.green("/S/Asset/Voice/ByExternalTTS():"), "Audio narration creation completed");
 
         }
@@ -82,10 +75,10 @@ async function ByExternalTTS(content = [{ text, destination }]) {
         };
     };
 
-    //
+    // Itrerate of each content to
+    // create new file
     try {
 
-        //
         for(var i = 0, l = content; i < l; i++) {
             await _export(content[i].text, content[i].destination);
         };
@@ -100,13 +93,10 @@ async function ByExternalTTS(content = [{ text, destination }]) {
 
 export default async function CreateVoiceAsset({ content, useLocalTTS, callback }) {
 
-    //
     callback("Asset: Creating voice files");
 
-    //
     try {
 
-        //
         if(useLocalTTS) {
             await ByLocalTTS(content);
         }

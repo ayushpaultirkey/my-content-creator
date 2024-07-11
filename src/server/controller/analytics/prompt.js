@@ -10,21 +10,22 @@ import Analytics from "#service/analytics.js";
 */
 export default async function Prompt(request, response) {
 
-    //Create response object
+    // Create response body
     const _response = { message: "", success: false, data: {} };
     
     try {
 
-        // Use multer to handle file uploads
+        // Use multer to handle file uploads and upload them
+        // to .temp folder of the project
         Asset.Uploader(request, response, async(error) => {
             try {
 
-                // An error occurred when uploading.
+                // An error occurred when uploading
                 if(error) {
                     throw new Error(error.message);
                 };
 
-                //
+                // Check for cookies and query strings
                 const { cookies, query, files } = request;
                 const { uid } = cookies;
                 const { q } = query;
@@ -33,12 +34,12 @@ export default async function Prompt(request, response) {
                 };
                 const _file = (files && files.length > 0) ? files[0] : null;
 
-                // Check for prompt and file
+                // Check is the prompt and the file are valid
                 if(!_file && (!q || q.trim().length < 5)) {
                     throw new Error("Please enter either prompt or attach file");
                 };
 
-                //
+                // Generate answer based on the prompt
                 const _data = await Analytics.Prompt({
                     file: _file,
                     prompt: q,
@@ -46,7 +47,7 @@ export default async function Prompt(request, response) {
                     callback: () => {}
                 });
 
-                // Set the response data
+                // Set the new response data
                 _response.message = "Project updated";
                 _response.success = true;
                 _response.data = _data;

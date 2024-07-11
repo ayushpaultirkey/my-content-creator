@@ -10,25 +10,26 @@ import Analytics from "#service/analytics.js";
 */
 export default async function Video(request, response) {
 
-    // Create response object
+    // Create response body
     const _response = { message: "", success: false, data: {} };
 
     //
     try {
 
-        // Check for session uid and query
+        // Check for cookies and query strings
         const { uid } = request.cookies;
         const { videoId, refresh } = request.query;
         if(!uid || !videoId) {
             throw new Error("Invalid video id or reference id");
         };
 
-        // Check if there is user
+        // Check if the user is logged-in
+        // with their google account
         if(!Auth.HasToken(request)) {
             throw new Error("Google account not authenticated");
         };
 
-        //
+        // Get the video detail by its ID
         const _data = await Analytics.Video({
             refresh: refresh,
             rid: uid,
@@ -39,7 +40,7 @@ export default async function Video(request, response) {
             }
         })
 
-        //
+        // Set new response data
         _response.data = _data;
         _response.success = true;
 
@@ -53,7 +54,7 @@ export default async function Video(request, response) {
     }
     finally {
 
-        // send response
+        // Send response
         response.send(_response);
 
     };

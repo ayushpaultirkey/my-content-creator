@@ -9,7 +9,6 @@ export default class Graph extends H12 {
     constructor() {
         super();
         this.Report = null;
-        this.ResizeRegistered = false;
     }
     async init() {
 
@@ -90,16 +89,12 @@ export default class Graph extends H12 {
                 }
             };
     
-            var _chart = new google.visualization.LineChart(this.root)
+            var _chart = new google.visualization.LineChart(this.root);
             _chart.draw(_data, options);
 
-            if(!this.ResizeRegistered) {
-                window.onresize = () => {
-                    _chart.draw(_data, options);
-                };
+            window.onresize = () => {
+                _chart.draw(_data, options);
             };
-
-            this.ResizeRegistered = true;
 
         });
 

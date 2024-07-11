@@ -10,22 +10,22 @@ import Project from "#service/frame/project.js";
 */
 export default async function Fetch(request, response) {
 
-    //
+    // Create response body
     const _response = { message: "", success: false, data: [] };
     
     //
     try {
 
-        //
+        // Check for query strings
         const { pid } = request.query;
         if(!pid) {
             throw new Error("Invalid project id");
         };
 
-        //
+        // Get the list of assets from project
         const _asset = await Asset.GetAssets(Project.Path(pid, "/asset/"));
 
-        //
+        // Set new response data
         _response.success = true;
         _response.data = _asset.map(x => {
             return {
@@ -37,7 +37,7 @@ export default async function Fetch(request, response) {
     }
     catch(error) {
 
-        // Set error message
+        // Log and ser error message
         _response.message = error.message || "Unable to get asset list";
         console.log(chalk.red("/frame/asset/fetch:"), error);
 

@@ -6,15 +6,15 @@ export default async function UploadFile({ projectId = "", request, callback }) 
 
     try {
 
-        //
+        // Check if the project is valid and then
+        // get project path
         if(!projectId) {
             throw new Error("No project or file id is not defined");
         };
 
-        //
         const _filePath = await Project.Export.GetFile(projectId);
 
-        //
+        // Upload fle to google drive
         await Drive.UploadFile({
             filePath: _filePath.path,
             request: request,

@@ -18,7 +18,7 @@ async function Exist(id = "") {
     }
     catch(error) {
         return false;
-    }
+    };
 };
 
 
@@ -41,7 +41,7 @@ async function Read(id = "") {
     catch(error) {
         console.log(chalk.red("/S/Analytics/io/Read():"), error);
         throw new Error("Unable to read analytics session");
-    }
+    };
 };
 
 
@@ -53,7 +53,7 @@ async function Save(id = "", data = {}) {
     catch(error) {
         console.log(chalk.red("/S/Analytics/io/Save():"), error);
         throw new Error("Unable to save analytics session");
-    }
+    };
 };
 
 

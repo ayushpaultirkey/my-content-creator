@@ -1,10 +1,9 @@
 import "dotenv/config";
 import chalk from "chalk";
 import { google } from "googleapis";
-
 import GAuth from "../../auth.js";
 
-export default async function Report() {
+export default async function Report({ request, callback }) {
 
     try {
 
@@ -25,7 +24,7 @@ export default async function Report() {
 
         //
         const _analytics = google.youtubeAnalytics("v2");
-        const _auth = GAuth.OAuth2Client();
+        const _auth = GAuth.OAuth2Client(request);
 
         //
         const _response = await _analytics.reports.query({

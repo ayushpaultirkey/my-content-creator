@@ -10,25 +10,25 @@ import Analytics from "#service/analytics.js";
 */
 export default async function Send(request, response) {
 
-    // Create response object
+    // Create response body
     const _response = { message: "", success: false, data: null };
 
-    //
     try {
 
-        // Check for session uid and query
+        // Check for cookies and query strings
         const { uid } = request.cookies;
         const { videoId, commentId, comment } = request.query;
         if(!uid || !videoId || !commentId || !comment) {
             throw new Error("Invalid video, comment or reference id");
         };
 
-        // Check if there is user
+        // Check if the user is logged-in
+        // with their google account
         if(!Auth.HasToken(request)) {
             throw new Error("Google account not authenticated");
         };
 
-        //
+        // Add comment to youtbe video
         const _data = await Analytics.Video.Comment.Send({
             videoId: videoId,
             commentId: commentId,
@@ -40,7 +40,7 @@ export default async function Send(request, response) {
             }
         });
 
-        //
+        // Set new response data
         _response.data = _data;
         _response.success = true;
 
@@ -54,7 +54,7 @@ export default async function Send(request, response) {
     }
     finally {
 
-        // send response
+        // Send response
         response.send(_response);
 
     };
