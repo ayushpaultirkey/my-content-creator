@@ -2,9 +2,10 @@ import Render from "./project/render.js";
 import Create from "./project/create.js";
 import Update from "./project/update.js";
 import Export from "./project/export.js";
+import Delete from "./project/delete.js";
 import Exist from "./project/exist.js";
 import Read from "./project/read.js";
 import Save from "./project/save.js";
 import Path from "./project/path.js";
 
-export default { Render, Create, Update, Export, Read, Save, Exist, Path };
+export default { Render, Create, Update, Delete, Export, Read, Save, Exist, Path };

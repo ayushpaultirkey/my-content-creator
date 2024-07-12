@@ -7,12 +7,10 @@ import Attachment from "@component/attachment";
 
 @Component
 export default class Prompt extends H12 {
-
     constructor() {
         super();
         this.Project = null;
     }
-
     async init(args = { project }) {
 
         // Set the default values for the
@@ -66,7 +64,6 @@ export default class Prompt extends H12 {
             </div>
         </>;
     }
-
     async Load() {
 
         try {

@@ -11,6 +11,7 @@ import Project from "@component/frame/editor/project";
 import Viewport from "@component/frame/editor/viewport";
 import DragNDrop from "@component/frame/function/drag-n-drop";
 import DynImport from "@component/frame/function/dynamic-import";
+import Settings from "@component/frame/editor/settings";
 
 @Component
 export default class Frame extends H12 {
@@ -77,25 +78,7 @@ export default class Frame extends H12 {
                             <Slide args id="Slide" project={ this.args.project }></Slide>
                             <Project args id="Project" project={ this.args.project }></Project>
                             <Export args id="Export" project={ this.args.project }></Export>
-
-                            <div class="w-full h-full overflow-hidden hidden" id="projectTSetting">
-                                <div class="w-full h-full p-4 px-5 flex flex-col space-y-3 overflow-auto">
-
-                                    <div class="border border-transparent border-b-zinc-700 pb-2">
-                                        <label class="font-semibold text-zinc-400">Settings</label>
-                                    </div>
-
-                                    <div class="pt-3">
-                                        <button class="p-2 px-6 text-xs text-zinc-200 font-semibold rounded-md bg-red-500 hover:bg-red-600 active:bg-red-700 transition-colors">Delete Project</button>
-                                    </div>
-
-                                    <div class="flex flex-col">
-                                        <label class="text-xs font-semibold text-zinc-400">Note:</label>
-                                        <label class="text-xs text-zinc-400">The deleted project cannot be recovered, all the assets will be deleted.</label>
-                                    </div>
-
-                                </div>
-                            </div>
+                            <Settings args id="Settings" project={ this.args.project }></Settings>
 
                         </div>
 
@@ -129,14 +112,12 @@ export default class Frame extends H12 {
             </div>
         </>;
     }
-
     async Load() {
 
         this.BindDrag();
         this.LoadAsset();
 
     }
-
     async LoadAsset() {
 
         try {

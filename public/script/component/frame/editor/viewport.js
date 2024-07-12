@@ -86,7 +86,7 @@ export default class Viewport extends H12 {
             // Update the current viewport video
             // and load it
             const { Viewport, ViewportVideo } = this.element;
-            Viewport.src = `./project/${id}/cache/${slides[0].id}.mp4?r=${Misc.uuid}`;
+            Viewport.src = `./project/${id}/cache/${slides[0].id}.mp4?r=${Misc.uuid()}`;
             ViewportVideo.load();
 
         }
@@ -112,7 +112,7 @@ export default class Viewport extends H12 {
         };
 
         // Load the video
-        Viewport.src = `./project/${id}/cache/${slides[index].id}.mp4?r=${window.uuid}`;
+        Viewport.src = `./project/${id}/cache/${slides[index].id}.mp4?r=${Misc.uuid()}`;
         ViewportVideo.load();
 
         // Call dispatcher to update the selected slide
