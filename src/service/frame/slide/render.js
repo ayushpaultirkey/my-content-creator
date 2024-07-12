@@ -39,7 +39,7 @@ export default async function Render({ slide = [], root, width, height, callback
             const _slide = slide[_index];
 
             const _duration = await Duration({
-                path: path.join(root, `/asset/${_slide.id}.wav`),
+                filePath: path.join(root, `/asset/${_slide.id}.wav`),
                 content: _slide.content
             });
 

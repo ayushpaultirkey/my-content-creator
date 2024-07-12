@@ -33,7 +33,7 @@ export default class Viewport extends H12 {
             <div class="w-full h-full flex flex-col overflow-hidden">
                 <div class="bg-zinc-800 w-full h-full flex justify-center items-center relative">
                     
-                    <Authenticate args style="absolute top-10 right-10"></Authenticate>
+                    <Authenticate args style="absolute md:top-10 md:right-10 right-5 top-5 z-10"></Authenticate>
 
                     <div class="bg-zinc-300 h-96 shadow-lg">
                         <video class="w-full h-full" id="ViewportVideo" controls loop autoplay>

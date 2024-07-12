@@ -6,7 +6,7 @@ import DViewer from "@component/google/drive/viewer";
 import YTUploader from "@component/google/youtube/uploader";
 
 // @Component
-// Componenet used to tell the h12.transformer
+// Component used to tell the h12.transformer
 // to convert the elements into funtions
 
 async function OpenGDriveViewer() {

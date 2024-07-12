@@ -42,8 +42,8 @@ export default class Slide extends H12 {
             <div class="w-full h-full overflow-hidden hidden">
                 <div class="w-full h-full p-4 px-5 flex flex-col space-y-3 overflow-auto">
 
-                    <div class="border border-transparent border-b-zinc-700 pb-2">
-                        <label class="font-semibold text-zinc-400">Slide</label>
+                    <div class="border border-transparent border-b-zinc-700 pb-3">
+                        <label class="font-semibold text-zinc-400"><i class="mr-2 fa-solid fa-film"></i>Slide</label>
                     </div>
 
                     <div>

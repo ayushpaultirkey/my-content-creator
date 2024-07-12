@@ -30,10 +30,10 @@ async function ByLocalTTS(content = [{ text, destination }]) {
 
         try {
             await _export(content[i].text, content[i].destination);
-            console.log(chalk.green(`/S/Asset/ByLocalTTS():`), `voice-${i} created`);
+            console.log(chalk.green(`/S/Asset/ByLocalTTS():`), `${content[i].destination} created`);
         }
         catch(error) {
-            console.log(chalk.red(`/S/Asset/ByLocalTTS():`), `Error creating voice-${i}:`, error);
+            console.log(chalk.red(`/S/Asset/ByLocalTTS():`), `Error creating voice ${content[i].destination}:`, error);
         };
         
     };

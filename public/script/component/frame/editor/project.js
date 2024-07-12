@@ -33,8 +33,8 @@ export default class Project extends H12 {
             <div class="w-full h-full overflow-hidden hidden">
                 <div class="w-full h-full p-4 px-5 flex flex-col space-y-3 overflow-auto">
 
-                    <div class="border border-transparent border-b-zinc-700 pb-2">
-                        <label class="font-semibold text-zinc-400">Project</label>
+                    <div class="border border-transparent border-b-zinc-700 pb-3">
+                        <label class="font-semibold text-zinc-400"><i class="mr-2 fa-solid fa-folder-open"></i>Project</label>
                     </div>
 
                     <div>

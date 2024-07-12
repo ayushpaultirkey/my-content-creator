@@ -62,12 +62,12 @@ export default class Frame extends H12 {
                 <div class="w-full h-full flex flex-row relative">
 
                     <div class="w-full h-full bg-zinc-900 flex-col flex p-4 absolute -left-full md:w-auto md:h-auto md:static md:left-auto" id="NavigationTab">
-                        <button onclick={ () => { Dispatcher.Call("OnNavigate", { target: "DASHBOARD" }) } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-blue-500 fa fa-grip"></i>Dashboard</button>
-                        <button onclick={ () => { this.TabSwitch(0); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-red-500 fa-solid fa-wand-magic-sparkles"></i>Prompt</button>
-                        <button onclick={ () => { this.TabSwitch(1); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-green-500 fa-solid fa-film"></i>Slide</button>
-                        <button onclick={ () => { this.TabSwitch(2); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-yellow-500 fa-solid fa-folder-open"></i>Project</button>
-                        <button onclick={ () => { this.TabSwitch(3); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-cyan-500 fa-solid fa-cloud-arrow-up"></i>Export</button>
-                        <button onclick={ () => { this.TabSwitch(4); } } class="text-left p-2 px-3 rounded-md w-28 text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-indigo-500  fa-solid fa-gear"></i>Settings</button>
+                        <button onclick={ () => { Dispatcher.Call("OnNavigate", { target: "DASHBOARD" }) } } class="text-left p-2 px-3 rounded-md md:w-28 w-full text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-blue-500 fa fa-grip"></i>Dashboard</button>
+                        <button onclick={ () => { this.TabSwitch(0); } } class="text-left p-2 px-3 rounded-md md:w-28 w-full text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-red-500 fa-solid fa-wand-magic-sparkles"></i>Prompt</button>
+                        <button onclick={ () => { this.TabSwitch(1); } } class="text-left p-2 px-3 rounded-md md:w-28 w-full text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-green-500 fa-solid fa-film"></i>Slide</button>
+                        <button onclick={ () => { this.TabSwitch(2); } } class="text-left p-2 px-3 rounded-md md:w-28 w-full text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-yellow-500 fa-solid fa-folder-open"></i>Project</button>
+                        <button onclick={ () => { this.TabSwitch(3); } } class="text-left p-2 px-3 rounded-md md:w-28 w-full text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-cyan-500 fa-solid fa-cloud-arrow-up"></i>Export</button>
+                        <button onclick={ () => { this.TabSwitch(4); } } class="text-left p-2 px-3 rounded-md md:w-28 w-full text-xs text-zinc-400 bg-zinc-700 bg-opacity-0 hover:bg-opacity-50 active:bg-opacity-70 group"><i class="mr-2 transition-colors group-hover:text-indigo-500  fa-solid fa-gear"></i>Settings</button>
                     </div>
 
                     <div class="w-full h-full bg-zinc-800 border-r border-zinc-700 absolute -left-full md:min-w-[300px] md:max-w-[300px] lg:min-w-[360px] lg:max-w-[360px] md:static md:left-auto" id="PropertyTab">
@@ -82,18 +82,18 @@ export default class Frame extends H12 {
 
                         </div>
 
-                        <div class="absolute right-10 top-3 flex space-x-6 md:hidden">
-                            <button class="fa-solid fa-bars text-blue-500 text-xl" onclick={ () => { this.Navigate(0); } }></button>
-                            <button class="fa-solid fa-arrow-right text-blue-500 text-xl" onclick={ () => { this.Navigate(2); } }></button>
+                        <div class="absolute right-10 top-5 flex space-x-6 md:hidden">
+                            <button class="fa-solid fa-bars text-md text-zinc-500 hover:text-blue-600 active:text-blue-700" onclick={ () => { this.Navigate(0); } }></button>
+                            <button class="fa-solid fa-arrow-right text-md text-zinc-500 hover:text-blue-600 active:text-blue-700" onclick={ () => { this.Navigate(2); } }></button>
                         </div>
                     
                     </div>
 
                     <div class="w-full h-full absolute left-0 md:static md:left-auto overflow-hidden" id="ViewportTab">
                         <Viewport args id="Viewport" project={ this.args.project }></Viewport>
-                        <div class="absolute left-10 top-10 flex space-x-6 md:hidden">
-                            <button class="fa-solid fa-bars text-blue-500 text-xl" onclick={ () => { this.Navigate(0); } }></button>
-                            <button class="fa-solid fa-pen-to-square text-blue-500 text-xl" onclick={ () => { this.Navigate(1); } }></button>
+                        <div class="absolute left-5 top-7 flex space-x-6 md:hidden z-10">
+                            <button class="fa-solid fa-bars text-zinc-500 hover:text-blue-600 active:text-blue-700" onclick={ () => { this.Navigate(0); } }></button>
+                            <button class="fa-solid fa-pen-to-square text-zinc-500 hover:text-blue-600 active:text-blue-700" onclick={ () => { this.Navigate(1); } }></button>
                         </div>
                     </div>
 
@@ -149,7 +149,7 @@ export default class Frame extends H12 {
     Navigate(index = 0) {
 
         const { NavigationTab, ViewportTab, PropertyTab } = this.element;
-        Misc.TabNavigate(index, [NavigationTab, ViewportTab, PropertyTab]);
+        Misc.TabNavigate(index, [NavigationTab, PropertyTab, ViewportTab]);
 
     }
     TabSwitch(index = 0) {

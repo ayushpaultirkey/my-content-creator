@@ -30,24 +30,24 @@ export default class Dashboard extends H12 {
     }
     async render() {
         return <>
-            <div class="w-full h-full p-10">
+            <div class="w-full h-full p-6 md:p-12">
 
                 <div class="w-full h-full flex flex-col space-y-8 overflow-y-auto">
 
                     <div class="space-y-3">
                         <div class="w-full flex space-x-0 space-y-2 flex-col sm:flex-row sm:space-x-3 sm:space-y-0">
-                            <div class="w-full space-x-3">
-                                <button class="fa fa-arrow-left text-xl text-zinc-500 hover:text-blue-600 active:text-blue-700" onclick={ () => { Dispatcher.Call("OnNavigate", { target: "HOME" }) } }></button>
-                                <label class="text-2xl font-semibold text-zinc-300">Dashboard</label>
+                            <div class="w-full space-x-3 flex items-center">
+                                <button class="fa fa-arrow-left text-md md:text-xl mt-1 text-zinc-500 hover:text-blue-600 active:text-blue-700" onclick={ () => { Dispatcher.Call("OnNavigate", { target: "HOME" }) } }></button>
+                                <label class="text-xl md:text-3xl font-semibold text-zinc-300">Dashboard</label>
                             </div>
                             <div>
                                 <Authenticate args></Authenticate>
                             </div>
                         </div>
                         <div class="sm:min-h-60">
-                            <div class="grid sm:grid-cols-[repeat(auto-fill,250px)] grid-cols-[repeat(auto-fill,auto)] gap-4">
+                            <div class="grid sm:grid-cols-[repeat(auto-fill,250px)] grid-cols-[repeat(auto-fill,auto)] gap-2 sm:gap-4">
                             
-                                <div class="bg-blue-500 border-2 border-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors rounded-lg min-h-28 flex flex-col">
+                                <div class="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors rounded-lg min-h-24 sm:min-h-28 flex flex-col">
                                     <button class="fa fa-plus w-full h-full text-2xl text-zinc-900" onclick={ this.OpenCreator } title="Create Project"></button>
                                 </div>
                                 
@@ -59,11 +59,11 @@ export default class Dashboard extends H12 {
 
                     <div class="space-y-3">
                         <div class="w-full flex md:flex-row flex-col">
-                            <label class="text-2xl font-semibold text-zinc-300 w-full">Youtube Analytics</label>
+                            <label class="text-xl md:text-3xl font-semibold text-zinc-300 w-full">Youtube Analytics</label>
                         </div>
-                        <div class="grid sm:grid-cols-[repeat(auto-fill,250px)] grid-cols-[repeat(auto-fill,auto)] gap-4">
+                        <div class="grid sm:grid-cols-[repeat(auto-fill,250px)] grid-cols-[repeat(auto-fill,auto)] gap-2 sm:gap-4">
                         
-                            <div class="bg-blue-500 border-2 border-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors rounded-lg min-h-28 flex flex-col" onclick={ () => { Dispatcher.Call("OnNavigate", { target: "ANALYTICS" }) } }>
+                            <div class="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors rounded-lg min-h-24 sm:min-h-28 flex flex-col" onclick={ () => { Dispatcher.Call("OnNavigate", { target: "ANALYTICS" }) } }>
                                 <button class="fa-brands fa-youtube w-full h-full text-2xl text-zinc-900" title="Open analytics"></button>
                             </div>
                             
