@@ -35,7 +35,13 @@ export default class Attachment extends H12 {
         
         const _file = event.target.files[0];
 
-        if(_file.type.startsWith("image/") || _file.type.startsWith("video/") || _file.type.startsWith("audio/")) {
+        if(
+            _file.type.startsWith("image/") ||
+            _file.type.startsWith("video/") ||
+            _file.type.startsWith("audio/") ||
+            _file.type.startsWith("text/") ||
+            _file.type === "application/pdf"
+        ) {
             if(_file) {
 
                 this.File = _file;

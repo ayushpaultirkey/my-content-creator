@@ -1,8 +1,10 @@
 import "dotenv/config";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 import { GoogleAIFileManager } from "@google/generative-ai/server";
 import Container from "#library/container.js";
 import chalk from "chalk";
+import Asset from "#service/asset.js";
+
 
 
 /**
@@ -25,7 +27,25 @@ function Initialize(id, systemInstruction, responseMimeType = "text/plain") {
                 },
                 generationConfig: {
                     responseMimeType: responseMimeType
-                }
+                },
+                safetySettings: [
+                    {
+                      category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                      threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                    },
+                    {
+                      category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+                      threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                    },
+                    {
+                      category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                      threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                    },
+                    {
+                      category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                      threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH
+                    }
+                ]
             });
     
             Container.Set(id, {
@@ -61,10 +81,30 @@ async function PromptFile(id, file = {}, history = [], validate = true) {
         // Log
         console.log(chalk.green("/S/Google/Gemini.PromptFile():"), "Multimodel prompt started");
 
+        // Check if the file type is not supported for the prompt,
+        // then pre process it
+        if(file.mimetype.includes("pdf")) {
+
+            const _text = await Asset.ReadPDF(file.path);
+            const _format = _text.join(" ");
+
+            // Add text to history
+            history.push({
+                role: "user",
+                parts: [{
+                    text: _format
+                }]
+            });
+
+            // Return the text
+            return { file: null, history: history };
+
+        };
+
         //
         const { filemanager } = Container.Get(id);
         if(!filemanager) {
-            throw new Error("Filemanager not found")
+            throw new Error("Filemanager not found");
         };
 
         // Validate the history before prompting,
@@ -91,7 +131,7 @@ async function PromptFile(id, file = {}, history = [], validate = true) {
             displayName: file.filename,
         });
         const _file = _upload.file;
-    
+
         // Add file to history
         history.push({
             role: "user",

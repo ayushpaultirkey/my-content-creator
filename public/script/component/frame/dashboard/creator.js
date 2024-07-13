@@ -33,7 +33,7 @@ export default class Creator extends H12 {
                             <textarea class="resize-none h-20 p-2 text-xs sm:text-sm font-semibold bg-zinc-200 border-2 border-zinc-400 rounded-lg placeholder:text-zinc-700 placeholder:text-opacity-70" id="CPrompt" placeholder="Describe on what topic you want to create the video..."></textarea>
                             <div>
                                 <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors mr-1" onclick={ () => { this.child["CUploader"].Open(); } }><i class="fa fa-paperclip mr-2"></i>Attach File</button>
-                                <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors mr-1" onclick={ () => { this.parent.OpenTrend(); } }><i class="fa fa-paperclip mr-2"></i>Open Trend</button>
+                                <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors mr-1" onclick={ () => { this.parent.OpenTrend(); } }><i class="fa fa-arrow-trend-up mr-2"></i>Open Trend</button>
                                 <Attachment args id="CUploader"></Attachment>
                             </div>
                         </div>

@@ -1,6 +1,7 @@
 import "@style/main.css";
 import H12 from "@library/h12";
 import Dispatcher from "@library/h12.dispatcher";
+import Config from "@library/config";
 
 @Component
 export default class Settings extends H12 {
@@ -50,6 +51,11 @@ export default class Settings extends H12 {
         
         // Confirm for deletion the project
         if(confirm("Delete the project ?")) {
+
+            // Display loader
+            Dispatcher.Call(Config.ON_LOADER_SHOW);
+            Dispatcher.Call(Config.ON_LOADER_UPDATE, "Deleting project...");
+
             try {
 
                 const { id: pid } = this.Project;
@@ -69,6 +75,10 @@ export default class Settings extends H12 {
                 console.error(error);
                 alert(error);
             };
+
+            // Hide loader
+            Dispatcher.Call(Config.ON_LOADER_HIDE);
+
         };
 
     }
