@@ -24,7 +24,8 @@ export default defineConfig({
         alias: [
             { find: "@component", replacement: fileURLToPath(new URL("./public/script/component", import.meta.url)) },
             { find: "@library", replacement: fileURLToPath(new URL("./public/library", import.meta.url)) },
-            { find: "@style", replacement: fileURLToPath(new URL("./public/style", import.meta.url)) }
+            { find: "@style", replacement: fileURLToPath(new URL("./public/style", import.meta.url)) },
+            { find: "@data", replacement: fileURLToPath(new URL("./public/data", import.meta.url)) }
         ]
     },
     css: {

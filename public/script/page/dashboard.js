@@ -4,6 +4,7 @@ import Frame from "@library/frame";
 import Dispatcher from "@library/h12.dispatcher";
 
 import Card from "@component/frame/dashboard/card";
+import Trend from "@component/frame/dashboard/trend";
 import Creator from "@component/frame/dashboard/creator";
 import Authenticate from "@component/google/authenticate";
 
@@ -18,6 +19,7 @@ export default class Dashboard extends H12 {
 
             // Set default template value and load
             this.Set("{d.frame}", "");
+            this.Set("{d.trend}", "");
             this.Set("{d.creator}", "");
             this.Load();
 
@@ -73,6 +75,7 @@ export default class Dashboard extends H12 {
                 </div>
 
                 {d.creator}
+                {d.trend}
                 
             </div>
         </>;
@@ -114,6 +117,15 @@ export default class Dashboard extends H12 {
             console.warn("Creater builded");
         };
         this.child["DCreator"].Toggle();
+
+    }
+    async OpenTrend() {
+
+        if(!this.child["DTrend"]) {
+            this.Set("{d.trend}", <><Trend args id="DTrend"></Trend></>);
+            console.warn("Creater builded");
+        };
+        this.child["DTrend"].Toggle();
 
     }
 };

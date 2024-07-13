@@ -22,7 +22,7 @@ export default async function Video({ videoId, request, callback }) {
             part: "snippet,statistics",
         });
         
-        // Get channel data and check it
+        // Get video data and check it
         const { items } = _response.data;
         if(!items) {
             throw new Error("Videos not found");

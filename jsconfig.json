@@ -3,6 +3,7 @@
         "paths": {
             "@library/*": ["./public/library/*"],
             "@style/*": ["./public/style/*"],
+            "@data/*": ["./public/data/*"],
             "@component/*": ["./public/script/component/*"],
             "#service/*": [ "./src/service/*" ],
             "#controller/*": [ "./src/express/controller/*" ],

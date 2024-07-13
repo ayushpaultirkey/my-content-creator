@@ -26,7 +26,7 @@ export default async function Videos({ pageToken, request, callback }) {
             pageToken: (!pageToken) ? null : pageToken,
         });
 
-        // Get channel data and check it
+        // Get video data and check it
         const { items } = _response.data;
         if(!items) {
             throw new Error("Videos not found");
@@ -46,7 +46,6 @@ export default async function Videos({ pageToken, request, callback }) {
                 title: snippet.title,
                 description: snippet.description,
                 thumbnail: snippet.thumbnails.high.url,
-                published: snippet.publishedAt,
                 published: snippet.publishedAt,
             };
 

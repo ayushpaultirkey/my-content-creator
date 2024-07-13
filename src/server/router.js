@@ -24,6 +24,7 @@ import gAuth from "./controller/google/auth.js";
 import gAuthStatus from "./controller/google/auth/status.js";
 import gAuthCallback from "./controller/google/auth/callback.js";
 import gdGetFile from "./controller/google/drive/getfile.js";
+import gyTrending from "./controller/google/youtube/trending.js";
 
 // Analytics
 import aReport from "./controller/analytics/report.js";
@@ -97,6 +98,7 @@ router.get("/api/google/auth", gAuth);
 router.get("/api/google/auth/status", gAuthStatus);
 router.get("/api/google/auth/callback", gAuthCallback);
 router.get("/api/google/drive/getfile", gdGetFile);
+router.get("/api/google/youtube/trending", gyTrending);
 
 //
 export default router;
