@@ -24,13 +24,13 @@ export default class Creator extends H12 {
     async render() {
         return <>
             <div class="absolute top-0 left-0 w-full h-full bg-zinc-900 text-zinc-800 bg-opacity-90 flex justify-center items-center {d.visible}">
-                <div class="w-full h-full sm:h-auto bg-zinc-300 p-6 space-y-4">
-                    <label class="text-xl font-semibold">Create new project</label>
+                <div class="w-full h-full sm:h-auto bg-zinc-300 p-4 sm:p-6 space-y-4">
+                    <label class="text-md sm:text-xl font-semibold">Create new project</label>
                     <div class="flex flex-col space-y-3">
 
                         <div class="flex flex-col space-y-1">
-                            <label class="text-sm font-semibold">Project description:</label>
-                            <textarea class="resize-none h-20 p-2 text-sm font-semibold bg-zinc-200 border-2 border-zinc-400 rounded-lg placeholder:text-zinc-700 placeholder:text-opacity-70" id="CPrompt" placeholder="Describe on what topic you want to create the video..."></textarea>
+                            <label class="text-xs sm:text-sm font-semibold">Project description:</label>
+                            <textarea class="resize-none h-20 p-2 text-xs sm:text-sm font-semibold bg-zinc-200 border-2 border-zinc-400 rounded-lg placeholder:text-zinc-700 placeholder:text-opacity-70" id="CPrompt" placeholder="Describe on what topic you want to create the video..."></textarea>
                             <div>
                                 <button class="p-2 px-6 text-xs text-blue-100 font-semibold rounded-md bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors mr-1" onclick={ () => { this.child["CUploader"].Open(); } }><i class="fa fa-paperclip mr-2"></i>Attach File</button>
                                 <Attachment args id="CUploader"></Attachment>
@@ -38,7 +38,7 @@ export default class Creator extends H12 {
                         </div>
 
                         <div class="flex flex-col space-y-1">
-                            <label class="text-sm font-semibold">Dimensions:</label>
+                            <label class="text-xs sm:text-sm font-semibold">Dimensions:</label>
                             <div>
                                 <input type="number" class="w-24 p-2 text-xs font-semibold bg-zinc-200 border-2 border-zinc-400 rounded-lg placeholder:text-zinc-700 placeholder:text-opacity-70" value="720" id="CWidth" placeholder="Width" />
                                 <label class="text-sm font-semibold mx-2">x</label>
@@ -53,7 +53,7 @@ export default class Creator extends H12 {
 
                     </div>
                     <div class="flex flex-col space-y-1">
-                        <label class="text-sm font-semibold">Examples:</label>
+                        <label class="text-xs sm:text-sm font-semibold">Examples:</label>
                         <button class="text-xs text-left" onclick={ () => { this.AddPrompt(0); } }>&bull; Can you help me in generate a video content for health and fitness ? The video length is around 1 minute.</button>
                         <button class="text-xs text-left" onclick={ () => { this.AddPrompt(1); } }>&bull; Can you create a content for video on recent space discoveries ?</button>
                         <button class="text-xs text-left" onclick={ () => { this.AddPrompt(2); } }>&bull; Surprise me !</button>
@@ -62,7 +62,6 @@ export default class Creator extends H12 {
             </div>
         </>;
     }
-
     async Create() {
 
         const { CWidth, CHeight, CPrompt, DCreate } = this.element;
@@ -150,6 +149,11 @@ export default class Creator extends H12 {
         this.Set("{d.visible}", ((visible) ? "" : "hidden"));
 
     }
+    SetPrompt(text = "") {
+
+        this.element.CPrompt.value = text;
+
+    }
     AddPrompt(index = 0) {
 
         const _prompt = [
@@ -157,7 +161,7 @@ export default class Creator extends H12 {
             "Can you create a content for video on recent space discoveries ?",
             "Surprise me !"
         ];
-        this.element.CPrompt.value = _prompt[index];
+        this.SetPrompt(_prompt[index]);
 
     }
 };

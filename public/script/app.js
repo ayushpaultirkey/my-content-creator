@@ -34,6 +34,8 @@ class App extends H12 {
         // Lazy load library
         Lazy.Style("FAIcon", "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
+        Dispatcher.Call("OnNavigate", { target: "DASHBOARD" })
+
     }
     async render() {
         return <>

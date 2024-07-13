@@ -12,7 +12,7 @@ GOOGLE_OAUTH2_CLIENT="src/secret/googleoauth2-client.json"
 
 In `GOOGLE_OAUTH2_CLIENT` make sure to the callback value is set to `web.redirect_uris = [ "http://localhost:3000/api/google/auth/callback" ]`
 
-More detail can be found in `/src/secret/README.md`, on how to get the credential and client json files.
+More detail can be found in [/src/secret/README.md](/src/secret/README.md), on how to get the credential and client json files.
 
 Below are the steps to run on different operating systems.
 ### *Windows*

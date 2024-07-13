@@ -17,7 +17,7 @@ export default class Dashboard extends H12 {
         try {
 
             // Set default template value and load
-            this.Set("{d.frame}", "")
+            this.Set("{d.frame}", "");
             this.Set("{d.creator}", "");
             this.Load();
 
@@ -38,7 +38,7 @@ export default class Dashboard extends H12 {
                         <div class="w-full flex space-x-0 space-y-2 flex-col sm:flex-row sm:space-x-3 sm:space-y-0">
                             <div class="w-full space-x-3 flex items-center">
                                 <button class="fa fa-arrow-left text-md md:text-xl mt-1 text-zinc-500 hover:text-blue-600 active:text-blue-700" onclick={ () => { Dispatcher.Call("OnNavigate", { target: "HOME" }) } }></button>
-                                <label class="text-xl md:text-3xl font-semibold text-zinc-300">Dashboard</label>
+                                <label class="text-xl md:text-2xl font-semibold text-zinc-300">Dashboard</label>
                             </div>
                             <div>
                                 <Authenticate args></Authenticate>
@@ -59,7 +59,7 @@ export default class Dashboard extends H12 {
 
                     <div class="space-y-3">
                         <div class="w-full flex md:flex-row flex-col">
-                            <label class="text-xl md:text-3xl font-semibold text-zinc-300 w-full">Youtube Analytics</label>
+                            <label class="text-xl md:text-2xl font-semibold text-zinc-300 w-full">Youtube Analytics</label>
                         </div>
                         <div class="grid sm:grid-cols-[repeat(auto-fill,250px)] grid-cols-[repeat(auto-fill,auto)] gap-2 sm:gap-4">
                         
@@ -102,11 +102,16 @@ export default class Dashboard extends H12 {
         };
 
     }
+    SetCreatorText(text) {
+        if(this.child["DCreator"]) {
+            this.child["DCreator"].SetPrompt(text);
+        };
+    }
     async OpenCreator() {
 
         if(!this.child["DCreator"]) {
             this.Set("{d.creator}", <><Creator args id="DCreator"></Creator></>);
-            console.warn("Creater component builded");
+            console.warn("Creater builded");
         };
         this.child["DCreator"].Toggle();
 

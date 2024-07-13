@@ -72,7 +72,6 @@ export default async function Create({ prompt, file, width = 128, height = 128, 
                 destination: path.join(_projectPath, `/asset/${x.id}.wav`)
             })),
             callback: callback,
-            useLocalTTS: true,
         });
 
         // Download new images files and place

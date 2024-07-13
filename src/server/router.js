@@ -96,7 +96,6 @@ router.get("/api/analytics/analyze/video", anVideo);
 router.get("/api/google/auth", gAuth);
 router.get("/api/google/auth/status", gAuthStatus);
 router.get("/api/google/auth/callback", gAuthCallback);
-
 router.get("/api/google/drive/getfile", gdGetFile);
 
 //
