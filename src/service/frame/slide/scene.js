@@ -143,10 +143,80 @@ async function AddAudio({ projectPath, scene, audio, volume, showAt }) {
 };
 
 
+function CreateTextOutline({ scene, content, showAt, hideAt, width, height }) {
+
+    const _text = [];
+    const _offset = 3;
+    const _centerX = width / 2;
+    const _centerY = height / 2;
+
+    _text.push(new FFText({ text: content, x: _centerX - _offset, y: _centerY }));
+    _text.push(new FFText({ text: content, x: _centerX + _offset, y: _centerY }));
+    _text.push(new FFText({ text: content, x: _centerX, y: _centerY - _offset }));
+    _text.push(new FFText({ text: content, x: _centerX, y: _centerY + _offset }));
+
+    _text.push(new FFText({ text: content, x: _centerX - _offset, y: _centerY - _offset }));
+    _text.push(new FFText({ text: content, x: _centerX + _offset, y: _centerY + _offset }));
+    _text.push(new FFText({ text: content, x: _centerX - _offset, y: _centerY + _offset }));
+    _text.push(new FFText({ text: content, x: _centerX + _offset, y: _centerY - _offset }));
+
+    for(var i = 0; i < _text.length; i++) {
+
+        _text[i].setColor("black");
+        _text[i].addEffect("zoomIn", 1, showAt);
+        _text[i].addEffect("fadeOut", 1, hideAt);
+        _text[i].alignCenter();
+        _text[i].setFont(path.join(__root, "/project/.font/static/NotoSans-SemiBold.ttf"));
+        _text[i].setWrap(width / 1.5);
+        scene.addChild(_text[i]);
+
+    };
+    
+};
+
+
 async function AddText({ projectPath, scene, content, showAt, hideAt, width, height }) {
 
     // Add text content
     try {
+
+        // Create text shadow using offsets
+        CreateTextOutline({
+            scene: scene,
+            content: content,
+            showAt: showAt,
+            hideAt: hideAt,
+            width: width,
+            height: height
+        });
+
+        /** @type {import("ffcreator").FFText} */
+        const _text2 = new FFText({
+            text: content,
+            x: (width / 2) - 2,
+            y: (height / 2) - 2,
+        });
+        _text2.setColor("black");
+        _text2.addEffect("zoomIn", 1, showAt);
+        _text2.addEffect("fadeOut", 1, hideAt);
+        _text2.alignCenter();
+        _text2.setFont(path.join(__root, "/project/.font/static/NotoSans-SemiBold.ttf"));
+        _text2.setWrap(width / 1.5);
+        scene.addChild(_text2);
+
+        /** @type {import("ffcreator").FFText} */
+        const _text3 = new FFText({
+            text: content,
+            x: (width / 2) + 2,
+            y: (height / 2) + 2,
+        });
+        _text3.setColor("black");
+        _text3.addEffect("zoomIn", 1, showAt);
+        _text3.addEffect("fadeOut", 1, hideAt);
+        _text3.alignCenter();
+        _text3.setFont(path.join(__root, "/project/.font/static/NotoSans-SemiBold.ttf"));
+        _text3.setWrap(width / 1.5);
+        scene.addChild(_text3);
 
         /** @type {import("ffcreator").FFText} */
         const _text = new FFText({
@@ -161,6 +231,7 @@ async function AddText({ projectPath, scene, content, showAt, hideAt, width, hei
         _text.setFont(path.join(__root, "/project/.font/static/NotoSans-SemiBold.ttf"));
         _text.setWrap(width / 1.5);
         scene.addChild(_text);
+        
 
         //
         console.log(chalk.green("/S/Frame/Scene/AddText():"), "Text added");

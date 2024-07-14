@@ -1,3 +1,4 @@
+import "dotenv/config";
 import fs from "fs";
 import say from "say";
 import util from "util";
@@ -115,27 +116,17 @@ async function ByExternalTTS(content = [{ text, destination }]) {
         };
         
     };
-    // try {
-
-    //     for(var i = 0, l = content; i < l; i++) {
-    //         await _export(content[i].text, content[i].destination);
-    //     };
-
-    // }
-    // catch(error) {
-    //     console.log(chalk.red("/S/Asset/CreateVoiceAsset/ByExternalTTS():"), "Error while creating voice for slides", error);
-    // };
 
 };
 
 
-export default async function CreateVoiceAsset({ content, useLocalTTS = true, callback }) {
+export default async function CreateVoiceAsset({ content, callback }) {
 
     callback("Asset: Creating voice files");
 
     try {
 
-        if(useLocalTTS) {
+        if(process.env.NODE_ENV !== "production") {
             await ByLocalTTS(content);
         }
         else {
