@@ -1,5 +1,5 @@
 # My Content Creator
-My Content Creator is a AI web application to quickly generate short videos and is powered by Googl Gemini.
+My Content Creator is a AI web application to quickly generate short videos and analyze youtube channel, powered by Googl Gemini.
 
 ## Features
 - Generate video using prompt.
@@ -26,15 +26,15 @@ My Content Creator is a AI web application to quickly generate short videos and 
 - Google Gemini API key: [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
 - Google Cloud Platform service account and OAuth2 client JSON file:
     - Service account with appropriate permissions (YouTube Data API v3, YouTube Analytics API, Google Drive API, Cloud Text-to-Speech API, Cloud Translation API)
-    - OAuth 2.0 client ID credentials
-        - [https://console.cloud.google.com/apis/credentials](https://console.cloud.google.com/apis/credentials) 
         - [https://console.cloud.google.com/iam-admin/serviceaccounts](https://console.cloud.google.com/iam-admin/serviceaccounts)
-    - Place the credential files in the `src/private` folder.
+    - OAuth 2.0 client ID credentials
+        - [https://console.cloud.google.com/apis/credentials](https://console.cloud.google.com/apis/credentials)
+        - **Important:** In the `googleoauth2-client.json` ensure you've added "http://localhost:3000/api/google/auth/callback" to the *Authorized redirect URIs* section. Your `web.redirect_uris` field in the credential file should include "http://localhost:3000/api/google/auth/callback".
+        - Refer to [/src/secret/README.md](/src/secret/README.md) for detailed instructions on obtaining and configuring Google credentials.
+    - Place the credential and service files in the `src/private` folder.
         - `src/private/googlecloud-service.json` (from the Service Account section)
         - `src/private/googleoauth2-client.json` (from the OAuth 2.0 Client IDs section)
-    - **Important:** In the `googleoauth2-client.json` ensure you've added "http://localhost:3000/api/google/auth/callback" to the *Authorized redirect URIs* section. Your `web.redirect_uris` field in the credential file should include "http://localhost:3000/api/google/auth/callback".
-    - Refer to [/src/secret/README.md](/src/secret/README.md) for detailed instructions on obtaining and configuring Google credentials.
-
+    
 - Add the following keys in the `.env` file
     ```
     NODE_ENV="development"
