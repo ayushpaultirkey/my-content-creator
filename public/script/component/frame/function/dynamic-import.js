@@ -55,7 +55,8 @@ async function OpenGDriveViewer() {
     };
     this.child["GDrive"].Show(this.Project);
     
-}
+};
+
 async function OpenYTUploader() {
 
     if(!this.Project) {
@@ -72,6 +73,7 @@ async function OpenYTUploader() {
 
                 const { Project } = this.parent;
                 if(!Project) {
+                    onEnd();
                     return false;
                 };
 
@@ -96,6 +98,7 @@ async function OpenYTUploader() {
 
                         alert("Video uploaded to youtube !");
                         Dispatcher.Call(Config.ON_LOADER_HIDE);
+                        onEnd();
 
                     },
                     onError: (status, message) => {
@@ -104,6 +107,7 @@ async function OpenYTUploader() {
                             alert(message);
                         };
                         Dispatcher.Call(Config.ON_LOADER_HIDE);
+                        onEnd();
 
                     }
                 });

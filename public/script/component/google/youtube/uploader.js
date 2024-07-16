@@ -41,7 +41,7 @@ export default class Uploader extends H12 {
             { id: "44", value: "Trailers" }
         ];
     }
-    async init(args = { project }) {
+    async init() {
 
         this.Set("{y.option}", "");
         for(var x in this.Categories) {

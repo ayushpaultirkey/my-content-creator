@@ -1,5 +1,5 @@
 # My Content Creator
-My Content Creator is a AI web application to quickly generate short videos and analyze youtube channel, powered by Googl Gemini.
+My Content Creator is a AI web application to quickly generate short videos and analyze youtube videos and channel, powered by Google Gemini.
 
 ## Features
 - Generate video using prompt.

@@ -120,13 +120,13 @@ async function ByExternalTTS(content = [{ text, destination }]) {
 };
 
 
-export default async function CreateVoiceAsset({ content, callback }) {
+export default async function CreateVoiceAsset({ content, useLocalTTS = true, callback }) {
 
     callback("Asset: Creating voice files");
 
     try {
 
-        if(process.env.NODE_ENV !== "production") {
+        if(useLocalTTS) {
             await ByLocalTTS(content);
         }
         else {

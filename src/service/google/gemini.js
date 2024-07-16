@@ -125,7 +125,7 @@ async function PromptFile(id, file = {}, history = [], validate = true) {
             };
         };
 
-        // Upload file to file namager
+        // Upload file to file manager
         const _upload = await filemanager.uploadFile(file.path, {
             mimeType: file.mimetype,
             displayName: file.filename,
