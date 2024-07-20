@@ -20,7 +20,8 @@ export default function Fallback(type = "") {
             _path = path.join(__root, _path, "/fallback-v.mp4");
             break;
         case "AUDIO":
-            _path = path.join(__root, _path, "/fallback-a.wav");
+            //_path = path.join(__root, _path, "/fallback-a.wav");
+            _path = path.join(__root, _path, "/fallback-a.mp3");
             break;
     };
 

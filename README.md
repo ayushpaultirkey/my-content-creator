@@ -21,7 +21,7 @@ My Content Creator is a AI web application to quickly generate short videos and 
 ## Installation
 
 ### Prerequisites
-- Node.js and npm installed
+- Node.js (>v18.17.0) and npm installed
 - Pixabay API key: [https://pixabay.com/api/docs/](https://pixabay.com/api/docs/)
 - Google Gemini API key: [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
 - Google Cloud Platform service account and OAuth2 client JSON file:
@@ -51,20 +51,28 @@ My Content Creator is a AI web application to quickly generate short videos and 
     cd my-content-creator
     ```
 
+2. **Install npm modules:**
+    ```
+    npm install
+    ```
+
 ### Running The Application
 #### **Windows**
-1. **Download the ffmpeg builds:**
-    - Run the `npm run download` command to download the ffmpeg builds. The files will be downloaded in the `/library/` folder.
-    - (Manual option): If the download fails, you can manually download the ffmpeg build from [https://github.com/ffbinaries/ffbinaries-prebuilt/releases/tag/v6.1](https://github.com/ffbinaries/ffbinaries-prebuilt/releases/tag/v6.1) and place it in the `/library/` folder:
+1. **Install the fonts:**
+    Navigate to `/project/.font/static` and install all the fonts.
+
+2. **Download the ffmpeg builds:**
+    - Run the `npm run download` command to download the ffmpeg builds. The files will be downloaded in the `/library` folder.
+    - (Manual option): If the download fails, you can manually download the ffmpeg build from [https://github.com/ffbinaries/ffbinaries-prebuilt/releases/tag/v6.1](https://github.com/ffbinaries/ffbinaries-prebuilt/releases/tag/v6.1) and place it in the `/library` folder:
         - `/library/ffmpeg.exe`
         - `/library/ffprobe.exe`
 
-2. **Install npm packages:**
+3. **Install sharp package:**
     ```
-    npm install sharp@latest && npm install
+    npm install sharp@latest
     ```
 
-3. **Starting the application:**
+4. **Starting the application:**
     ```
     npm start
     ```
@@ -84,9 +92,9 @@ My Content Creator is a AI web application to quickly generate short videos and 
     sudo apt-get install libgl1-mesa-dev xvfb libxi-dev libx11-dev 
     ```
 
-3. **Install npm packages:**
+3. **Install sharp package:**
     ```
-    npm install sharp@0.32.6 && npm install
+    npm install sharp@0.32.6
     ```
 
 4. **Start the application:**

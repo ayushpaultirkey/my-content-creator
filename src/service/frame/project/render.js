@@ -63,7 +63,7 @@ export default async function Render({ projectId = "", callback = null }) {
 
             // Get narration audio length
             const _duration = await Duration({
-                filePath: path.join(_projectPath, `/asset/${slide.id}.wav`),
+                filePath: path.join(_projectPath, `/asset/${slide.id}.mp3`),
                 content: slide.content
             });
 
@@ -77,7 +77,7 @@ export default async function Render({ projectId = "", callback = null }) {
             await Scene.AddAudio({
                 projectPath: _projectPath,
                 scene: _scene,
-                audio: `${slide.id}.wav`,
+                audio: `${slide.id}.mp3`,
                 volume: 1 + (_volumeMapping(_vindex, 0, _slides.length, 1, 0) * 10),
                 showAt: 0,
             });

@@ -70,7 +70,7 @@ export default async function Update({ projectId = "", prompt = "", file = null,
         await Asset.CreateVoiceAsset({
             content: _slideUpdated.map(x => ({
                 text: x.content,
-                destination: path.join(_projectPath, `/asset/${x.id}.wav`)
+                destination: path.join(_projectPath, `/asset/${x.id}.mp3`)
             })),
             callback: callback,
         });

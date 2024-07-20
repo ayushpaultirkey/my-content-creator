@@ -39,7 +39,7 @@ export default async function Render({ slide = [], root, width, height, callback
             const _slide = slide[_index];
 
             const _duration = await Duration({
-                filePath: path.join(root, `/asset/${_slide.id}.wav`),
+                filePath: path.join(root, `/asset/${_slide.id}.mp3`),
                 content: _slide.content
             });
 
@@ -59,7 +59,7 @@ export default async function Render({ slide = [], root, width, height, callback
             await Scene.AddAudio({
                 projectPath: root,
                 scene: _scene,
-                audio: `${_slide.id}.wav`,
+                audio: `${_slide.id}.mp3`,
                 volume: 1,
                 showAt: 0
             });

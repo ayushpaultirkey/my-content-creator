@@ -24,9 +24,9 @@ export default async function GetAssets(searchIn) {
             if(_fileStat.isFile()) {
 
                 // Check if the file isnt narration file
-                if(file.match(/slide[0-9]+\.wav/g)) {
-                    continue;
-                };
+                // if(file.match(/slide[0-9]+\.wav/g)) {
+                //     continue;
+                // };
 
                 // Get its mime type
                 const _mime = mime.lookup(_filePath);

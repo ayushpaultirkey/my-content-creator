@@ -1,5 +1,6 @@
 import os from "os";
 import path from "path";
+import ffmpeg from "fluent-ffmpeg";
 import { FFCreator } from "ffcreator";
 
 import directory from "#library/directory.js";
@@ -9,12 +10,20 @@ import chalk from "chalk";
 const { __root } = directory();
 
 //
-
 const platform = os.platform();
 if(platform === "win32") {
-    FFCreator.setFFmpegPath(path.join(__root, "/library/ffmpeg.exe"));
-    FFCreator.setFFprobePath(path.join(__root, "/library/ffprobe.exe"));
+
+    const _ffmpegPath = path.join(__root, "/library/ffmpeg.exe");
+    const _ffprobePath = path.join(__root, "/library/ffprobe.exe");
+
+    ffmpeg.setFfmpegPath(_ffmpegPath);
+    ffmpeg.setFfprobePath(_ffprobePath);
+
+    FFCreator.setFFmpegPath(_ffmpegPath);
+    FFCreator.setFFprobePath(_ffprobePath);
+
     console.log(chalk.yellow("[NOTE]: Windows environment detected, make sure to download ffmpeg in /library folder, or run the 'npm run download' command"));
+
 }
 else {
     console.log(chalk.yellow("[NOTE]: Linux environment detected, make sure to install ffmpeg"));

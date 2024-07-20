@@ -1,10 +1,35 @@
 import "dotenv/config";
+import os from "os";
 import fs from "fs";
 import say from "say";
+import path from "path";
 import util from "util";
 import chalk from "chalk";
+import crypto from "crypto";
+import ffmpeg from "fluent-ffmpeg";
 import gcTTS from "@google-cloud/text-to-speech";
 import gcTranslate from "@google-cloud/translate";
+import directory from "#library/directory.js";
+
+const { __root } = directory();
+
+async function ConvertWavToMp3(input, output) {
+
+    return new Promise((resolve, reject) => {
+        ffmpeg(input)
+        .toFormat("mp3")
+        .on("end", () => {
+            console.log(chalk.green("/S/Asset/CreateVoiceAsset/ConvertWavToMp3():"), input, "=>", output);
+            resolve();
+        })
+        .on("error", (error) => {
+            console.log(chalk.red("/S/Asset/CreateVoiceAsset/ConvertWavToMp3():"), error);
+            reject(error);
+        })
+        .save(output);
+    });
+
+};
 
 
 async function DetectLanguage(text) {
@@ -35,14 +60,19 @@ async function ByLocalTTS(content = [{ text, destination }]) {
     
     function _export(text, destination) {
         return new Promise((resolve, reject) => {
-            say.export(text, undefined, 1, destination, (error) => {
+
+            const _tempName = `${crypto.randomUUID()}.wav`;
+            const _tempPath = path.join(__root, "/project/.temp/", _tempName);
+
+            say.export(text, undefined, 1, _tempPath, async (error) => {
                 if(error) {
                     reject(error);
                 }
                 else {
-                    resolve();
+                    resolve({ name: _tempName, directory: _tempPath });
                 };
             });
+
         });
     };
 
@@ -50,8 +80,12 @@ async function ByLocalTTS(content = [{ text, destination }]) {
     for(var i = 0, l = content.length; i < l; i++) {
 
         try {
-            await _export(content[i].text, content[i].destination);
+
+            const { directory } = await _export(content[i].text, content[i].destination);
+            await ConvertWavToMp3(directory, content[i].destination);
+
             console.log(chalk.green(`/S/Asset/CreateVoiceAsset/ByLocalTTS():`), `${content[i].destination} created`);
+
         }
         catch(error) {
             console.log(chalk.red(`/S/Asset/CreateVoiceAsset/ByLocalTTS():`), `Error creating voice ${content[i].destination}:`, error);
@@ -85,7 +119,7 @@ async function ByExternalTTS(content = [{ text, destination }]) {
             const [ _response ] = await _client.synthesizeSpeech({
                 input: { text: text },
                 voice: { languageCode: _language, ssmlGender: "NEUTRAL" },
-                audioConfig: { audioEncoding: "LINEAR16" },
+                audioConfig: { audioEncoding: "MP3" },
             });
 
             const _writer = util.promisify(fs.writeFile);
@@ -126,7 +160,10 @@ export default async function CreateVoiceAsset({ content, useLocalTTS = true, ca
 
     try {
 
-        if(useLocalTTS) {
+        const _platform = os.platform();
+
+        // Use external tts in other operating systems
+        if(useLocalTTS && _platform === "win32") {
             await ByLocalTTS(content);
         }
         else {

@@ -69,7 +69,7 @@ export default async function Create({ prompt, file, width = 128, height = 128, 
         await Asset.CreateVoiceAsset({
             content: _parsed.slides.map(x => ({
                 text: x.content,
-                destination: path.join(_projectPath, `/asset/${x.id}.wav`)
+                destination: path.join(_projectPath, `/asset/${x.id}.mp3`)
             })),
             callback: callback,
         });
