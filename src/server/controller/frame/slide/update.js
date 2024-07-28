@@ -36,8 +36,8 @@ export default async function Update(request, response) {
         const _slideImage = (pimage == null || !Array.isArray(pimage)) ? [] : pimage;
         const _slideVideo = (pvideo == null || !Array.isArray(pvideo)) ? [] : pvideo;
 
-        const _imagePrompt = JSON.stringify(_slideImage);
-        const _videoPrompt = JSON.stringify(_slideVideo);
+        const _imagePrompt = JSON.stringify(_slideImage.map((x) => { return { name: x, effect: "" } }));
+        const _videoPrompt = JSON.stringify(_slideVideo.map((x) => { return { name: x, effect: "" } }));
 
         // Update slide by using the prompt
         const _projectUpdated = await Project.Update({

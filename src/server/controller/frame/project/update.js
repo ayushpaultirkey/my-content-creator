@@ -39,7 +39,7 @@ export default async function Update(request, response) {
         else {
 
             // Create audio prompt []
-            const _audioPrompt = JSON.stringify(_projectAudio);
+            const _audioPrompt = JSON.stringify(_projectAudio.map((x) => { return { name: x, effect: "" } }));
     
             // Update project using prompt
             const _projectUpdated = await Project.Update({

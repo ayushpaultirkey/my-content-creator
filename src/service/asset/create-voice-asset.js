@@ -154,7 +154,7 @@ async function ByExternalTTS(content = [{ text, destination }]) {
 };
 
 
-export default async function CreateVoiceAsset({ content, useLocalTTS = true, callback }) {
+export default async function CreateVoiceAsset({ content, useLocalTTS = false, callback }) {
 
     callback("Asset: Creating voice files");
 
