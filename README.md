@@ -58,8 +58,8 @@ My Content Creator is a AI web application to quickly generate short videos and 
     npm install
     ```
 
-### Running The Application
-#### **Windows**
+## Running The Application
+### **Windows**
 1. **Install the fonts:**
     Navigate to `/project/.font/static` and install all the fonts.
 
@@ -80,7 +80,7 @@ My Content Creator is a AI web application to quickly generate short videos and 
     ```
     Navigate to [http://localhost:3000/](http://localhost:3000/)
 
-#### **Linux (Debian)**
+### **Linux (Debian)**
 1. **Install FFmpeg:**
     ```
     sudo apt update
