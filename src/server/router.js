@@ -42,10 +42,15 @@ import avcSend from "./controller/analytics/video/comment/send.js";
 const router = express.Router();
 
 router.use((request, response, next) => {
-    if(!request.session.gclient) {
-        Auth.OAuth2Client(request);
-        console.log(chalk.green("router.use():"), "oauth2 client created");
-    };
+    try {
+        if(!request.session.gclient) {
+            Auth.OAuth2Client(request);
+            console.log(chalk.green("router.use():"), "oauth2 client created");
+        };
+    }
+    catch(error) {
+        console.log(chalk.red("router.use():"), error);
+    }
     next();
 });
 router.use((request, response, next) => {
