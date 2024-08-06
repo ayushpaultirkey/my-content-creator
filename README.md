@@ -17,6 +17,7 @@ My Content Creator is a AI web application to quickly generate short videos and 
 - [Running the Application](#running-the-application)
     - [Windows](#windows)
     - [Linux (Debian)](#linux-debian)
+- [Troubleshooting](#troubleshooting)
 - [Screenshots](#screenshots)
 
 ## Installation
@@ -110,6 +111,31 @@ My Content Creator is a AI web application to quickly generate short videos and 
         ```
 
     Navigate to [http://localhost:3000/](http://localhost:3000/)
+
+## Troubleshooting
+1. **API and services:**
+    - The app can run without the following API and services:
+        - **Pixabay API:** The fallback assets will be used
+        - **Google Client & Services:** Google Drive, Youtube Analytics, TTS etc. wont work.
+
+    - However, the **Gemini API Key** should be present as it is required for core functionality.
+
+2. **`ffmpeg` not installed:**
+    - Make sure that the ffmpeg is installed.
+        - For windows run the `npm run download` command
+        - For linux use the `sudo api install ffmpeg`
+
+3. **`node-canvas` error:**
+    If you are using Node.js version `>20.16.0`, you might encounter the following error when trying to install modules (`npm install`):
+    `
+    Hit response response status error 404 not found canvas-v2.11.2-node-v127-win32-unknown-x64.zip
+    `
+    **Solution:** Use the older version of nodejs between `v18.17.0` to `v20.12.2`
+
+4. **`sharp` version error:**
+    - Install the correct version of the `sharp` module for specific platform.
+        - Windows: Run `npm install sharp@latest`
+        - Linux: Run `npm install sharp@0.32.6` 
 
 ## Screenshots
 

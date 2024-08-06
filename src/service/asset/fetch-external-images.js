@@ -116,7 +116,9 @@ export default async function FetchExternalImage({ keyword, count = 5, callback 
     }
     catch(error) {
         console.log(chalk.red("/S/Asset/FetchExternalImage():"), error);
-        throw new Error("Unable to download images");
+        console.log(chalk.red("/S/Asset/FetchExternalImage():"), "Using fallback image");
+        _collection.push(Fallback("IMAGE"));
+        //throw new Error("Unable to download images");
     }
     
     return _collection;
