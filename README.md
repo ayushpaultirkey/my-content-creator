@@ -123,13 +123,15 @@ My Content Creator is a AI web application to quickly generate short videos and 
 2. **`ffmpeg` not installed:**
     - Make sure that the ffmpeg is installed.
         - For windows run the `npm run download` command
-        - For linux use the `sudo api install ffmpeg`
+        - For linux use the `sudo apt install ffmpeg`
 
 3. **`node-canvas` error:**
-    If you are using Node.js version `>20.16.0`, you might encounter the following error when trying to install modules (`npm install`):
+    If you are using Node.js version `>20.16.0`, you might encounter the following error when trying to install modules:
+
     `
     Hit response response status error 404 not found canvas-v2.11.2-node-v127-win32-unknown-x64.zip
     `
+    
     **Solution:** Use the older version of nodejs between `v18.17.0` to `v20.12.2`
 
 4. **`sharp` version error:**
